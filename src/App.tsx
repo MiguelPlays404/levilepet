@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { NavigationProgress } from "@/components/NavigationProgress";
 import { PageTransition } from "@/components/PageTransition";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { MaintenanceGuard } from "@/components/MaintenanceGuard";
 import Index from "./pages/Index";
 import FaleConosco from "./pages/FaleConosco";
 import Hotelzinho from "./pages/Hotelzinho";
@@ -16,6 +17,7 @@ import Fotos from "./pages/Fotos";
 import Videos from "./pages/Videos";
 import SigaNos from "./pages/SigaNos";
 import NotFound from "./pages/NotFound";
+import Manutencao from "./pages/Manutencao";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminPhotos from "./pages/admin/AdminPhotos";
 import AdminVideos from "./pages/admin/AdminVideos";
@@ -65,8 +67,10 @@ const App = () => (
       <BrowserRouter>
         <BrandingApplier />
         <NavigationProgress />
-        <Routes>
-          <Route path="/" element={<PageTransition><Index /></PageTransition>} />
+        <MaintenanceGuard>
+          <Routes>
+            <Route path="/" element={<PageTransition><Index /></PageTransition>} />
+            <Route path="/manutencao" element={<Manutencao />} />
           <Route path="/fale-conosco" element={<PageTransition><FaleConosco /></PageTransition>} />
           <Route path="/hotelzinho" element={<PageTransition><Hotelzinho /></PageTransition>} />
           <Route path="/transporte" element={<PageTransition><Transporte /></PageTransition>} />
@@ -92,7 +96,8 @@ const App = () => (
           <Route path="/admin/destaques" element={<ProtectedRoute><AdminDestaques /></ProtectedRoute>} />
           <Route path="/admin/transporte" element={<ProtectedRoute><AdminTransporte /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
-        </Routes>
+          </Routes>
+        </MaintenanceGuard>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

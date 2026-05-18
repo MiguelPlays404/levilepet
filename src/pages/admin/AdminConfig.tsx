@@ -3,7 +3,8 @@ import { AdminLayout } from "@/components/AdminLayout";
 import { MediaUploader } from "@/components/MediaUploader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ExternalLink, Upload } from "lucide-react";
+import { ExternalLink, Upload, Power } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 type FieldProps = { label: string; field: string; type?: string; config: any; setConfig: (v: any) => void };
 const Field = ({ label, field, type, config, setConfig }: FieldProps) => (
@@ -54,6 +55,31 @@ export default function AdminConfig() {
   return (
     <AdminLayout title="Configurações Gerais">
       <div className="max-w-2xl space-y-6">
+        {/* Maintenance Mode */}
+        <div className="bg-[#18181B] rounded-2xl p-6 border border-white/[0.07]">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-lg ${config.maintenance_mode ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'}`}>
+                <Power className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-heading font-semibold text-white text-sm">Modo de Manutenção</h3>
+                <p className="text-xs text-[#71717A]">Quando ativo, visitantes verão uma página de espera.</p>
+              </div>
+            </div>
+            <Switch 
+              checked={config.maintenance_mode || false} 
+              onCheckedChange={(checked) => setConfig({ ...config, maintenance_mode: checked })}
+            />
+          </div>
+          {config.maintenance_mode && (
+            <div className="mt-4 p-3 bg-red-500/5 border border-red-500/10 rounded-xl">
+              <p className="text-[10px] text-red-400 font-heading uppercase tracking-wider">Aviso importante</p>
+              <p className="text-xs text-red-200/70 mt-1">O site está inacessível para o público. Apenas quem souber o código secreto poderá entrar.</p>
+            </div>
+          )}
+        </div>
+
         {/* Identity */}
         <div className="bg-[#18181B] rounded-2xl p-6 border border-white/[0.07]">
           <h3 className="font-heading font-semibold text-white text-sm mb-4">Identidade</h3>
