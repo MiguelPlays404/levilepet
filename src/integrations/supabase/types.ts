@@ -359,6 +359,7 @@ export type Database = {
           localizacao_subtitle: string | null
           localizacao_title: string | null
           logo_url: string | null
+          maintenance_mode: boolean | null
           nav_label_conhecer: string | null
           nav_label_fotos: string | null
           nav_label_hotelzinho: string | null
@@ -505,6 +506,7 @@ export type Database = {
           localizacao_subtitle?: string | null
           localizacao_title?: string | null
           logo_url?: string | null
+          maintenance_mode?: boolean | null
           nav_label_conhecer?: string | null
           nav_label_fotos?: string | null
           nav_label_hotelzinho?: string | null
@@ -651,6 +653,7 @@ export type Database = {
           localizacao_subtitle?: string | null
           localizacao_title?: string | null
           logo_url?: string | null
+          maintenance_mode?: boolean | null
           nav_label_conhecer?: string | null
           nav_label_fotos?: string | null
           nav_label_hotelzinho?: string | null
