@@ -3,6 +3,7 @@ import { AdminLayout } from "@/components/AdminLayout";
 import { MediaUploader } from "@/components/MediaUploader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAutoSave, AutoSaveIndicator } from "@/hooks/useAutoSave";
 
 export default function AdminHotelzinho() {
   const [content, setContent] = useState<any>(null);
@@ -19,10 +20,27 @@ export default function AdminHotelzinho() {
     if (!content) return;
     setSaving(true);
     const { error } = await supabase.from("hotelzinho_content").update(content).eq("id", content.id);
-    if (config?.id) await supabase.from("site_config").update({ hotel_hero_image_url: config.hotel_hero_image_url, hotel_gallery_section_title: config.hotel_gallery_section_title, hotel_cta_title: config.hotel_cta_title } as any).eq("id", config.id);
+    if (config?.id) await supabase.from("site_config").update({ 
+      hotel_hero_image_url: config.hotel_hero_image_url, 
+      hotel_gallery_section_title: config.hotel_gallery_section_title, 
+      hotel_cta_title: config.hotel_cta_title 
+    } as any).eq("id", config.id);
     toast({ title: error ? "Erro ao salvar" : "✅ Conteúdo salvo!" });
     setSaving(false);
   };
+
+  const { status, hasDraft, restoreDraft, clearDraft } = useAutoSave(
+    content,
+    async (data) => {
+      const { error } = await supabase.from("hotelzinho_content").update(data).eq("id", content.id);
+      if (error) throw error;
+    },
+    {
+      storageKey: "draft_admin_hotelzinho",
+      enabled: !!content,
+      onRestore: (draft) => setContent(draft)
+    }
+  );
 
   if (!content) return <AdminLayout title="Hotelzinho"><div className="text-[#71717A]">Carregando...</div></AdminLayout>;
 
@@ -70,6 +88,12 @@ export default function AdminHotelzinho() {
           <button onClick={handleSave} disabled={saving} className="btn-primary text-sm">{saving ? "Salvando..." : "💾 Salvar"}</button>
         </div>
       </div>
+      <AutoSaveIndicator 
+        status={status} 
+        hasDraft={hasDraft} 
+        onRestore={restoreDraft} 
+        onClear={clearDraft} 
+      />
     </AdminLayout>
   );
 }

@@ -4,6 +4,7 @@ import { MediaUploader } from "@/components/MediaUploader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Trash2, ArrowUp, ArrowDown, Eye, EyeOff } from "lucide-react";
+import { useAutoSave, AutoSaveIndicator } from "@/hooks/useAutoSave";
 
 const ICON_OPTIONS = ["Truck", "Shield", "Heart", "Clock", "MapPin", "PawPrint", "Snowflake", "Star", "CheckCircle", "Phone", "Calendar", "Home"];
 
@@ -34,6 +35,20 @@ export default function AdminTransporte() {
     toast({ title: error ? "Erro ao salvar" : "✅ Salvo!" });
     setSaving(false);
   };
+
+  const { status, hasDraft, restoreDraft, clearDraft } = useAutoSave(
+    content,
+    async (data) => {
+      const { id, updated_at, ...rest } = data;
+      const { error } = await supabase.from("transporte_content").update(rest).eq("id", id);
+      if (error) throw error;
+    },
+    {
+      storageKey: "draft_admin_transporte",
+      enabled: !!content,
+      onRestore: (draft) => setContent(draft)
+    }
+  );
 
   if (!content) return <AdminLayout title="Transporte"><div className="text-[#71717A]">Carregando...</div></AdminLayout>;
 
@@ -264,6 +279,12 @@ export default function AdminTransporte() {
           <button onClick={handleSave} disabled={saving} className="btn-primary text-sm">{saving ? "Salvando..." : "💾 Salvar textos"}</button>
         </div>
       </div>
+      <AutoSaveIndicator 
+        status={status} 
+        hasDraft={hasDraft} 
+        onRestore={restoreDraft} 
+        onClear={clearDraft} 
+      />
     </AdminLayout>
   );
 }
