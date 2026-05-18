@@ -8,6 +8,7 @@ import { PageTransition } from "@/components/PageTransition";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { MaintenanceGuard } from "@/components/MaintenanceGuard";
 import { RoutePersistence } from "@/components/RoutePersistence";
+import { SecurityHeaders } from "@/components/SecurityHeaders";
 import Index from "./pages/Index";
 import FaleConosco from "./pages/FaleConosco";
 import Hotelzinho from "./pages/Hotelzinho";
@@ -66,6 +67,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <SecurityHeaders />
         <BrandingApplier />
         <NavigationProgress />
         <RoutePersistence>

@@ -1,18 +1,25 @@
-const SESSION_KEY = 'lvp_admin';
-const SESSION_DURATION = 8 * 60 * 60 * 1000; // 8 hours
+const SESSION_KEY = 'lvp_admin_secure_v1';
+const SESSION_DURATION = 4 * 60 * 60 * 1000; // 4 hours
 
 interface AdminSession {
   token: string;
   createdAt: number;
   expiresAt: number;
+  entropy: string;
 }
 
 export function createAdminSession(): void {
   const now = Date.now();
+  // Generate random tokens for additional security check
+  const array = new Uint32Array(4);
+  window.crypto.getRandomValues(array);
+  const entropy = Array.from(array).map(b => b.toString(16)).join('');
+  
   const session: AdminSession = {
-    token: btoa(`${now}-${Math.random()}`),
+    token: btoa(`${now}-${entropy}-${Math.random()}`),
     createdAt: now,
     expiresAt: now + SESSION_DURATION,
+    entropy: entropy
   };
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
 }
