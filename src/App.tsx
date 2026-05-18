@@ -7,6 +7,7 @@ import { NavigationProgress } from "@/components/NavigationProgress";
 import { PageTransition } from "@/components/PageTransition";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { MaintenanceGuard } from "@/components/MaintenanceGuard";
+import { RoutePersistence } from "@/components/RoutePersistence";
 import Index from "./pages/Index";
 import FaleConosco from "./pages/FaleConosco";
 import Hotelzinho from "./pages/Hotelzinho";
@@ -67,8 +68,9 @@ const App = () => (
       <BrowserRouter>
         <BrandingApplier />
         <NavigationProgress />
-        <MaintenanceGuard>
-          <Routes>
+        <RoutePersistence>
+          <MaintenanceGuard>
+            <Routes>
             <Route path="/" element={<PageTransition><Index /></PageTransition>} />
             <Route path="/manutencao" element={<Manutencao />} />
           <Route path="/fale-conosco" element={<PageTransition><FaleConosco /></PageTransition>} />
@@ -95,9 +97,10 @@ const App = () => (
           <Route path="/admin/guia" element={<ProtectedRoute><AdminGuia /></ProtectedRoute>} />
           <Route path="/admin/destaques" element={<ProtectedRoute><AdminDestaques /></ProtectedRoute>} />
           <Route path="/admin/transporte" element={<ProtectedRoute><AdminTransporte /></ProtectedRoute>} />
-          <Route path="*" element={<NotFound />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </MaintenanceGuard>
+      </RoutePersistence>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
