@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Hammer, ArrowRight, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { setAdminSession } from "@/lib/adminSession";
+import { createAdminSession } from "@/lib/adminSession";
 
 export default function Manutencao() {
   const [name, setName] = useState("");
@@ -34,7 +34,7 @@ export default function Manutencao() {
         // We set a flag in sessionStorage to bypass maintenance redirect
         sessionStorage.setItem("maintenance_bypass", "true");
         // Also set admin session for full access
-        setAdminSession();
+        createAdminSession();
         toast({ title: "Acesso administrativo liberado!" });
         setTimeout(() => navigate("/"), 1500);
       } else {
