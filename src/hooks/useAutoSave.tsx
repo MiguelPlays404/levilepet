@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
-import { Cloud, CloudCheck, CloudOff, AlertTriangle, RefreshCw } from "lucide-react";
+import { Cloud, CloudOff, AlertTriangle, RefreshCw, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 /**
@@ -186,7 +186,7 @@ export function AutoSaveIndicator({ status, hasDraft, onRestore, onClear }: {
             )}
             {status === "saved" && (
               <>
-                <CloudCheck className="w-4 h-4" />
+                <CheckCircle2 className="w-4 h-4" />
                 <span className="text-xs font-medium">Alterações salvas!</span>
               </>
             )}
