@@ -8,7 +8,7 @@ export function SecurityHeaders() {
     
     // Prevent clickjacking by ensuring we're not in an iframe (basic check)
     if (window.self !== window.top) {
-      window.top!.location = window.self.location;
+      window.top!.location.href = window.self.location.href;
     }
   }, []);
 
