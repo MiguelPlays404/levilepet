@@ -3,6 +3,7 @@ import { AdminLayout } from "@/components/AdminLayout";
 import { MediaUploader } from "@/components/MediaUploader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAutoSave, AutoSaveIndicator } from "@/hooks/useAutoSave";
 
 const HOME_TABS = [
   { key: "hero", label: "Hero" },
@@ -43,12 +44,32 @@ export default function AdminHome() {
   };
 
   const saveFields = async (fields: Record<string, any>, label: string) => {
+    if (!config?.id) return;
     setSaving(label);
     const { error } = await supabase.from("site_config").update(fields as any).eq("id", config.id);
     setSaving("");
-    toast({ title: error ? "Erro ao salvar" : `✅ ${label} salvo!` });
-    if (!error) setConfig({ ...config, ...fields });
+    if (!error) {
+      toast({ title: `✅ ${label} salvo!` });
+      setConfig((prev: any) => ({ ...prev, ...fields }));
+      return true;
+    } else {
+      toast({ title: "Erro ao salvar", variant: "destructive" });
+      return false;
+    }
   };
+
+  const { status, hasDraft, restoreDraft, clearDraft } = useAutoSave(
+    config,
+    async (data) => {
+      const { error } = await supabase.from("site_config").update(data).eq("id", config.id);
+      if (error) throw error;
+    },
+    {
+      storageKey: "draft_admin_home",
+      enabled: !!config,
+      onRestore: (draft) => setConfig(draft)
+    }
+  );
 
   const toggleSection = async (id: string, active: boolean) => {
     await supabase.from("home_sections").update({ is_active: !active }).eq("id", id);
@@ -231,6 +252,12 @@ export default function AdminHome() {
           </div>
         </div>
       )}
+      <AutoSaveIndicator 
+        status={status} 
+        hasDraft={hasDraft} 
+        onRestore={restoreDraft} 
+        onClear={clearDraft} 
+      />
     </AdminLayout>
   );
 }
