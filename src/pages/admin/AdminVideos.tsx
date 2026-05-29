@@ -76,7 +76,7 @@ export default function AdminVideos() {
     if (!pendingVideoUrl) { toast({ title: "Envie o vídeo primeiro" }); return; }
     const locations = addLocations.length ? addLocations : ["geral"];
     await supabase.from("videos").insert({
-      title: uploadTitle || "Vídeo",
+      title: uploadTitle || "",
       video_url: pendingVideoUrl,
       video_type: "upload",
       thumbnail_url: uploadThumb || "",
@@ -87,6 +87,23 @@ export default function AdminVideos() {
     } as any);
     toast({ title: "✅ Vídeo adicionado!" });
     setUploadTitle(""); setUploadThumb(""); setPendingVideoUrl("");
+    fetchVideos();
+  };
+
+  // Multi-upload: each video is inserted automatically without title
+  const handleMultiUploaded = async (url: string) => {
+    if (!url) return;
+    const locations = addLocations.length ? addLocations : ["geral"];
+    await supabase.from("videos").insert({
+      title: "",
+      video_url: url,
+      video_type: "upload",
+      thumbnail_url: "",
+      category: primaryCategory(locations),
+      locations,
+      is_featured: locations.includes("home"),
+      likes_count: 0, is_active: true, published_at: new Date().toISOString(),
+    } as any);
     fetchVideos();
   };
 
