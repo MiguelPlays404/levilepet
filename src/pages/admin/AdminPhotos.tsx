@@ -55,10 +55,8 @@ export default function AdminPhotos() {
 
   const handleUploaded = async (url: string) => {
     if (!url) return;
-    const fileName = url.split("/").pop()?.split(".")[0] || "Foto";
     const locations = uploadLocations.length ? uploadLocations : [activeTab === "all" ? "galeria" : activeTab];
-    await supabase.from("photos").insert({ title: fileName, image_url: url, category: primaryCategory(locations), locations, is_featured: locations.includes("home") } as any);
-    toast({ title: "✅ Foto adicionada à galeria!" });
+    await supabase.from("photos").insert({ title: "", image_url: url, category: primaryCategory(locations), locations, is_featured: locations.includes("home") } as any);
     fetchPhotos();
   };
 
@@ -145,7 +143,8 @@ export default function AdminPhotos() {
             </button>
           ))}
         </div>
-        <MediaUploader accept="image" pathPrefix={`fotos/${uploadCategory}`} onUploaded={handleUploaded} label="" />
+        <MediaUploader accept="image" multiple pathPrefix={`fotos/${uploadCategory}`} onUploaded={handleUploaded} label="" />
+        <p className="text-[11px] text-[#71717A] mt-2">💡 Arraste várias fotos de uma vez. Cada uma é enviada sem título — você pode editar depois se quiser.</p>
       </div>
 
       {/* Filters */}

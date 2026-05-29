@@ -11,6 +11,7 @@ interface Props {
   onUploaded: (url: string) => void;
   label?: string;
   compact?: boolean;
+  multiple?: boolean;
 }
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -24,27 +25,24 @@ export function MediaUploader({
   onUploaded,
   label = "Enviar arquivo",
   compact = false,
+  multiple = false,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(currentUrl || null);
   const [dragOver, setDragOver] = useState(false);
+  const [batchInfo, setBatchInfo] = useState<{ done: number; total: number } | null>(null);
   const { toast } = useToast();
 
   const acceptAttr = accept === "image" ? "image/*" : accept === "video" ? "video/*" : "image/*,video/*";
 
-  const upload = useCallback(async (file: File) => {
-    setUploading(true);
-    setProgress(0);
-
+  const uploadOne = useCallback(async (file: File): Promise<string | null> => {
     const ext = file.name.split(".").pop() || "bin";
     const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const path = `${pathPrefix}/${safeName}`;
-
+    const url = `${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`;
     try {
-      // XHR para captar progresso real
-      const url = `${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`;
       await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("POST", url, true);
@@ -59,20 +57,45 @@ export function MediaUploader({
         xhr.onerror = () => reject(new Error("Falha de rede"));
         xhr.send(file);
       });
-
       const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-      setPreview(data.publicUrl);
-      onUploaded(data.publicUrl);
-      toast({ title: "✅ Upload concluído!" });
+      return data.publicUrl;
     } catch (e: any) {
-      toast({ title: "Erro no upload", description: e.message, variant: "destructive" });
-    } finally {
-      setUploading(false);
-      setTimeout(() => setProgress(0), 500);
+      toast({ title: `Erro ao enviar ${file.name}`, description: e.message, variant: "destructive" });
+      return null;
     }
-  }, [bucket, pathPrefix, onUploaded, toast]);
+  }, [bucket, pathPrefix, toast]);
 
-  const onFile = (f?: File | null) => { if (f) upload(f); };
+  const handleFiles = useCallback(async (files: FileList | File[]) => {
+    const arr = Array.from(files);
+    if (arr.length === 0) return;
+    setUploading(true);
+    setProgress(0);
+
+    if (multiple) {
+      setBatchInfo({ done: 0, total: arr.length });
+      let success = 0;
+      for (let i = 0; i < arr.length; i++) {
+        setProgress(0);
+        const u = await uploadOne(arr[i]);
+        if (u) {
+          onUploaded(u);
+          success++;
+        }
+        setBatchInfo({ done: i + 1, total: arr.length });
+      }
+      toast({ title: `✅ ${success} de ${arr.length} enviados` });
+      setBatchInfo(null);
+    } else {
+      const u = await uploadOne(arr[0]);
+      if (u) {
+        setPreview(u);
+        onUploaded(u);
+        toast({ title: "✅ Upload concluído!" });
+      }
+    }
+    setUploading(false);
+    setTimeout(() => setProgress(0), 500);
+  }, [multiple, onUploaded, toast, uploadOne]);
 
   const isVideo = preview && /\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(preview);
 
@@ -82,7 +105,7 @@ export function MediaUploader({
       <div
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
-        onDrop={(e) => { e.preventDefault(); setDragOver(false); onFile(e.dataTransfer.files?.[0]); }}
+        onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files?.length) handleFiles(e.dataTransfer.files); }}
         onClick={() => inputRef.current?.click()}
         className={`relative cursor-pointer rounded-xl border-2 border-dashed transition-all ${
           dragOver ? "border-primary bg-primary/10" : "border-[#3F3F46] hover:border-primary/50"
@@ -92,11 +115,12 @@ export function MediaUploader({
           ref={inputRef}
           type="file"
           accept={acceptAttr}
+          multiple={multiple}
           className="hidden"
-          onChange={(e) => onFile(e.target.files?.[0])}
+          onChange={(e) => { if (e.target.files?.length) handleFiles(e.target.files); e.target.value = ""; }}
         />
 
-        {preview && !uploading ? (
+        {preview && !uploading && !multiple ? (
           <div className="relative">
             {isVideo ? (
               <video src={preview} className="max-h-48 mx-auto rounded-lg" controls />
@@ -118,15 +142,19 @@ export function MediaUploader({
             <div className="w-full bg-[#27272A] rounded-full h-2 overflow-hidden">
               <div className="h-full bg-primary transition-all duration-150" style={{ width: `${progress}%` }} />
             </div>
-            <p className="text-xs text-[#A1A1AA] mt-2">Enviando... {progress}%</p>
+            <p className="text-xs text-[#A1A1AA] mt-2">
+              {batchInfo ? `Enviando ${batchInfo.done + 1} de ${batchInfo.total}... ${progress}%` : `Enviando... ${progress}%`}
+            </p>
           </div>
         ) : (
           <div className="text-center text-[#A1A1AA] py-4">
             {accept === "video" ? <VideoIcon className="w-8 h-8 mx-auto mb-2 text-primary" /> :
              accept === "both" ? <Upload className="w-8 h-8 mx-auto mb-2 text-primary" /> :
              <ImageIcon className="w-8 h-8 mx-auto mb-2 text-primary" />}
-            <p className="text-sm font-medium">Clique ou arraste {accept === "video" ? "um vídeo" : accept === "both" ? "uma imagem ou vídeo" : "uma imagem"}</p>
-            <p className="text-xs mt-1">Sem limite de tamanho · qualquer resolução</p>
+            <p className="text-sm font-medium">
+              Clique ou arraste {multiple ? (accept === "video" ? "vários vídeos" : accept === "both" ? "vários arquivos" : "várias imagens") : (accept === "video" ? "um vídeo" : accept === "both" ? "uma imagem ou vídeo" : "uma imagem")}
+            </p>
+            <p className="text-xs mt-1">{multiple ? "Selecione ou arraste vários de uma vez · " : ""}Sem limite de tamanho</p>
           </div>
         )}
       </div>

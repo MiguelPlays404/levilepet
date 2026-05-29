@@ -16,7 +16,8 @@ const Index = () => {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [sections, setSections] = useState<any[]>([]);
   const [photos, setPhotos] = useState<any[]>([]);
-  const [featuredVideo, setFeaturedVideo] = useState<any>(null);
+  const [featuredVideos, setFeaturedVideos] = useState<any[]>([]);
+  const [showMoreVideos, setShowMoreVideos] = useState(false);
   const [config, setConfig] = useState<any>(null);
 
   useScrollAnimation();
@@ -25,7 +26,7 @@ const Index = () => {
     supabase.from("site_config").select("*").limit(1).maybeSingle().then(({ data }) => setConfig(data));
     supabase.from("home_sections").select("*").eq("is_active", true).order("display_order").then(({ data }) => setSections(data || []));
     supabase.from("photos").select("*").eq("is_active", true).eq("is_featured", true).order("display_order").limit(6).then(({ data }) => setPhotos(data || []));
-    supabase.from("videos").select("*").eq("is_active", true).eq("is_featured", true).limit(1).maybeSingle().then(({ data }) => setFeaturedVideo(data));
+    supabase.from("videos").select("*").eq("is_active", true).eq("is_featured", true).order("published_at", { ascending: false }).limit(8).then(({ data }) => setFeaturedVideos(data || []));
   }, []);
 
   const c = config || {};
@@ -218,32 +219,53 @@ const Index = () => {
         </section>
       )}
 
-      {/* ═══ VÍDEO DESTAQUE — CLARO (#FAFAF8) ═══ */}
-      {featuredVideo && (
-        <section className="py-20 lg:py-24" style={{ background: '#FAFAF8' }}>
-          <div className="container mx-auto px-6">
-            <div className="text-center mb-10">
-              <h2 data-animate="fade-up" className="section-title text-black mb-3">{c.video_section_title || 'Em Destaque'}</h2>
-              <p data-animate="fade-up" data-delay="1" className="section-subtitle mx-auto">{c.video_section_subtitle || featuredVideo.title}</p>
-            </div>
-            <div data-animate="fade-scale" data-delay="2" className="max-w-3xl mx-auto">
-              <div className="aspect-video rounded-[20px] overflow-hidden bg-black" style={{ boxShadow: 'var(--shadow-xl)' }}>
-                {featuredVideo.video_type === 'upload' ? (
-                  <video src={featuredVideo.video_url} className="w-full h-full" controls preload="metadata" poster={featuredVideo.thumbnail_url || undefined} />
-                ) : (
-                  <iframe
-                    src={featuredVideo.video_url.includes('embed') ? featuredVideo.video_url : `https://www.youtube.com/embed/${featuredVideo.video_url.match(/(?:v=|youtu\.be\/)([^&\s]+)/)?.[1] || ''}`}
-                    className="w-full h-full" allowFullScreen loading="lazy" title={featuredVideo.title}
-                  />
+      {/* ═══ VÍDEOS DESTAQUE — CLARO (#FAFAF8) ═══ */}
+      {featuredVideos.length > 0 && (() => {
+        const visible = showMoreVideos ? featuredVideos : featuredVideos.slice(0, 1);
+        const renderVideo = (v: any) => (
+          v.video_type === 'upload' ? (
+            <video src={v.video_url} className="w-full h-full" controls preload="metadata" poster={v.thumbnail_url || undefined} />
+          ) : (
+            <iframe
+              src={v.video_url.includes('embed') ? v.video_url : `https://www.youtube.com/embed/${v.video_url.match(/(?:v=|youtu\.be\/)([^&\s]+)/)?.[1] || ''}`}
+              className="w-full h-full" allowFullScreen loading="lazy" title={v.title || 'Vídeo'}
+            />
+          )
+        );
+        return (
+          <section className="py-20 lg:py-24" style={{ background: '#FAFAF8' }}>
+            <div className="container mx-auto px-6">
+              <div className="text-center mb-10">
+                <h2 data-animate="fade-up" className="section-title text-black mb-3">{c.video_section_title || 'Em Destaque'}</h2>
+                <p data-animate="fade-up" data-delay="1" className="section-subtitle mx-auto">{c.video_section_subtitle || 'Assista aos nossos vídeos favoritos'}</p>
+              </div>
+              <div className="max-w-3xl mx-auto space-y-8">
+                {visible.map((v, i) => (
+                  <div key={v.id} data-animate="fade-scale" data-delay={String(Math.min(i + 1, 4))}>
+                    <div className="aspect-video rounded-[20px] overflow-hidden bg-black" style={{ boxShadow: 'var(--shadow-xl)' }}>
+                      {renderVideo(v)}
+                    </div>
+                    {v.title && <p className="text-center mt-3 font-heading font-semibold text-black/80">{v.title}</p>}
+                  </div>
+                ))}
+              </div>
+              <div className="text-center mt-8 flex flex-wrap justify-center gap-3" data-animate="fade-up" data-delay="3">
+                {featuredVideos.length > 1 && !showMoreVideos && (
+                  <button onClick={() => setShowMoreVideos(true)} className="btn-primary">
+                    ⭐ Ver mais destaques ({featuredVideos.length - 1})
+                  </button>
                 )}
+                {showMoreVideos && featuredVideos.length > 1 && (
+                  <button onClick={() => setShowMoreVideos(false)} className="btn-primary">
+                    Mostrar menos
+                  </button>
+                )}
+                <Link to="/videos" className="btn-dark">{c.featured_videos_btn_text || 'Ver Todos os Vídeos'}</Link>
               </div>
             </div>
-            <div className="text-center mt-8" data-animate="fade-up" data-delay="3">
-              <Link to="/videos" className="btn-dark">{c.featured_videos_btn_text || 'Ver Todos os Vídeos'}</Link>
-            </div>
-          </div>
-        </section>
-      )}
+          </section>
+        );
+      })()}
 
       {/* ═══ CTA HOTELZINHO — AMARELO (#F5C000) ═══ */}
       <section className="py-20 lg:py-24" style={{ background: '#F5C000' }}>
