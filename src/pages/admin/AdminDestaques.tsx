@@ -121,8 +121,9 @@ export default function AdminDestaques() {
 
       {/* Upload */}
       <div className="bg-[#18181B] rounded-2xl p-6 mb-6 border border-white/[0.07]">
-        <h3 className="font-heading font-semibold text-sm mb-3">Adicionar foto ao destaque · {tab.label}</h3>
-        <MediaUploader accept="image" pathPrefix={`destaques/${tab.key}`} onUploaded={handleUploaded} label="" />
+        <h3 className="font-heading font-semibold text-sm mb-3">Adicionar fotos ao destaque · {tab.label}</h3>
+        <MediaUploader accept="image" multiple pathPrefix={`destaques/${tab.key}`} onUploaded={handleUploaded} label="" />
+        <p className="text-[11px] text-[#71717A] mt-2">💡 Arraste várias fotos. Cada uma entra sem título.</p>
       </div>
 
       {/* Limit warning */}
