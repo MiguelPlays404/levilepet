@@ -38,15 +38,13 @@ export default function AdminDestaques() {
 
   const handleUploaded = async (url: string) => {
     if (!url) return;
-    const fileName = url.split("/").pop()?.split(".")[0] || "Destaque";
     await supabase.from("photos").insert({
-      title: fileName,
+      title: "",
       image_url: url,
       category: "galeria",
       locations: [tab.key],
       is_featured: false,
     } as any);
-    toast({ title: "✅ Foto adicionada aos destaques!" });
     load();
   };
 
