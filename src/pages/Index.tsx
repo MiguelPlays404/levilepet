@@ -16,7 +16,8 @@ const Index = () => {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [sections, setSections] = useState<any[]>([]);
   const [photos, setPhotos] = useState<any[]>([]);
-  const [featuredVideo, setFeaturedVideo] = useState<any>(null);
+  const [featuredVideos, setFeaturedVideos] = useState<any[]>([]);
+  const [showMoreVideos, setShowMoreVideos] = useState(false);
   const [config, setConfig] = useState<any>(null);
 
   useScrollAnimation();
@@ -25,7 +26,7 @@ const Index = () => {
     supabase.from("site_config").select("*").limit(1).maybeSingle().then(({ data }) => setConfig(data));
     supabase.from("home_sections").select("*").eq("is_active", true).order("display_order").then(({ data }) => setSections(data || []));
     supabase.from("photos").select("*").eq("is_active", true).eq("is_featured", true).order("display_order").limit(6).then(({ data }) => setPhotos(data || []));
-    supabase.from("videos").select("*").eq("is_active", true).eq("is_featured", true).limit(1).maybeSingle().then(({ data }) => setFeaturedVideo(data));
+    supabase.from("videos").select("*").eq("is_active", true).eq("is_featured", true).order("published_at", { ascending: false }).limit(8).then(({ data }) => setFeaturedVideos(data || []));
   }, []);
 
   const c = config || {};
