@@ -195,6 +195,13 @@ export default function AdminVideos() {
         <button onClick={handleConfirmUpload} disabled={!pendingVideoUrl} className="btn-primary text-sm w-full disabled:opacity-50">➕ Adicionar vídeo enviado</button>
       </div>
 
+      {/* Multi-upload */}
+      <div className="bg-[#18181B] rounded-2xl p-6 border border-white/[0.07] mb-8">
+        <h3 className="font-heading font-semibold text-sm mb-2 flex items-center gap-2"><Upload className="w-4 h-4 text-primary" /> Envio rápido em lote</h3>
+        <p className="text-xs text-[#71717A] mb-3">💡 Arraste vários vídeos de uma vez. Cada um é salvo sem título/capa — você pode editar depois. Locais selecionados acima serão aplicados.</p>
+        <MediaUploader accept="video" multiple pathPrefix={`videos/${primaryCategory(addLocations)}`} onUploaded={handleMultiUploaded} label="" />
+      </div>
+
       {/* Tabs */}
       <div className="flex gap-2 mb-4 flex-wrap">
         {TABS.map(t => (
