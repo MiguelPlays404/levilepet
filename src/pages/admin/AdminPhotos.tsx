@@ -143,7 +143,8 @@ export default function AdminPhotos() {
             </button>
           ))}
         </div>
-        <MediaUploader accept="image" pathPrefix={`fotos/${uploadCategory}`} onUploaded={handleUploaded} label="" />
+        <MediaUploader accept="image" multiple pathPrefix={`fotos/${uploadCategory}`} onUploaded={handleUploaded} label="" />
+        <p className="text-[11px] text-[#71717A] mt-2">💡 Arraste várias fotos de uma vez. Cada uma é enviada sem título — você pode editar depois se quiser.</p>
       </div>
 
       {/* Filters */}
