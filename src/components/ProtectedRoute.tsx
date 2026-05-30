@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { checkAdminSession } from "@/lib/adminSession";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
@@ -8,39 +8,12 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    let cancelled = false;
-
-    const verify = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        if (!cancelled) navigate("/admin/login", { replace: true });
-        return;
-      }
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-      if (cancelled) return;
-      if (data) {
-        setAuthorized(true);
-      } else {
-        await supabase.auth.signOut();
-        navigate("/admin/login", { replace: true });
-      }
-      setChecking(false);
-    };
-
-    const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
-      if (!session) {
-        setAuthorized(false);
-        navigate("/admin/login", { replace: true });
-      }
-    });
-
-    verify();
-    return () => { cancelled = true; sub.subscription.unsubscribe(); };
+    if (checkAdminSession()) {
+      setAuthorized(true);
+    } else {
+      navigate("/", { replace: true });
+    }
+    setChecking(false);
   }, [navigate]);
 
   if (checking) {

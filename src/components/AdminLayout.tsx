@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Image, Video, Hotel, Eye, Settings, Share2, Shield, LogOut, ExternalLink, Home, Type, Palette, Compass, BookOpen, Star, Truck, CalendarClock } from "lucide-react";
-import { destroyAdminSession } from "@/lib/adminSession";
+import { LayoutDashboard, Image, Video, Hotel, Eye, Settings, Share2, Shield, LogOut, ExternalLink, Home, Type, Palette, Compass, BookOpen, Star, Truck } from "lucide-react";
+import { destroyAdminSession, getSessionAge } from "@/lib/adminSession";
 import { useToast } from "@/hooks/use-toast";
 
 const navItems = [
@@ -11,7 +11,6 @@ const navItems = [
   { label: "Fotos", path: "/admin/fotos", icon: Image },
   { label: "Destaques da Semana", path: "/admin/destaques", icon: Star },
   { label: "Vídeos", path: "/admin/videos", icon: Video },
-  { label: "Agendamento", path: "/admin/agendamento", icon: CalendarClock },
   { label: "Hotelzinho", path: "/admin/hotelzinho", icon: Hotel },
   { label: "Transporte", path: "/admin/transporte", icon: Truck },
   { label: "Venha Nos Conhecer", path: "/admin/conhecer", icon: Eye },
@@ -31,10 +30,10 @@ export function AdminLayout({ children, title }: { children: React.ReactNode; ti
   const location = useLocation();
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     if (confirm("Deseja sair do painel administrativo?")) {
-      await destroyAdminSession();
-      navigate("/admin/login");
+      destroyAdminSession();
+      navigate("/");
     }
   };
 
