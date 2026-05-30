@@ -292,8 +292,8 @@ export default function AdminAgendamento() {
       ...(photos ?? []).map((p) => ({ ...p, _kind: "photo" })),
       ...(videos ?? []).map((v) => ({ ...v, _kind: "video" })),
     ].sort((a, b) => {
-      const aDate = a._kind === "photo" ? a.created_at : a.published_at;
-      const bDate = b._kind === "photo" ? b.created_at : b.published_at;
+      const aDate = a._kind === "photo" ? (a as any).created_at : (a as any).published_at;
+      const bDate = b._kind === "photo" ? (b as any).created_at : (b as any).published_at;
       return new Date(bDate).getTime() - new Date(aDate).getTime();
     });
     setRecentItems(merged);
