@@ -36,6 +36,7 @@ import AdminGuia from "./pages/admin/AdminGuia";
 import AdminDestaques from "./pages/admin/AdminDestaques";
 import AdminTransporte from "./pages/admin/AdminTransporte";
 import AdminAgendamento from "./pages/admin/AdminAgendamento";
+import AdminLogin from "./pages/admin/AdminLogin";
 import { useEffect } from "react";
 import { supabase } from "./integrations/supabase/client";
 
@@ -85,6 +86,7 @@ const App = () => (
           <Route path="/videos" element={<PageTransition><Videos /></PageTransition>} />
           <Route path="/siga-nos" element={<PageTransition><SigaNos /></PageTransition>} />
           {/* Admin Routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/home" element={<ProtectedRoute><AdminHome /></ProtectedRoute>} />
           <Route path="/admin/fotos" element={<ProtectedRoute><AdminPhotos /></ProtectedRoute>} />
