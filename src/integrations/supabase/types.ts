@@ -225,6 +225,7 @@ export type Database = {
           is_active: boolean | null
           is_featured: boolean | null
           locations: string[] | null
+          publish_at: string | null
           title: string
           updated_at: string | null
         }
@@ -237,6 +238,7 @@ export type Database = {
           is_active?: boolean | null
           is_featured?: boolean | null
           locations?: string[] | null
+          publish_at?: string | null
           title?: string
           updated_at?: string | null
         }
@@ -249,6 +251,7 @@ export type Database = {
           is_active?: boolean | null
           is_featured?: boolean | null
           locations?: string[] | null
+          publish_at?: string | null
           title?: string
           updated_at?: string | null
         }
@@ -944,6 +947,7 @@ export type Database = {
           is_featured: boolean | null
           likes_count: number | null
           locations: string[] | null
+          publish_at: string | null
           published_at: string | null
           thumbnail_url: string | null
           title: string
@@ -960,6 +964,7 @@ export type Database = {
           is_featured?: boolean | null
           likes_count?: number | null
           locations?: string[] | null
+          publish_at?: string | null
           published_at?: string | null
           thumbnail_url?: string | null
           title?: string
@@ -976,6 +981,7 @@ export type Database = {
           is_featured?: boolean | null
           likes_count?: number | null
           locations?: string[] | null
+          publish_at?: string | null
           published_at?: string | null
           thumbnail_url?: string | null
           title?: string
