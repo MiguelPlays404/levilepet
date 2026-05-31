@@ -56,7 +56,8 @@ export default function AdminPhotos() {
   const handleUploaded = async (url: string) => {
     if (!url) return;
     const locations = uploadLocations.length ? uploadLocations : [activeTab === "all" ? "galeria" : activeTab];
-    await supabase.from("photos").insert({ title: "", image_url: url, category: primaryCategory(locations), locations, is_featured: locations.includes("home") } as any);
+    const { error } = await supabase.from("photos").insert({ title: "", image_url: url, category: primaryCategory(locations), locations, is_featured: locations.includes("home") } as any);
+    if (error) throw error;
     fetchPhotos();
   };
 

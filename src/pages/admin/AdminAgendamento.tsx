@@ -366,7 +366,7 @@ export default function AdminAgendamento() {
       const isNow = schedMode === "now";
 
       if (mediaType === "photo") {
-        await supabase.from("photos").insert({
+        const { error } = await supabase.from("photos").insert({
           title: title || "Foto",
           image_url: mediaUrl,
           category: primaryPhotoLoc(locations),
@@ -375,10 +375,11 @@ export default function AdminAgendamento() {
           is_active: isNow,
           publish_at: publishAt ? publishAt.toISOString() : null,
         } as any);
+        if (error) throw error;
       } else {
         const thumb = videoMode === "link" ? getYoutubeThumbnail(linkUrl) : thumbUrl;
         const isYt = linkUrl.includes("youtube") || linkUrl.includes("youtu.be");
-        await supabase.from("videos").insert({
+        const { error } = await supabase.from("videos").insert({
           title: title || "Vídeo",
           video_url: mediaUrl,
           video_type: videoMode === "link" ? (isYt ? "youtube" : "link") : "upload",
@@ -391,6 +392,7 @@ export default function AdminAgendamento() {
           published_at: isNow ? new Date().toISOString() : null,
           publish_at: publishAt ? publishAt.toISOString() : null,
         } as any);
+        if (error) throw error;
       }
 
       if (isNow) {

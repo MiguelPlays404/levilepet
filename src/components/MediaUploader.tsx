@@ -8,7 +8,7 @@ interface Props {
   bucket?: string;
   pathPrefix?: string;
   currentUrl?: string;
-  onUploaded: (url: string) => void;
+  onUploaded: (url: string) => void | Promise<void>;
   label?: string;
   compact?: boolean;
   multiple?: boolean;
@@ -23,6 +23,16 @@ const getUploadErrorMessage = (responseText: string) => {
     return parsed.message || parsed.error || responseText;
   } catch {
     return responseText || "Falha no upload";
+  }
+};
+
+const getFriendlyError = (error: unknown) => {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return "Erro desconhecido";
   }
 };
 
@@ -89,22 +99,31 @@ export function MediaUploader({
       setBatchInfo({ done: 0, total: arr.length });
       let success = 0;
       for (let i = 0; i < arr.length; i++) {
-        setProgress(0);
-        const u = await uploadOne(arr[i]);
-        if (u) {
-          onUploaded(u);
-          success++;
+        try {
+          setProgress(0);
+          const u = await uploadOne(arr[i]);
+          if (u) {
+            await onUploaded(u);
+            success++;
+          }
+        } catch (e) {
+          toast({ title: `Erro ao salvar ${arr[i].name}`, description: getFriendlyError(e), variant: "destructive" });
+        } finally {
+          setBatchInfo({ done: i + 1, total: arr.length });
         }
-        setBatchInfo({ done: i + 1, total: arr.length });
       }
       toast({ title: `✅ ${success} de ${arr.length} enviados` });
       setBatchInfo(null);
     } else {
-      const u = await uploadOne(arr[0]);
-      if (u) {
-        setPreview(u);
-        onUploaded(u);
-        toast({ title: "✅ Upload concluído!" });
+      try {
+        const u = await uploadOne(arr[0]);
+        if (u) {
+          await onUploaded(u);
+          setPreview(u);
+          toast({ title: "✅ Upload concluído!" });
+        }
+      } catch (e) {
+        toast({ title: "Erro ao concluir upload", description: getFriendlyError(e), variant: "destructive" });
       }
     }
     setUploading(false);
