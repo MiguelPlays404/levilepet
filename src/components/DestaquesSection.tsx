@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getPhotos } from "@/lib/dataCache";
 import { Lightbox } from "@/components/Lightbox";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 
@@ -20,10 +20,13 @@ export function DestaquesSection({ locationKey, title, subtitle, background = "#
   const scrollerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    supabase.from("photos").select("*").eq("is_active", true).order("display_order").then(({ data }) => {
-      const filtered = (data || []).filter(p => normalizeLocations(p).includes(locationKey)).slice(0, 8);
+    let cancelled = false;
+    getPhotos().then((data) => {
+      if (cancelled) return;
+      const filtered = (data || []).filter((p: any) => normalizeLocations(p).includes(locationKey)).slice(0, 8);
       setPhotos(filtered);
     });
+    return () => { cancelled = true; };
   }, [locationKey]);
 
   const scroll = (dir: "left" | "right") => {

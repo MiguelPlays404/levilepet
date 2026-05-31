@@ -3,14 +3,14 @@ import { PageHero } from "@/components/PageHero";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { MessageCircle, MapPin, Phone } from "lucide-react";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSiteConfig } from "@/lib/dataCache";
 
 const FaleConosco = () => {
   useScrollAnimation();
   const [c, setC] = useState<any>(null);
 
   useEffect(() => {
-    supabase.from("site_config").select("*").limit(1).single().then(({ data }) => setC(data));
+    getSiteConfig().then((data) => setC(data));
   }, []);
 
   const waNum = c?.whatsapp_number || '5514997145610';

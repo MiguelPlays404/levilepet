@@ -1,20 +1,15 @@
 import { MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSiteConfig } from "@/lib/dataCache";
 
 export function WhatsAppFloat() {
   const [config, setConfig] = useState<{ whatsapp_number?: string; whatsapp_message?: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    supabase
-      .from("site_config")
-      .select("whatsapp_number,whatsapp_message")
-      .limit(1)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!cancelled) setConfig(data);
-      });
+    getSiteConfig().then((data) => {
+      if (!cancelled) setConfig(data);
+    });
     return () => { cancelled = true; };
   }, []);
 

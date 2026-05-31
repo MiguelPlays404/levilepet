@@ -4,7 +4,7 @@ import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { Video, MessageCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Lightbox } from "@/components/Lightbox";
-import { supabase } from "@/integrations/supabase/client";
+import { getSiteConfig, getConhecerContent, getPhotos } from "@/lib/dataCache";
 
 const VenhaNosConhecer = () => {
   const [content, setContent] = useState<any>(null);
@@ -18,15 +18,18 @@ const VenhaNosConhecer = () => {
   const mediaLocations = (item: any) => Array.from(new Set([...(Array.isArray(item.locations) ? item.locations : []), item.category, item.is_featured ? "home" : null].filter(Boolean)));
 
   useEffect(() => {
-    supabase.from("conhecer_content").select("*").limit(1).maybeSingle().then(({ data }) => setContent(data));
-    supabase.from("photos").select("*").eq("is_active", true).order("display_order").then(({ data }) => setPhotos((data || []).filter(media => mediaLocations(media).includes("conhecer"))));
-    supabase.from("site_config").select("*").limit(1).maybeSingle().then(({ data }) => {
-      if (data) {
-        setWaNum(data.whatsapp_number);
-        setWaMsg(data.whatsapp_message || waMsg);
-        setCfg(data);
+    let cancelled = false;
+    Promise.all([getConhecerContent(), getPhotos(), getSiteConfig()]).then(([conhecerData, allPhotos, siteConfig]) => {
+      if (cancelled) return;
+      setContent(conhecerData);
+      setPhotos((allPhotos || []).filter((media: any) => mediaLocations(media).includes("conhecer")));
+      if (siteConfig) {
+        setWaNum(siteConfig.whatsapp_number);
+        setWaMsg(siteConfig.whatsapp_message || 'Olá! Vim pelo site e gostaria de conhecer o Le Ville Pet.');
+        setCfg(siteConfig);
       }
     });
+    return () => { cancelled = true; };
   }, []);
 
   return (

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, MessageCircle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSiteConfig, getNavItems } from "@/lib/dataCache";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,27 +24,18 @@ export function Navbar() {
     } else {
       document.body.style.overflow = '';
     }
-    // Cleanup garante que overflow é sempre restaurado ao desmontar
     return () => {
       document.body.style.overflow = '';
     };
   }, [isOpen]);
 
-  // Carregar config uma única vez
+  // Carregar do cache (instantâneo na 2ª+ visita)
   useEffect(() => {
     let cancelled = false;
-    Promise.all([
-      supabase.from("site_config").select("*").limit(1).maybeSingle(),
-      supabase
-        .from("nav_items")
-        .select("*")
-        .eq("is_active", true)
-        .eq("show_in_navbar", true)
-        .order("display_order"),
-    ]).then(([c, n]) => {
+    Promise.all([getSiteConfig(), getNavItems()]).then(([cfg, nav]) => {
       if (cancelled) return;
-      setConfig(c.data);
-      setNavItems(n.data || []);
+      setConfig(cfg);
+      setNavItems((nav || []).filter((n: any) => n.show_in_navbar));
     });
     return () => { cancelled = true; };
   }, []);
@@ -119,7 +110,7 @@ export function Navbar() {
         </button>
       </div>
 
-      {/* Overlay escuro mobile — clique fecha o menu */}
+      {/* Overlay escuro mobile */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/70 z-[9998] lg:hidden"

@@ -3,7 +3,7 @@ import { PublicLayout } from "@/components/PublicLayout";
 import { useState, useEffect } from "react";
 import { Lightbox } from "@/components/Lightbox";
 import { DestaquesSection } from "@/components/DestaquesSection";
-import { supabase } from "@/integrations/supabase/client";
+import { getSiteConfig, getHomeSections, getPhotos, getVideos } from "@/lib/dataCache";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import {
   Hotel, Camera, Video, MapPin, MessageCircle, Share2,
@@ -23,10 +23,20 @@ const Index = () => {
   useScrollAnimation();
 
   useEffect(() => {
-    supabase.from("site_config").select("*").limit(1).maybeSingle().then(({ data }) => setConfig(data));
-    supabase.from("home_sections").select("*").eq("is_active", true).order("display_order").then(({ data }) => setSections(data || []));
-    supabase.from("photos").select("*").eq("is_active", true).eq("is_featured", true).order("display_order").limit(6).then(({ data }) => setPhotos(data || []));
-    supabase.from("videos").select("*").eq("is_active", true).eq("is_featured", true).order("published_at", { ascending: false }).limit(8).then(({ data }) => setFeaturedVideos(data || []));
+    let cancelled = false;
+    Promise.all([
+      getSiteConfig(),
+      getHomeSections(),
+      getPhotos(),
+      getVideos(),
+    ]).then(([cfg, sections, allPhotos, allVideos]) => {
+      if (cancelled) return;
+      setConfig(cfg);
+      setSections(sections || []);
+      setPhotos((allPhotos || []).filter((p: any) => p.is_featured).slice(0, 6));
+      setFeaturedVideos((allVideos || []).filter((v: any) => v.is_featured).slice(0, 8));
+    });
+    return () => { cancelled = true; };
   }, []);
 
   const c = config || {};

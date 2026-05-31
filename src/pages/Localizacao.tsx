@@ -3,7 +3,7 @@ import { PageHero } from "@/components/PageHero";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { MapPin, Navigation } from "lucide-react";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSiteConfig } from "@/lib/dataCache";
 
 const DEFAULT_EMBED = "https://maps.google.com/maps?q=Villaggio+Mall+Center+Bauru+SP&t=&z=15&ie=UTF8&iwloc=&output=embed";
 
@@ -12,7 +12,7 @@ const Localizacao = () => {
   const [c, setC] = useState<any>(null);
 
   useEffect(() => {
-    supabase.from("site_config").select("*").limit(1).maybeSingle().then(({ data }) => setC(data));
+    getSiteConfig().then((data) => setC(data));
   }, []);
 
   const mapsUrl = c?.google_maps_url || "https://maps.app.goo.gl/nkuDnVyBe6ZHYNbS8";

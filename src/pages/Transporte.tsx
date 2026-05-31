@@ -6,7 +6,7 @@ import {
   Snowflake, Star, CheckCircle, Phone, Calendar, Home, ArrowRight,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSiteConfig, getTransporteContent, getPhotos } from "@/lib/dataCache";
 import { Lightbox } from "@/components/Lightbox";
 
 const ICON_MAP: Record<string, any> = {
@@ -24,11 +24,18 @@ const Transporte = () => {
   useScrollAnimation();
 
   useEffect(() => {
-    supabase.from("transporte_content").select("*").limit(1).maybeSingle().then(({ data }) => setContent(data));
-    supabase.from("site_config").select("whatsapp_number").limit(1).maybeSingle().then(({ data }) => { if (data?.whatsapp_number) setWaNum(data.whatsapp_number); });
-    supabase.from("photos").select("*").eq("is_active", true).order("display_order").then(({ data }) => {
-      setExtraPhotos((data || []).filter(p => normalizeLocations(p).includes("transporte")));
+    let cancelled = false;
+    Promise.all([
+      getTransporteContent(),
+      getSiteConfig(),
+      getPhotos(),
+    ]).then(([transporteData, siteConfig, allPhotos]) => {
+      if (cancelled) return;
+      setContent(transporteData);
+      if (siteConfig?.whatsapp_number) setWaNum(siteConfig.whatsapp_number);
+      setExtraPhotos((allPhotos || []).filter(p => normalizeLocations(p).includes("transporte")));
     });
+    return () => { cancelled = true; };
   }, []);
 
   const highlights = content ? [1, 2, 3, 4, 5, 6].map(n => ({

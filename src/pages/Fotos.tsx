@@ -4,7 +4,7 @@ import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { useState, useEffect } from "react";
 import { Lightbox } from "@/components/Lightbox";
 import { Search, Camera } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSiteConfig, getPhotos } from "@/lib/dataCache";
 
 const catKeys = ["all", "galeria", "hotelzinho", "conhecer"] as const;
 
@@ -24,11 +24,11 @@ const Fotos = () => {
   useScrollAnimation();
 
   useEffect(() => {
-    supabase.from("photos").select("*").eq("is_active", true).order("display_order").then(({ data }) => {
+    getPhotos().then((data) => {
       setPhotos(data || []);
       setLoading(false);
     });
-    supabase.from("site_config").select("*").limit(1).maybeSingle().then(({ data }) => setCfg(data));
+    getSiteConfig().then((data) => setCfg(data));
   }, []);
 
   const filterLabels: Record<typeof catKeys[number], string> = {

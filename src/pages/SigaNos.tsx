@@ -2,7 +2,7 @@ import { PublicLayout } from "@/components/PublicLayout";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { MessageCircle, Phone } from "lucide-react";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSiteConfig } from "@/lib/dataCache";
 
 const SigaNos = () => {
   useScrollAnimation();
@@ -10,7 +10,7 @@ const SigaNos = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.from("site_config").select("*").limit(1).maybeSingle().then(({ data }) => {
+    getSiteConfig().then((data) => {
       setC(data);
       setLoading(false);
     });

@@ -3,7 +3,7 @@ import { PageHero } from "@/components/PageHero";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { Shield, Heart, CheckCircle, MessageCircle } from "lucide-react";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSiteConfig, getHotelzinhoContent, getPhotos } from "@/lib/dataCache";
 import { Lightbox } from "@/components/Lightbox";
 import { DestaquesSection } from "@/components/DestaquesSection";
 
@@ -18,9 +18,18 @@ const Hotelzinho = () => {
   const mediaLocations = (item: any) => Array.from(new Set([...(Array.isArray(item.locations) ? item.locations : []), item.category, item.is_featured ? "home" : null].filter(Boolean)));
 
   useEffect(() => {
-    supabase.from("hotelzinho_content").select("*").limit(1).maybeSingle().then(({ data }) => setContent(data));
-    supabase.from("photos").select("*").eq("is_active", true).order("display_order").then(({ data }) => setPhotos((data || []).filter(media => mediaLocations(media).includes("hotelzinho"))));
-    supabase.from("site_config").select("*").limit(1).maybeSingle().then(({ data }) => { if (data) { setWaNum(data.whatsapp_number); setCfg(data); } });
+    let cancelled = false;
+    Promise.all([
+      getHotelzinhoContent(),
+      getPhotos(),
+      getSiteConfig(),
+    ]).then(([hotelContent, allPhotos, siteConfig]) => {
+      if (cancelled) return;
+      setContent(hotelContent);
+      setPhotos((allPhotos || []).filter(media => mediaLocations(media).includes("hotelzinho")));
+      if (siteConfig) { setWaNum(siteConfig.whatsapp_number || '5514997145610'); setCfg(siteConfig); }
+    });
+    return () => { cancelled = true; };
   }, []);
 
   const iconMap: Record<string, typeof Shield> = { '🛡️': Shield, '❤️': Heart, '🍽️': CheckCircle };

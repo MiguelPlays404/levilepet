@@ -39,16 +39,14 @@ import AdminTransporte from "./pages/admin/AdminTransporte";
 import AdminAgendamento from "./pages/admin/AdminAgendamento";
 import AdminLogin from "./pages/admin/AdminLogin";
 import { useEffect } from "react";
-import { supabase } from "./integrations/supabase/client";
+import { getSiteConfig, prewarmCache } from "./lib/dataCache";
 
 function BrandingApplier() {
   useEffect(() => {
-    supabase
-      .from("site_config")
-      .select("favicon_url,font_heading,font_body,primary_color")
-      .limit(1)
-      .maybeSingle()
-      .then(({ data }) => {
+    // Pré-aquece o cache em background assim que o app monta
+    prewarmCache();
+
+    getSiteConfig().then((data) => {
         if (!data) return;
         if (data.favicon_url) {
           let link = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;

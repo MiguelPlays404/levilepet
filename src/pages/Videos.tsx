@@ -4,6 +4,7 @@ import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { Heart, Play, Video, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { getSiteConfig } from "@/lib/dataCache";
 import { getYoutubeId } from "@/lib/youtube";
 
 function getUserId(): string {
@@ -22,7 +23,7 @@ const Videos = () => {
 
   useEffect(() => {
     loadData();
-    supabase.from("site_config").select("*").limit(1).maybeSingle().then(({ data }) => setCfg(data));
+    getSiteConfig().then((data) => setCfg(data));
     const localLikes = JSON.parse(localStorage.getItem("lvp_likes") || "[]");
     setLikedSet(new Set(localLikes));
   }, []);

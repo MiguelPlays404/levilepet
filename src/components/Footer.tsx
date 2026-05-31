@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { MapPin, Phone, Instagram } from "lucide-react";
 import { AdminAccessField } from "./AdminAccessField";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSiteConfig, getNavItems } from "@/lib/dataCache";
 
 export function Footer() {
   const [c, setC] = useState<any>(null);
@@ -10,13 +10,10 @@ export function Footer() {
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([
-      supabase.from("site_config").select("*").limit(1).maybeSingle(),
-      supabase.from("nav_items").select("*").eq("is_active", true).eq("show_in_footer", true).order("display_order"),
-    ]).then(([cfg, nav]) => {
+    Promise.all([getSiteConfig(), getNavItems()]).then(([cfg, nav]) => {
       if (cancelled) return;
-      setC(cfg.data);
-      setFooterLinks(nav.data || []);
+      setC(cfg);
+      setFooterLinks((nav || []).filter((n: any) => n.show_in_footer));
     });
     return () => { cancelled = true; };
   }, []);
@@ -42,33 +39,34 @@ export function Footer() {
             ))}
           </div>
 
-          <div className="flex items-center gap-2">
-            {c?.fixed_phone && (
-              <a href={`tel:${c.fixed_phone.replace(/\D/g,'')}`} title={c.fixed_phone} className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/60 hover:text-primary hover:border-primary/40 transition-all">
-                <Phone className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-4 text-[#666] text-xs" style={{ fontFamily: 'Inter' }}>
+            {c?.address && (
+              <span className="flex items-center gap-1">
+                <MapPin className="w-3 h-3 text-primary" />
+                {c.address}
+              </span>
+            )}
+            {c?.phone && (
+              <a href={`tel:${c.phone}`} className="flex items-center gap-1 hover:text-primary transition-colors">
+                <Phone className="w-3 h-3 text-primary" />
+                {c.phone}
               </a>
             )}
-            {(c?.footer_show_whatsapp ?? true) && (
-              <a href={`https://wa.me/${waNum}`} target="_blank" rel="noopener noreferrer" title="WhatsApp" className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/60 hover:text-[#25D366] hover:border-[#25D366]/40 transition-all">
-                <Phone className="w-3.5 h-3.5" />
+            {c?.instagram_url && (
+              <a href={c.instagram_url} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1 hover:text-primary transition-colors">
+                <Instagram className="w-3 h-3 text-primary" />
+                Instagram
               </a>
             )}
-            {(c?.footer_show_instagram ?? true) && (
-              <a href={c?.instagram_url || "https://www.instagram.com/levillepetbauru/"} target="_blank" rel="noopener noreferrer" title="Instagram" className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/60 hover:text-primary hover:border-primary/40 transition-all">
-                <Instagram className="w-3.5 h-3.5" />
-              </a>
-            )}
-            <a href={c?.google_maps_url || "https://maps.app.goo.gl/nkuDnVyBe6ZHYNbS8"} target="_blank" rel="noopener noreferrer" title="Mapa" className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/60 hover:text-primary hover:border-primary/40 transition-all">
-              <MapPin className="w-3.5 h-3.5" />
-            </a>
           </div>
         </div>
 
-        <div className="mt-3 pt-3 border-t border-white/[0.05] flex flex-col sm:flex-row items-center justify-between gap-2">
-          <AdminAccessField />
-          <p className="text-[#444] text-[11px] text-center" style={{ fontFamily: 'Inter' }}>
-            {c?.copyright_text || '© 2026 Le Ville Pet'}
+        <div className="mt-4 pt-4 border-t border-white/[0.04] flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p className="text-[#444] text-[11px]" style={{ fontFamily: 'Inter' }}>
+            © {new Date().getFullYear()} {c?.site_name || 'Le Ville Pet'}. Todos os direitos reservados.
           </p>
+          <AdminAccessField />
         </div>
       </div>
     </footer>
