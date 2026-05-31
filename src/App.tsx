@@ -9,6 +9,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { MaintenanceGuard } from "@/components/MaintenanceGuard";
 import { RoutePersistence } from "@/components/RoutePersistence";
 import { SecurityHeaders } from "@/components/SecurityHeaders";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import Index from "./pages/Index";
 import FaleConosco from "./pages/FaleConosco";
 import Hotelzinho from "./pages/Hotelzinho";
@@ -69,44 +70,45 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <ScrollToTop />
         <SecurityHeaders />
         <BrandingApplier />
         <NavigationProgress />
         <RoutePersistence>
           <MaintenanceGuard>
             <Routes>
-            <Route path="/" element={<PageTransition><Index /></PageTransition>} />
-            <Route path="/manutencao" element={<Manutencao />} />
-          <Route path="/fale-conosco" element={<PageTransition><FaleConosco /></PageTransition>} />
-          <Route path="/hotelzinho" element={<PageTransition><Hotelzinho /></PageTransition>} />
-          <Route path="/transporte" element={<PageTransition><Transporte /></PageTransition>} />
-          <Route path="/venha-nos-conhecer" element={<PageTransition><VenhaNosConhecer /></PageTransition>} />
-          <Route path="/localizacao" element={<PageTransition><Localizacao /></PageTransition>} />
-          <Route path="/fotos" element={<PageTransition><Fotos /></PageTransition>} />
-          <Route path="/videos" element={<PageTransition><Videos /></PageTransition>} />
-          <Route path="/siga-nos" element={<PageTransition><SigaNos /></PageTransition>} />
-          {/* Admin Routes */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-          <Route path="/admin/home" element={<ProtectedRoute><AdminHome /></ProtectedRoute>} />
-          <Route path="/admin/fotos" element={<ProtectedRoute><AdminPhotos /></ProtectedRoute>} />
-          <Route path="/admin/videos" element={<ProtectedRoute><AdminVideos /></ProtectedRoute>} />
-          <Route path="/admin/hotelzinho" element={<ProtectedRoute><AdminHotelzinho /></ProtectedRoute>} />
-          <Route path="/admin/conhecer" element={<ProtectedRoute><AdminConhecer /></ProtectedRoute>} />
-          <Route path="/admin/config" element={<ProtectedRoute><AdminConfig /></ProtectedRoute>} />
-          <Route path="/admin/social" element={<ProtectedRoute><AdminSocial /></ProtectedRoute>} />
-          <Route path="/admin/seguranca" element={<ProtectedRoute><AdminSecurity /></ProtectedRoute>} />
-          <Route path="/admin/navbar-footer" element={<ProtectedRoute><AdminNavbarFooter /></ProtectedRoute>} />
-          <Route path="/admin/branding" element={<ProtectedRoute><AdminBranding /></ProtectedRoute>} />
-          <Route path="/admin/textos-paginas" element={<ProtectedRoute><AdminPageTexts /></ProtectedRoute>} />
-          <Route path="/admin/guia" element={<ProtectedRoute><AdminGuia /></ProtectedRoute>} />
-          <Route path="/admin/destaques" element={<ProtectedRoute><AdminDestaques /></ProtectedRoute>} />
-          <Route path="/admin/transporte" element={<ProtectedRoute><AdminTransporte /></ProtectedRoute>} />
-          <Route path="/admin/agendamento" element={<ProtectedRoute><AdminAgendamento /></ProtectedRoute>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </MaintenanceGuard>
-      </RoutePersistence>
+              <Route path="/" element={<PageTransition><Index /></PageTransition>} />
+              <Route path="/manutencao" element={<Manutencao />} />
+              <Route path="/fale-conosco" element={<PageTransition><FaleConosco /></PageTransition>} />
+              <Route path="/hotelzinho" element={<PageTransition><Hotelzinho /></PageTransition>} />
+              <Route path="/transporte" element={<PageTransition><Transporte /></PageTransition>} />
+              <Route path="/venha-nos-conhecer" element={<PageTransition><VenhaNosConhecer /></PageTransition>} />
+              <Route path="/localizacao" element={<PageTransition><Localizacao /></PageTransition>} />
+              <Route path="/fotos" element={<PageTransition><Fotos /></PageTransition>} />
+              <Route path="/videos" element={<PageTransition><Videos /></PageTransition>} />
+              <Route path="/siga-nos" element={<PageTransition><SigaNos /></PageTransition>} />
+              {/* Admin Routes */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/admin/home" element={<ProtectedRoute><AdminHome /></ProtectedRoute>} />
+              <Route path="/admin/fotos" element={<ProtectedRoute><AdminPhotos /></ProtectedRoute>} />
+              <Route path="/admin/videos" element={<ProtectedRoute><AdminVideos /></ProtectedRoute>} />
+              <Route path="/admin/hotelzinho" element={<ProtectedRoute><AdminHotelzinho /></ProtectedRoute>} />
+              <Route path="/admin/conhecer" element={<ProtectedRoute><AdminConhecer /></ProtectedRoute>} />
+              <Route path="/admin/config" element={<ProtectedRoute><AdminConfig /></ProtectedRoute>} />
+              <Route path="/admin/social" element={<ProtectedRoute><AdminSocial /></ProtectedRoute>} />
+              <Route path="/admin/seguranca" element={<ProtectedRoute><AdminSecurity /></ProtectedRoute>} />
+              <Route path="/admin/navbar-footer" element={<ProtectedRoute><AdminNavbarFooter /></ProtectedRoute>} />
+              <Route path="/admin/branding" element={<ProtectedRoute><AdminBranding /></ProtectedRoute>} />
+              <Route path="/admin/textos-paginas" element={<ProtectedRoute><AdminPageTexts /></ProtectedRoute>} />
+              <Route path="/admin/guia" element={<ProtectedRoute><AdminGuia /></ProtectedRoute>} />
+              <Route path="/admin/destaques" element={<ProtectedRoute><AdminDestaques /></ProtectedRoute>} />
+              <Route path="/admin/transporte" element={<ProtectedRoute><AdminTransporte /></ProtectedRoute>} />
+              <Route path="/admin/agendamento" element={<ProtectedRoute><AdminAgendamento /></ProtectedRoute>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </MaintenanceGuard>
+        </RoutePersistence>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
