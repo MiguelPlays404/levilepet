@@ -3,7 +3,7 @@ import { AdminLayout } from "@/components/AdminLayout";
 import { MediaUploader } from "@/components/MediaUploader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ExternalLink, Upload, Power } from "lucide-react";
+import { ExternalLink, Power } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
 type FieldProps = { label: string; field: string; type?: string; config: any; setConfig: (v: any) => void };
@@ -21,7 +21,6 @@ const Field = ({ label, field, type, config, setConfig }: FieldProps) => (
 export default function AdminConfig() {
   const [config, setConfig] = useState<any>(null);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -34,19 +33,6 @@ export default function AdminConfig() {
     const { error } = await supabase.from("site_config").update(config).eq("id", config.id);
     toast({ title: error ? "Erro ao salvar" : "✅ Configurações salvas!" });
     setSaving(false);
-  };
-
-  const handleLogoUpload = async (files: FileList | null) => {
-    if (!files?.[0]) return;
-    setUploading(true);
-    const file = files[0];
-    const path = `branding/logo_${Date.now()}.${file.name.split('.').pop()}`;
-    const { error } = await supabase.storage.from("levillepet-media").upload(path, file);
-    if (error) { toast({ title: "Erro no upload" }); setUploading(false); return; }
-    const { data: urlData } = supabase.storage.from("levillepet-media").getPublicUrl(path);
-    setConfig({ ...config, logo_url: urlData.publicUrl });
-    toast({ title: "✅ Logo enviada! Clique em Salvar." });
-    setUploading(false);
   };
 
   if (!config) return <AdminLayout title="Configurações Gerais"><div className="text-[#71717A]">Carregando...</div></AdminLayout>;
@@ -98,10 +84,9 @@ export default function AdminConfig() {
             ) : (
               <div className="h-16 w-16 rounded-lg bg-[#27272A] flex items-center justify-center text-[#71717A] text-xs">Sem logo</div>
             )}
-            <label className="flex items-center gap-2 text-sm text-primary cursor-pointer hover:underline">
-              <Upload className="w-4 h-4" /> {uploading ? "Enviando..." : "Enviar nova logo"}
-              <input type="file" accept="image/*" className="hidden" onChange={e => handleLogoUpload(e.target.files)} disabled={uploading} />
-            </label>
+            <div className="flex-1">
+              <MediaUploader accept="image" compact pathPrefix="branding/logo" currentUrl={config.logo_url} onUploaded={(url) => setConfig({ ...config, logo_url: url })} label="" />
+            </div>
           </div>
           {config.logo_url && (
             <button onClick={() => setConfig({...config, logo_url: ''})} className="text-xs text-red-400 mt-2 hover:underline">Remover logo</button>
