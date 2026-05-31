@@ -17,6 +17,15 @@ interface Props {
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
+const getUploadErrorMessage = (responseText: string) => {
+  try {
+    const parsed = JSON.parse(responseText);
+    return parsed.message || parsed.error || responseText;
+  } catch {
+    return responseText || "Falha no upload";
+  }
+};
+
 export function MediaUploader({
   accept = "image",
   bucket = "levillepet-media",
@@ -43,17 +52,22 @@ export function MediaUploader({
     const path = `${pathPrefix}/${safeName}`;
     const url = `${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`;
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error("Sessão de admin expirada. Entre novamente para enviar arquivos.");
+      }
+
       await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("POST", url, true);
-        xhr.setRequestHeader("Authorization", `Bearer ${SUPABASE_KEY}`);
+        xhr.setRequestHeader("Authorization", `Bearer ${session.access_token}`);
         xhr.setRequestHeader("apikey", SUPABASE_KEY);
         xhr.setRequestHeader("x-upsert", "true");
         xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
         xhr.upload.onprogress = (e) => {
           if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
         };
-        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(xhr.responseText)));
+        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(getUploadErrorMessage(xhr.responseText))));
         xhr.onerror = () => reject(new Error("Falha de rede"));
         xhr.send(file);
       });
