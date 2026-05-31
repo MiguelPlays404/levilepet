@@ -55,7 +55,7 @@ export default function AdminVideos() {
     const thumbnail = getYoutubeThumbnail(linkUrl);
     const isYoutube = linkUrl.includes("youtube") || linkUrl.includes("youtu.be");
     const locations = addLocations.length ? addLocations : ["geral"];
-    await supabase.from("videos").insert({
+    const { error } = await supabase.from("videos").insert({
       title: linkTitle || "Novo vídeo",
       video_url: linkUrl,
       video_type: isYoutube ? "youtube" : "link",
@@ -65,6 +65,7 @@ export default function AdminVideos() {
       is_featured: locations.includes("home"),
       likes_count: 0, is_active: true, published_at: new Date().toISOString(),
     } as any);
+    if (error) { toast({ title: "Erro ao adicionar vídeo", description: error.message, variant: "destructive" }); return; }
     toast({ title: "✅ Vídeo adicionado!" });
     setLinkUrl(""); setLinkTitle("");
     fetchVideos();
@@ -75,7 +76,7 @@ export default function AdminVideos() {
   const handleConfirmUpload = async () => {
     if (!pendingVideoUrl) { toast({ title: "Envie o vídeo primeiro" }); return; }
     const locations = addLocations.length ? addLocations : ["geral"];
-    await supabase.from("videos").insert({
+    const { error } = await supabase.from("videos").insert({
       title: uploadTitle || "",
       video_url: pendingVideoUrl,
       video_type: "upload",
@@ -85,6 +86,7 @@ export default function AdminVideos() {
       is_featured: locations.includes("home"),
       likes_count: 0, is_active: true, published_at: new Date().toISOString(),
     } as any);
+    if (error) { toast({ title: "Erro ao salvar vídeo", description: error.message, variant: "destructive" }); return; }
     toast({ title: "✅ Vídeo adicionado!" });
     setUploadTitle(""); setUploadThumb(""); setPendingVideoUrl("");
     fetchVideos();
@@ -94,7 +96,7 @@ export default function AdminVideos() {
   const handleMultiUploaded = async (url: string) => {
     if (!url) return;
     const locations = addLocations.length ? addLocations : ["geral"];
-    await supabase.from("videos").insert({
+    const { error } = await supabase.from("videos").insert({
       title: "",
       video_url: url,
       video_type: "upload",
@@ -104,6 +106,7 @@ export default function AdminVideos() {
       is_featured: locations.includes("home"),
       likes_count: 0, is_active: true, published_at: new Date().toISOString(),
     } as any);
+    if (error) throw error;
     fetchVideos();
   };
 
