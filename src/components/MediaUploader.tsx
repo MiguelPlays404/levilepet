@@ -99,28 +99,32 @@ export function MediaUploader({
       setBatchInfo({ done: 0, total: arr.length });
       let success = 0;
       for (let i = 0; i < arr.length; i++) {
-        setProgress(0);
-        const u = await uploadOne(arr[i]);
-        if (u) {
-          await onUploaded(u);
-          success++;
+        try {
+          setProgress(0);
+          const u = await uploadOne(arr[i]);
+          if (u) {
+            await onUploaded(u);
+            success++;
+          }
+        } catch (e) {
+          toast({ title: `Erro ao salvar ${arr[i].name}`, description: getFriendlyError(e), variant: "destructive" });
+        } finally {
+          setBatchInfo({ done: i + 1, total: arr.length });
         }
-      } catch (e) {
-        toast({ title: `Erro ao salvar ${arr[i].name}`, description: getFriendlyError(e), variant: "destructive" });
-      } finally {
-        setBatchInfo({ done: i + 1, total: arr.length });
       }
       toast({ title: `✅ ${success} de ${arr.length} enviados` });
       setBatchInfo(null);
     } else {
-      const u = await uploadOne(arr[0]);
-      if (u) {
-        await onUploaded(u);
-        setPreview(u);
-        toast({ title: "✅ Upload concluído!" });
+      try {
+        const u = await uploadOne(arr[0]);
+        if (u) {
+          await onUploaded(u);
+          setPreview(u);
+          toast({ title: "✅ Upload concluído!" });
+        }
+      } catch (e) {
+        toast({ title: "Erro ao concluir upload", description: getFriendlyError(e), variant: "destructive" });
       }
-    } catch (e) {
-      toast({ title: "Erro ao concluir upload", description: getFriendlyError(e), variant: "destructive" });
     }
     setUploading(false);
     setTimeout(() => setProgress(0), 500);
