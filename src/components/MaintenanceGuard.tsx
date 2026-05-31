@@ -1,21 +1,18 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
-// Cache em memória para evitar query repetida a cada troca de página
-let cachedMaintenanceMode: boolean | null = null;
-let cacheTimestamp = 0;
-const CACHE_TTL_MS = 60_000; // 1 minuto
+// Cache de módulo — persiste durante a sessão do browser
+let maintenanceChecked = false;
+let maintenanceActive = false;
 
 export function MaintenanceGuard({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
-  // Começa como false para NÃO gerar tela branca inicial
-  const [loading, setLoading] = useState(false);
-  const checkedRef = useRef(false);
+  const ranRef = useRef(false);
 
   useEffect(() => {
-    // Skip em páginas admin e manutenção
+    // Nunca verificar em rotas admin ou na própria página de manutenção
     if (
       location.pathname === "/manutencao" ||
       location.pathname.startsWith("/admin")
@@ -23,66 +20,41 @@ export function MaintenanceGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Se já verificou nesta sessão e o cache ainda é válido, não faz nova query
-    const now = Date.now();
-    if (
-      checkedRef.current &&
-      cachedMaintenanceMode !== null &&
-      now - cacheTimestamp < CACHE_TTL_MS
-    ) {
-      if (cachedMaintenanceMode) navigate("/manutencao");
+    // Bypass de sessão (usuário inseriu código secreto)
+    if (sessionStorage.getItem("maintenance_bypass") === "true") {
       return;
     }
 
-    // Verificar bypass de sessão
-    const bypass = sessionStorage.getItem("maintenance_bypass") === "true";
-    if (bypass) {
-      checkedRef.current = true;
+    // Já verificou nesta sessão — usar resultado em cache
+    if (maintenanceChecked) {
+      if (maintenanceActive) navigate("/manutencao", { replace: true });
       return;
     }
 
-    // Só mostra loading na primeira verificação real (não em cada troca de página)
-    if (!checkedRef.current) {
-      setLoading(true);
-    }
+    // Evitar double-run em React StrictMode dev
+    if (ranRef.current) return;
+    ranRef.current = true;
 
-    let cancelled = false;
-
-    const checkMaintenance = async () => {
-      try {
-        const { data } = await supabase
-          .from("site_config")
-          .select("maintenance_mode")
-          .maybeSingle();
-
-        if (cancelled) return;
-
-        cachedMaintenanceMode = data?.maintenance_mode ?? false;
-        cacheTimestamp = Date.now();
-        checkedRef.current = true;
-
-        if (cachedMaintenanceMode) {
-          navigate("/manutencao");
+    // Verificar silenciosamente — SEM loading, SEM return null, SEM bloqueio
+    supabase
+      .from("site_config")
+      .select("maintenance_mode")
+      .maybeSingle()
+      .then(({ data }) => {
+        maintenanceChecked = true;
+        maintenanceActive = data?.maintenance_mode ?? false;
+        if (maintenanceActive) {
+          navigate("/manutencao", { replace: true });
         }
-      } catch {
-        // Em caso de erro de rede, não bloqueia o usuário
-        cachedMaintenanceMode = false;
-        cacheTimestamp = Date.now();
-        checkedRef.current = true;
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    checkMaintenance();
-    return () => { cancelled = true; };
-    // Intencionalmente sem location.pathname nas deps —
-    // a verificação é feita apenas uma vez por sessão (com cache)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      })
+      .catch(() => {
+        // Em caso de falha de rede, não bloqueia o usuário
+        maintenanceChecked = true;
+        maintenanceActive = false;
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Só bloqueia na primeira carga, nunca em trocas de página
-  if (loading) return null;
-
+  // NUNCA bloqueia o render — renderiza os filhos imediatamente sempre
   return <>{children}</>;
 }

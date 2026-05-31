@@ -23,26 +23,18 @@ export function Footer() {
 
   const waNum = c?.whatsapp_number || '5514997145610';
 
-  // Ao clicar no logo do footer, sincronizar localStorage para evitar redirect
-  const handleHomeClick = () => {
-    localStorage.setItem("levillepet_last_path", "/");
-  };
-
   return (
     <footer style={{ background: '#0A0A0A' }} className="py-5 border-t border-white/[0.06]">
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-          {/* Logo + slogan */}
-          <Link to="/" onClick={handleHomeClick} className="flex items-center gap-2 group">
+          <Link to="/" className="flex items-center gap-2 group">
             <img src={c?.logo_url || "/images/logo-levillepet.png"} alt={c?.site_name || 'Le Ville Pet'} className="h-8 rounded-md" />
             <span className="font-heading italic text-primary text-xs hidden sm:inline">"{c?.site_slogan || 'a gente se entende'}"</span>
           </Link>
 
-          {/* Quick nav */}
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
             {footerLinks.slice(0, 5).map((link) => (
               <Link key={link.id} to={link.path}
-                onClick={link.path === "/" ? handleHomeClick : undefined}
                 className="text-[#888] text-xs hover:text-primary transition-colors"
                 style={{ fontFamily: 'Inter' }}>
                 {link.label}
@@ -50,7 +42,6 @@ export function Footer() {
             ))}
           </div>
 
-          {/* Contact icons */}
           <div className="flex items-center gap-2">
             {c?.fixed_phone && (
               <a href={`tel:${c.fixed_phone.replace(/\D/g,'')}`} title={c.fixed_phone} className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/60 hover:text-primary hover:border-primary/40 transition-all">
