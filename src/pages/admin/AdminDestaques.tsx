@@ -38,13 +38,14 @@ export default function AdminDestaques() {
 
   const handleUploaded = async (url: string) => {
     if (!url) return;
-    await supabase.from("photos").insert({
+    const { error } = await supabase.from("photos").insert({
       title: "",
       image_url: url,
       category: "galeria",
       locations: [tab.key],
       is_featured: false,
     } as any);
+    if (error) throw error;
     load();
   };
 
