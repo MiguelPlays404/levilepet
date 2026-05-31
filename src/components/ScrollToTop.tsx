@@ -1,16 +1,18 @@
-import { useEffect } from "react";
+// ScrollToTop — apenas para rotas admin e sem PageTransition
+// As rotas públicas já têm scroll gerenciado pelo PageTransition
+import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 
-/**
- * Sobe o scroll para o topo a cada mudança de rota.
- * Necessário porque o React Router v6 com BrowserRouter
- * não reseta o scroll automaticamente.
- */
 export function ScrollToTop() {
   const { pathname } = useLocation();
+  const isFirst = useRef(true);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    if (isFirst.current) { isFirst.current = false; return; }
+    // Só rola para admin (páginas públicas têm PageTransition que gerencia isso)
+    if (pathname.startsWith("/admin") || pathname === "/manutencao") {
+      window.scrollTo(0, 0);
+    }
   }, [pathname]);
 
   return null;
