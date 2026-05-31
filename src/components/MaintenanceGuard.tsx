@@ -1,42 +1,87 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+
+// Cache em memória para evitar query repetida a cada troca de página
+let cachedMaintenanceMode: boolean | null = null;
+let cacheTimestamp = 0;
+const CACHE_TTL_MS = 60_000; // 1 minuto
 
 export function MaintenanceGuard({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [loading, setLoading] = useState(true);
+  // Começa como false para NÃO gerar tela branca inicial
+  const [loading, setLoading] = useState(false);
+  const checkedRef = useRef(false);
 
   useEffect(() => {
+    // Skip em páginas admin e manutenção
+    if (
+      location.pathname === "/manutencao" ||
+      location.pathname.startsWith("/admin")
+    ) {
+      return;
+    }
+
+    // Se já verificou nesta sessão e o cache ainda é válido, não faz nova query
+    const now = Date.now();
+    if (
+      checkedRef.current &&
+      cachedMaintenanceMode !== null &&
+      now - cacheTimestamp < CACHE_TTL_MS
+    ) {
+      if (cachedMaintenanceMode) navigate("/manutencao");
+      return;
+    }
+
+    // Verificar bypass de sessão
+    const bypass = sessionStorage.getItem("maintenance_bypass") === "true";
+    if (bypass) {
+      checkedRef.current = true;
+      return;
+    }
+
+    // Só mostra loading na primeira verificação real (não em cada troca de página)
+    if (!checkedRef.current) {
+      setLoading(true);
+    }
+
+    let cancelled = false;
+
     const checkMaintenance = async () => {
-      // 1. Skip check if already on maintenance or admin pages
-      if (location.pathname === "/manutencao" || location.pathname.startsWith("/admin")) {
-        setLoading(false);
-        return;
-      }
+      try {
+        const { data } = await supabase
+          .from("site_config")
+          .select("maintenance_mode")
+          .maybeSingle();
 
-      // 2. Check if user has bypass (entered the secret code)
-      const bypass = sessionStorage.getItem("maintenance_bypass") === "true";
-      if (bypass) {
-        setLoading(false);
-        return;
-      }
+        if (cancelled) return;
 
-      // 3. Check database
-      const { data } = await supabase
-        .from("site_config")
-        .select("maintenance_mode")
-        .maybeSingle();
+        cachedMaintenanceMode = data?.maintenance_mode ?? false;
+        cacheTimestamp = Date.now();
+        checkedRef.current = true;
 
-      if (data?.maintenance_mode) {
-        navigate("/manutencao");
+        if (cachedMaintenanceMode) {
+          navigate("/manutencao");
+        }
+      } catch {
+        // Em caso de erro de rede, não bloqueia o usuário
+        cachedMaintenanceMode = false;
+        cacheTimestamp = Date.now();
+        checkedRef.current = true;
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setLoading(false);
     };
 
     checkMaintenance();
-  }, [location.pathname, navigate]);
+    return () => { cancelled = true; };
+    // Intencionalmente sem location.pathname nas deps —
+    // a verificação é feita apenas uma vez por sessão (com cache)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  // Só bloqueia na primeira carga, nunca em trocas de página
   if (loading) return null;
 
   return <>{children}</>;

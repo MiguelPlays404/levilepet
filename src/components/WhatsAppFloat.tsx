@@ -1,9 +1,29 @@
 import { MessageCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export function WhatsAppFloat() {
+  const [config, setConfig] = useState<{ whatsapp_number?: string; whatsapp_message?: string } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    supabase
+      .from("site_config")
+      .select("whatsapp_number,whatsapp_message")
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setConfig(data);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  const waNum = config?.whatsapp_number || "5514997145610";
+  const waMsg = encodeURIComponent(config?.whatsapp_message || "Olá! Vim pelo site Le Ville Pet!");
+
   return (
     <a
-      href="https://wa.me/5514997145610?text=Ol%C3%A1!%20Vim%20pelo%20site%20Le%20Ville%20Pet!"
+      href={`https://wa.me/${waNum}?text=${waMsg}`}
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-5 right-4 lg:bottom-6 lg:right-6 z-[9999] w-[60px] h-[60px] rounded-full bg-whatsapp flex items-center justify-center shadow-lg whatsapp-fab group"
