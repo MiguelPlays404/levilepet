@@ -346,6 +346,17 @@ export default function AdminAgendamento() {
       toast({ title: "⚠️ Adicione a mídia antes de agendar", variant: "destructive" });
       return;
     }
+
+    // Thumbnail obrigatória para vídeos (exceto YouTube que gera automático)
+    if (mediaType === "video") {
+      const isYouTube = linkUrl.includes("youtube") || linkUrl.includes("youtu.be");
+      const hasThumbnail = videoMode === "link" ? (isYouTube || thumbUrl.trim() !== "") : thumbUrl.trim() !== "";
+      if (!hasThumbnail) {
+        toast({ title: "⚠️ Adicione uma capa (thumbnail) para o vídeo", description: "A capa é obrigatória para que o vídeo apareça corretamente no site.", variant: "destructive" });
+        return;
+      }
+    }
+
     if (locations.length === 0) {
       toast({ title: "⚠️ Selecione ao menos uma categoria", variant: "destructive" });
       return;
@@ -377,12 +388,15 @@ export default function AdminAgendamento() {
         } as any);
         if (error) throw error;
       } else {
-        const thumb = videoMode === "link" ? getYoutubeThumbnail(linkUrl) : thumbUrl;
+        const ytThumb = getYoutubeThumbnail(linkUrl);
+        const thumb = videoMode === "link" ? (ytThumb || thumbUrl || "") : (thumbUrl || "");
         const isYt = linkUrl.includes("youtube") || linkUrl.includes("youtu.be");
+        const isVimeo = linkUrl.includes("vimeo.com");
+        const videoTypeStr = isYt ? "youtube" : isVimeo ? "vimeo" : "link";
         const { error } = await supabase.from("videos").insert({
           title: title || "Vídeo",
           video_url: mediaUrl,
-          video_type: videoMode === "link" ? (isYt ? "youtube" : "link") : "upload",
+          video_type: videoMode === "link" ? videoTypeStr : "upload",
           thumbnail_url: thumb || "",
           category: primaryVideoLoc(locations),
           locations,
@@ -540,7 +554,7 @@ export default function AdminAgendamento() {
                 <>
                   <div className="flex gap-2 mb-4">
                     {[
-                      { value: "link", label: "🔗 Link YouTube" },
+                      { value: "link", label: "🔗 Link de Vídeo" },
                       { value: "upload", label: "📤 Upload Arquivo" },
                     ].map((m) => (
                       <button
@@ -562,11 +576,69 @@ export default function AdminAgendamento() {
                       <input
                         value={linkUrl}
                         onChange={(e) => setLinkUrl(e.target.value)}
-                        placeholder="https://youtube.com/watch?v=..."
+                        placeholder="YouTube, Vimeo, link direto .mp4 ..."
                         className="w-full bg-[#27272A] border border-[#3F3F46] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-[#52525B] outline-none focus:border-primary/50"
                       />
-                      {linkUrl && getYoutubeThumbnail(linkUrl) && (
-                        <img src={getYoutubeThumbnail(linkUrl)} alt="thumb" className="w-full h-32 object-cover rounded-xl" />
+                      {/* Preview adaptativo por tipo de link */}
+                      {linkUrl && (
+                        <div className="rounded-xl overflow-hidden bg-[#0D0D0D] border border-[#27272A]">
+                          {(linkUrl.includes("youtube") || linkUrl.includes("youtu.be")) ? (
+                            getYoutubeThumbnail(linkUrl) ? (
+                              <div className="relative">
+                                <img src={getYoutubeThumbnail(linkUrl)} alt="thumb" className="w-full h-40 object-cover" />
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center shadow-lg">
+                                    <Play className="w-5 h-5 text-white ml-0.5" />
+                                  </div>
+                                </div>
+                                <span className="absolute bottom-2 left-2 text-[10px] bg-black/70 text-white px-2 py-0.5 rounded font-heading">YouTube</span>
+                                <span className="absolute bottom-2 right-2 text-[10px] bg-green-600/80 text-white px-2 py-0.5 rounded font-heading">✅ Capa automática</span>
+                              </div>
+                            ) : null
+                          ) : linkUrl.includes("vimeo.com") ? (
+                            <div className="flex items-center gap-3 p-4">
+                              <div className="w-10 h-10 bg-[#1AB7EA] rounded-lg flex items-center justify-center shrink-0">
+                                <Play className="w-4 h-4 text-white" />
+                              </div>
+                              <div>
+                                <p className="text-sm text-white font-heading">Vimeo</p>
+                                <p className="text-xs text-[#71717A] truncate max-w-[260px]">{linkUrl}</p>
+                              </div>
+                            </div>
+                          ) : /\.(mp4|webm|mov|m4v)(\?|$)/i.test(linkUrl) ? (
+                            <video src={linkUrl} controls className="w-full max-h-48 rounded-xl" />
+                          ) : (
+                            <div className="flex items-center gap-3 p-4">
+                              <div className="w-10 h-10 bg-[#27272A] rounded-lg flex items-center justify-center shrink-0">
+                                <Link2 className="w-4 h-4 text-primary" />
+                              </div>
+                              <div>
+                                <p className="text-sm text-white font-heading">Link de Vídeo Externo</p>
+                                <p className="text-xs text-[#71717A] truncate max-w-[260px]">{linkUrl}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {/* Thumbnail obrigatória para links externos (não-YouTube) */}
+                      {linkUrl && !linkUrl.includes("youtube") && !linkUrl.includes("youtu.be") && (
+                        <div className={`p-3 rounded-xl border ${thumbUrl ? "border-green-500/30 bg-green-500/5" : "border-red-500/30 bg-red-500/5"}`}>
+                          <label className="text-xs text-[#A1A1AA] mb-1 block">
+                            🖼️ Capa do vídeo <span className="text-red-400">*</span>
+                          </label>
+                          <p className="text-[11px] text-[#71717A] mb-2">Obrigatória para links externos. Aparece antes do vídeo tocar.</p>
+                          <MediaUploader
+                            accept="image"
+                            pathPrefix="agendamento/videos/thumbs"
+                            currentUrl={thumbUrl}
+                            onUploaded={(url) => setThumbUrl(url)}
+                            label=""
+                            compact
+                          />
+                          {!thumbUrl && (
+                            <p className="text-[11px] text-red-400 mt-1.5 flex items-center gap-1">⚠️ Faça upload da capa para continuar</p>
+                          )}
+                        </div>
                       )}
                     </div>
                   )}
@@ -574,7 +646,8 @@ export default function AdminAgendamento() {
                   {videoMode === "upload" && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs text-[#A1A1AA] mb-2 block">🎬 Arquivo de vídeo *</label>
+                        <label className="text-xs text-[#A1A1AA] mb-1 block">🎬 Arquivo de vídeo <span className="text-red-400">*</span></label>
+                        <p className="text-[11px] text-[#71717A] mb-2">MP4, WebM, MOV — sem limite de tamanho</p>
                         <MediaUploader
                           accept="video"
                           pathPrefix={`agendamento/videos/${primaryVideoLoc(locations)}`}
@@ -583,8 +656,11 @@ export default function AdminAgendamento() {
                           label=""
                         />
                       </div>
-                      <div>
-                        <label className="text-xs text-[#A1A1AA] mb-2 block">🖼️ Capa (opcional)</label>
+                      <div className={`p-3 rounded-xl border ${thumbUrl ? "border-green-500/30 bg-green-500/5" : "border-red-500/30 bg-red-500/5"}`}>
+                        <label className="text-xs text-[#A1A1AA] mb-1 block">
+                          🖼️ Capa do vídeo <span className="text-red-400">*</span>
+                        </label>
+                        <p className="text-[11px] text-[#71717A] mb-2">Imagem que aparece antes do vídeo tocar</p>
                         <MediaUploader
                           accept="image"
                           pathPrefix="agendamento/videos/thumbs"
@@ -592,6 +668,12 @@ export default function AdminAgendamento() {
                           onUploaded={(url) => setThumbUrl(url)}
                           label=""
                         />
+                        {!thumbUrl && (
+                          <p className="text-[11px] text-red-400 mt-1.5">⚠️ Obrigatória</p>
+                        )}
+                        {thumbUrl && (
+                          <p className="text-[11px] text-green-400 mt-1.5">✅ Capa adicionada</p>
+                        )}
                       </div>
                     </div>
                   )}
