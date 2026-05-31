@@ -1,4 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
+/**
+ * PageTransition — versão definitiva
+ *
+ * Arquitetura correta:
+ * - UM ÚNICO wrapper em volta de <Routes> no App.tsx (não por rota)
+ * - CSS animation (hardware-accelerated) em vez de JS setTimeout + opacity state
+ * - pointer-events: none durante a transição → sem cliques "acumulados"
+ * - Sem estado React → sem re-renders causados pelo próprio componente
+ * - Sem risco de timer orphan (clearTimeout no cleanup do useEffect)
+ */
+import React, { useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 interface PageTransitionProps {
@@ -7,44 +17,63 @@ interface PageTransitionProps {
 
 export const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
   const location = useLocation();
-  const [opacity, setOpacity] = useState(1);
-  const prevPath = useRef(location.pathname);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const prevPathRef = useRef(location.pathname);
+  const isFirstRef = useRef(true);
+  const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
-    // Primeira renderização — sem animação
-    if (prevPath.current === location.pathname) return;
-    prevPath.current = location.pathname;
+    // Primeira montagem: sem animação
+    if (isFirstRef.current) {
+      isFirstRef.current = false;
+      return;
+    }
 
-    // Cancelar qualquer timer anterior
-    if (timerRef.current) clearTimeout(timerRef.current);
+    // Mesma rota (hash change, query param, etc.): sem animação
+    if (prevPathRef.current === location.pathname) return;
+    prevPathRef.current = location.pathname;
 
-    // 1. Fade out suave (150ms)
-    setOpacity(0);
+    const el = wrapperRef.current;
+    if (!el) return;
 
-    // 2. Durante o fade-out, scroll para o topo (invisível para o usuário)
-    timerRef.current = setTimeout(() => {
-      window.scrollTo(0, 0);
-      // 3. Fade in suave (200ms)
-      setOpacity(1);
-    }, 150);
+    // Cancela qualquer timer anterior (caso navegação ultra-rápida)
+    if (timerRef.current !== null) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
 
+    // Bloqueia cliques durante a transição → evita race conditions
+    el.style.pointerEvents = 'none';
+
+    // Força reinício da animation CSS (reflow trick)
+    el.style.animation = 'none';
+    void el.offsetHeight; // flush reflow
+    el.style.animation = 'pageEnter 0.32s cubic-bezier(0.4, 0, 0.2, 1) both';
+
+    // Libera cliques ao fim da animação
+    timerRef.current = window.setTimeout(() => {
+      if (wrapperRef.current) {
+        wrapperRef.current.style.animation = '';
+        wrapperRef.current.style.pointerEvents = '';
+      }
+      timerRef.current = null;
+    }, 350); // ~10ms de margem além dos 320ms da animation
+
+    // Cleanup: cancela timer se o componente desmontar (admin redirect, etc.)
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (timerRef.current !== null) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      if (wrapperRef.current) {
+        wrapperRef.current.style.pointerEvents = '';
+        wrapperRef.current.style.animation = '';
+      }
     };
   }, [location.pathname]);
 
   return (
-    <div
-      style={{
-        opacity,
-        transition: opacity === 0
-          ? 'opacity 0.15s ease-out'
-          : 'opacity 0.2s ease-in',
-        minHeight: '100vh',
-        willChange: 'opacity',
-      }}
-    >
+    <div ref={wrapperRef}>
       {children}
     </div>
   );

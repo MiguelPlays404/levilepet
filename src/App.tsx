@@ -43,26 +43,51 @@ import { supabase } from "./integrations/supabase/client";
 
 function BrandingApplier() {
   useEffect(() => {
-    supabase.from("site_config").select("favicon_url,font_heading,font_body,primary_color").limit(1).maybeSingle().then(({ data }) => {
-      if (!data) return;
-      if (data.favicon_url) {
-        let link = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;
-        if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
-        link.href = data.favicon_url;
-      }
-      if (data.font_heading || data.font_body) {
-        const fams = [data.font_heading, data.font_body].filter(Boolean).map(f => `family=${encodeURIComponent(f!)}:wght@400;500;600;700&`).join("");
-        const id = "dynamic-fonts";
-        let s = document.getElementById(id) as HTMLLinkElement | null;
-        if (!s) { s = document.createElement("link"); s.id = id; s.rel = "stylesheet"; document.head.appendChild(s); }
-        s.href = `https://fonts.googleapis.com/css2?${fams}display=swap`;
-      }
-    });
+    supabase
+      .from("site_config")
+      .select("favicon_url,font_heading,font_body,primary_color")
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!data) return;
+        if (data.favicon_url) {
+          let link = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;
+          if (!link) {
+            link = document.createElement("link");
+            link.rel = "icon";
+            document.head.appendChild(link);
+          }
+          link.href = data.favicon_url;
+        }
+        if (data.font_heading || data.font_body) {
+          const fams = [data.font_heading, data.font_body]
+            .filter(Boolean)
+            .map((f) => `family=${encodeURIComponent(f!)}:wght@400;500;600;700&`)
+            .join("");
+          const id = "dynamic-fonts";
+          let s = document.getElementById(id) as HTMLLinkElement | null;
+          if (!s) {
+            s = document.createElement("link");
+            s.id = id;
+            s.rel = "stylesheet";
+            document.head.appendChild(s);
+          }
+          s.href = `https://fonts.googleapis.com/css2?${fams}display=swap`;
+        }
+      });
   }, []);
   return null;
 }
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Evita refetch excessivo em navegações rápidas
+      staleTime: 30_000,
+      gcTime: 5 * 60_000,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -70,43 +95,52 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        {/* ScrollToTop: rola para o topo em toda troca de rota */}
         <ScrollToTop />
         <SecurityHeaders />
         <BrandingApplier />
         <NavigationProgress />
         <RoutePersistence>
           <MaintenanceGuard>
-            <Routes>
-              <Route path="/" element={<PageTransition><Index /></PageTransition>} />
-              <Route path="/manutencao" element={<Manutencao />} />
-              <Route path="/fale-conosco" element={<PageTransition><FaleConosco /></PageTransition>} />
-              <Route path="/hotelzinho" element={<PageTransition><Hotelzinho /></PageTransition>} />
-              <Route path="/transporte" element={<PageTransition><Transporte /></PageTransition>} />
-              <Route path="/venha-nos-conhecer" element={<PageTransition><VenhaNosConhecer /></PageTransition>} />
-              <Route path="/localizacao" element={<PageTransition><Localizacao /></PageTransition>} />
-              <Route path="/fotos" element={<PageTransition><Fotos /></PageTransition>} />
-              <Route path="/videos" element={<PageTransition><Videos /></PageTransition>} />
-              <Route path="/siga-nos" element={<PageTransition><SigaNos /></PageTransition>} />
-              {/* Admin Routes */}
-              <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-              <Route path="/admin/home" element={<ProtectedRoute><AdminHome /></ProtectedRoute>} />
-              <Route path="/admin/fotos" element={<ProtectedRoute><AdminPhotos /></ProtectedRoute>} />
-              <Route path="/admin/videos" element={<ProtectedRoute><AdminVideos /></ProtectedRoute>} />
-              <Route path="/admin/hotelzinho" element={<ProtectedRoute><AdminHotelzinho /></ProtectedRoute>} />
-              <Route path="/admin/conhecer" element={<ProtectedRoute><AdminConhecer /></ProtectedRoute>} />
-              <Route path="/admin/config" element={<ProtectedRoute><AdminConfig /></ProtectedRoute>} />
-              <Route path="/admin/social" element={<ProtectedRoute><AdminSocial /></ProtectedRoute>} />
-              <Route path="/admin/seguranca" element={<ProtectedRoute><AdminSecurity /></ProtectedRoute>} />
-              <Route path="/admin/navbar-footer" element={<ProtectedRoute><AdminNavbarFooter /></ProtectedRoute>} />
-              <Route path="/admin/branding" element={<ProtectedRoute><AdminBranding /></ProtectedRoute>} />
-              <Route path="/admin/textos-paginas" element={<ProtectedRoute><AdminPageTexts /></ProtectedRoute>} />
-              <Route path="/admin/guia" element={<ProtectedRoute><AdminGuia /></ProtectedRoute>} />
-              <Route path="/admin/destaques" element={<ProtectedRoute><AdminDestaques /></ProtectedRoute>} />
-              <Route path="/admin/transporte" element={<ProtectedRoute><AdminTransporte /></ProtectedRoute>} />
-              <Route path="/admin/agendamento" element={<ProtectedRoute><AdminAgendamento /></ProtectedRoute>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            {/*
+              PageTransition envolve TODAS as rotas UMA VEZ (não por rota).
+              Isso garante que a mesma instância persiste entre navegações,
+              eliminando race conditions de mount/unmount.
+            */}
+            <PageTransition>
+              <Routes>
+                {/* Rotas públicas */}
+                <Route path="/" element={<Index />} />
+                <Route path="/manutencao" element={<Manutencao />} />
+                <Route path="/fale-conosco" element={<FaleConosco />} />
+                <Route path="/hotelzinho" element={<Hotelzinho />} />
+                <Route path="/transporte" element={<Transporte />} />
+                <Route path="/venha-nos-conhecer" element={<VenhaNosConhecer />} />
+                <Route path="/localizacao" element={<Localizacao />} />
+                <Route path="/fotos" element={<Fotos />} />
+                <Route path="/videos" element={<Videos />} />
+                <Route path="/siga-nos" element={<SigaNos />} />
+                {/* Rotas admin */}
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+                <Route path="/admin/home" element={<ProtectedRoute><AdminHome /></ProtectedRoute>} />
+                <Route path="/admin/fotos" element={<ProtectedRoute><AdminPhotos /></ProtectedRoute>} />
+                <Route path="/admin/videos" element={<ProtectedRoute><AdminVideos /></ProtectedRoute>} />
+                <Route path="/admin/hotelzinho" element={<ProtectedRoute><AdminHotelzinho /></ProtectedRoute>} />
+                <Route path="/admin/conhecer" element={<ProtectedRoute><AdminConhecer /></ProtectedRoute>} />
+                <Route path="/admin/config" element={<ProtectedRoute><AdminConfig /></ProtectedRoute>} />
+                <Route path="/admin/social" element={<ProtectedRoute><AdminSocial /></ProtectedRoute>} />
+                <Route path="/admin/seguranca" element={<ProtectedRoute><AdminSecurity /></ProtectedRoute>} />
+                <Route path="/admin/navbar-footer" element={<ProtectedRoute><AdminNavbarFooter /></ProtectedRoute>} />
+                <Route path="/admin/branding" element={<ProtectedRoute><AdminBranding /></ProtectedRoute>} />
+                <Route path="/admin/textos-paginas" element={<ProtectedRoute><AdminPageTexts /></ProtectedRoute>} />
+                <Route path="/admin/guia" element={<ProtectedRoute><AdminGuia /></ProtectedRoute>} />
+                <Route path="/admin/destaques" element={<ProtectedRoute><AdminDestaques /></ProtectedRoute>} />
+                <Route path="/admin/transporte" element={<ProtectedRoute><AdminTransporte /></ProtectedRoute>} />
+                <Route path="/admin/agendamento" element={<ProtectedRoute><AdminAgendamento /></ProtectedRoute>} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </PageTransition>
           </MaintenanceGuard>
         </RoutePersistence>
       </BrowserRouter>

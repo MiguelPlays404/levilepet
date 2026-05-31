@@ -1,5 +1,10 @@
-// ScrollToTop — apenas para rotas admin e sem PageTransition
-// As rotas públicas já têm scroll gerenciado pelo PageTransition
+/**
+ * ScrollToTop — global, para TODAS as rotas
+ * 
+ * Rola para o topo imediatamente ao mudar de rota.
+ * Como o PageTransition começa com opacity:0 (primeiro frame da animation),
+ * o usuário nunca vê o scroll acontecendo.
+ */
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -9,10 +14,8 @@ export function ScrollToTop() {
 
   useEffect(() => {
     if (isFirst.current) { isFirst.current = false; return; }
-    // Só rola para admin (páginas públicas têm PageTransition que gerencia isso)
-    if (pathname.startsWith("/admin") || pathname === "/manutencao") {
-      window.scrollTo(0, 0);
-    }
+    // behavior: 'instant' garante que não há scroll animado conflitando com PageTransition
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, [pathname]);
 
   return null;
