@@ -264,7 +264,7 @@ const Index = () => {
               <div className="mx-auto space-y-8">
                 {visible.map((v, i) => (
                   <div key={v.id} data-animate="fade-scale" data-delay={String(Math.min(i + 1, 4))} className={`${getMaxW(v)} mx-auto`}>
-                    <div className={`${getAspect(v)} rounded-[20px] overflow-hidden bg-black`} style={{ boxShadow: 'var(--shadow-xl)' }}>
+                    <div className={`${getAspectClass(v)} rounded-[20px] overflow-hidden bg-black`} style={{ boxShadow: 'var(--shadow-xl)' }}>
                       {renderVideo(v)}
                     </div>
                     {v.title && <p className="text-center mt-3 font-heading font-semibold text-black/80">{v.title}</p>}
