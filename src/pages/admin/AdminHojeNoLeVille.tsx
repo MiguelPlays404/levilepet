@@ -382,7 +382,7 @@ export default function AdminHojeNoLeVille() {
                 {/* Preview */}
                 <div
                   className="relative bg-black overflow-hidden"
-                  style={{ aspectRatio: isVertical ? "9/16" : "4/3", maxHeight: isVertical ? "240px" : "180px" }}
+                  style={{ ...aspectStyle(ar), maxHeight: isVertical ? "240px" : "180px" }}
                 >
                   {isVideo ? (
                     <video
