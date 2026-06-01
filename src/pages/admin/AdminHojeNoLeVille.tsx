@@ -96,13 +96,13 @@ export default function AdminHojeNoLeVille() {
     const isVid = /\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(url);
     setFMediaType(isVid ? "video" : "image");
     if (isVid) {
-      setFOrientation(""); // forçar escolha ao salvar
+      setFAspect(""); // forçar escolha ao salvar
     }
   };
 
   const resetForm = () => {
     setFTitle(""); setFDesc(""); setFMediaUrl(""); setFMediaType("image");
-    setFOrientation(""); setFPublishedAt(nowLocalDatetime()); setFExpiresAt("");
+    setFAspect(""); setFPublishedAt(nowLocalDatetime()); setFExpiresAt("");
     setFHasExpiry(false); setShowForm(false);
   };
 
@@ -110,16 +110,17 @@ export default function AdminHojeNoLeVille() {
     if (!fMediaUrl) {
       toast({ title: "Envie uma imagem ou vídeo antes de salvar", variant: "destructive" }); return;
     }
-    if (!fOrientation) {
-      toast({ title: "⚠️ Selecione a orientação (obrigatório)", variant: "destructive" }); return;
+    if (!fAspect) {
+      toast({ title: "⚠️ Selecione a proporção (obrigatório)", variant: "destructive" }); return;
     }
     setFSaving(true);
-    const { error } = await supabase.from("hoje_no_le_ville" as any).insert({
+    const { error } = await supabase.from("hoje_no_le_ville").insert({
       title: fTitle || null,
       description: fDesc || null,
       media_url: fMediaUrl,
       media_type: fMediaType,
-      orientation: fOrientation,
+      orientation: aspectToOrientation(fAspect),
+      aspect_ratio: fAspect,
       published_at: new Date(fPublishedAt).toISOString(),
       expires_at: fHasExpiry && fExpiresAt ? new Date(fExpiresAt).toISOString() : null,
       is_active: true,
