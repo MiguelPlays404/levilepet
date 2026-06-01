@@ -104,7 +104,7 @@ function HojeLightbox({ items, index, onClose, onNav }: LightboxProps) {
       >
         <div
           className="rounded-2xl overflow-hidden bg-black w-full"
-          style={isVertical ? { aspectRatio: "9/16", maxHeight: "80vh" } : { aspectRatio: "16/9" }}
+          style={{ ...aspectStyle(ar), maxHeight: isVertical ? "80vh" : undefined }}
         >
           {isVideo ? (
             <video
