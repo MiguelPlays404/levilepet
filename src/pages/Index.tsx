@@ -246,8 +246,14 @@ const Index = () => {
             />
           )
         );
-        const getAspect = (v: any) => v.orientation === 'vertical' ? 'aspect-[9/16]' : 'aspect-video';
-        const getMaxW = (v: any) => v.orientation === 'vertical' ? 'max-w-xs' : 'max-w-3xl';
+        const getAspectClass = (v: any) => {
+          const ar = v.aspect_ratio || (v.orientation === 'vertical' ? '9:16' : '16:9');
+          return { '16:9': 'aspect-video', '4:3': 'aspect-[4/3]', '1:1': 'aspect-square', '3:4': 'aspect-[3/4]', '9:16': 'aspect-[9/16]' }[ar] || 'aspect-video';
+        };
+        const getMaxW = (v: any) => {
+          const ar = v.aspect_ratio || (v.orientation === 'vertical' ? '9:16' : '16:9');
+          return (ar === '9:16' || ar === '3:4') ? 'max-w-xs' : (ar === '1:1' ? 'max-w-md' : 'max-w-3xl');
+        };
         return (
           <section className="py-20 lg:py-24" style={{ background: '#FAFAF8' }}>
             <div className="container mx-auto px-6">
