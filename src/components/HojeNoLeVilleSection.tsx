@@ -151,7 +151,7 @@ export function HojeNoLeVilleSection() {
     const fetchItems = async () => {
       const now = new Date().toISOString();
       const { data } = await supabase
-        .from("hoje_no_le_ville" as any)
+        .from("hoje_no_le_ville")
         .select("*")
         .eq("is_active", true)
         .lte("published_at", now)

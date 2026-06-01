@@ -72,7 +72,7 @@ export default function AdminHojeNoLeVille() {
   const load = async () => {
     setLoading(true);
     const { data } = await supabase
-      .from("hoje_no_le_ville" as any)
+      .from("hoje_no_le_ville")
       .select("*")
       .order("display_order", { ascending: true })
       .order("published_at", { ascending: false });
@@ -134,7 +134,7 @@ export default function AdminHojeNoLeVille() {
   };
 
   const toggleActive = async (item: HojeItem) => {
-    await supabase.from("hoje_no_le_ville" as any).update({ is_active: !item.is_active }).eq("id", item.id);
+    await supabase.from("hoje_no_le_ville").update({ is_active: !item.is_active }).eq("id", item.id);
     load();
   };
 
@@ -144,13 +144,13 @@ export default function AdminHojeNoLeVille() {
       const path = item.media_url.split("/levillepet-media/")[1];
       if (path) await supabase.storage.from("levillepet-media").remove([path]);
     }
-    await supabase.from("hoje_no_le_ville" as any).delete().eq("id", item.id);
+    await supabase.from("hoje_no_le_ville").delete().eq("id", item.id);
     toast({ title: "✅ Removido" });
     load();
   };
 
   const reorder = async (item: HojeItem, dir: -1 | 1) => {
-    await supabase.from("hoje_no_le_ville" as any)
+    await supabase.from("hoje_no_le_ville")
       .update({ display_order: (item.display_order || 0) + dir })
       .eq("id", item.id);
     load();
@@ -158,7 +158,7 @@ export default function AdminHojeNoLeVille() {
 
   const updateExpiry = async (item: HojeItem, val: string) => {
     const expires_at = val ? new Date(val).toISOString() : null;
-    await supabase.from("hoje_no_le_ville" as any).update({ expires_at }).eq("id", item.id);
+    await supabase.from("hoje_no_le_ville").update({ expires_at }).eq("id", item.id);
     load();
   };
 
