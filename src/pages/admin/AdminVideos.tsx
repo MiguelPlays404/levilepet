@@ -96,7 +96,8 @@ export default function AdminVideos() {
       category: primaryCategory(locations),
       locations,
       is_featured: locations.includes("home"),
-      orientation: uploadAspect,
+      orientation: aspectToOrientation(uploadAspect),
+      aspect_ratio: uploadAspect,
       likes_count: 0, is_active: true, published_at: new Date().toISOString(),
     } as any);
     if (error) { toast({ title: "Erro ao salvar vídeo", description: error.message, variant: "destructive" }); return; }
