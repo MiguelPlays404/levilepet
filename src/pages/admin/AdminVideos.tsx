@@ -269,7 +269,7 @@ export default function AdminVideos() {
         <table className="w-full text-sm min-w-[800px]">
           <thead><tr className="border-b border-[#27272A]">
             <th className="text-left p-4 text-[#71717A]">Vídeo</th>
-            <th className="text-left p-4 text-[#71717A]">Orientação</th>
+            <th className="text-left p-4 text-[#71717A]">Proporção</th>
             <th className="text-left p-4 text-[#71717A]">Tipo</th>
             <th className="text-left p-4 text-[#71717A]">Locais</th>
             <th className="text-center p-4 text-[#71717A]">❤️</th>
