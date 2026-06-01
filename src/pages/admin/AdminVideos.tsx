@@ -289,22 +289,15 @@ export default function AdminVideos() {
                   </div>
                 </td>
                 <td className="p-4">
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => handleChangeOrientation(v, "horizontal")}
-                      title="Horizontal"
-                      className={`p-1.5 rounded-lg border transition-colors ${(v.orientation || "horizontal") === "horizontal" ? "border-primary bg-primary/10 text-primary" : "border-[#3F3F46] text-[#666] hover:border-[#52525B]"}`}
-                    >
-                      <Maximize2 className="w-3 h-3" />
-                    </button>
-                    <button
-                      onClick={() => handleChangeOrientation(v, "vertical")}
-                      title="Vertical"
-                      className={`p-1.5 rounded-lg border transition-colors ${v.orientation === "vertical" ? "border-primary bg-primary/10 text-primary" : "border-[#3F3F46] text-[#666] hover:border-[#52525B]"}`}
-                    >
-                      <RectangleVertical className="w-3 h-3" />
-                    </button>
-                  </div>
+                  <select
+                    value={v.aspect_ratio || (v.orientation === "vertical" ? "9:16" : "16:9")}
+                    onChange={(e) => handleChangeAspect(v, e.target.value)}
+                    className="bg-[#27272A] border border-[#3F3F46] rounded-lg px-2 py-1.5 text-xs text-white"
+                  >
+                    {ASPECT_OPTIONS.map(o => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
                 </td>
                 <td className="p-4 text-[#71717A] text-xs">{v.video_type}</td>
                 <td className="p-4">
