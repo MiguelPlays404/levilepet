@@ -160,7 +160,7 @@ export function HojeNoLeVilleSection() {
         .order("published_at", { ascending: false });
 
       if (!cancelled) {
-        setItems(data || []);
+        setItems(((data as any) || []) as HojeItem[]);
         setLoading(false);
       }
     };
