@@ -245,43 +245,9 @@ export default function AdminHojeNoLeVille() {
             )}
           </div>
 
-          {/* Orientação — OBRIGATÓRIO */}
-          <div>
-            <label className="block text-xs text-[#A1A1AA] mb-2 font-heading">
-              Orientação da mídia <span className="text-red-400">*obrigatório</span>
-            </label>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setFOrientation("horizontal")}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 text-sm font-heading font-semibold transition-all ${
-                  fOrientation === "horizontal"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-[#3F3F46] text-[#A1A1AA] hover:border-[#52525B]"
-                }`}
-              >
-                <Maximize2 className="w-4 h-4" />
-                Horizontal (16:9)
-              </button>
-              <button
-                type="button"
-                onClick={() => setFOrientation("vertical")}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 text-sm font-heading font-semibold transition-all ${
-                  fOrientation === "vertical"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-[#3F3F46] text-[#A1A1AA] hover:border-[#52525B]"
-                }`}
-              >
-                <RectangleVertical className="w-4 h-4" />
-                Vertical (9:16)
-              </button>
-            </div>
-            {!fOrientation && (
-              <p className="text-[11px] text-red-400 mt-1.5 font-heading">
-                Selecione a orientação para continuar
-              </p>
-            )}
-          </div>
+          {/* Proporção — OBRIGATÓRIO */}
+          <AspectRatioPicker value={fAspect} onChange={setFAspect} required />
+
 
           {/* Título e descrição */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
