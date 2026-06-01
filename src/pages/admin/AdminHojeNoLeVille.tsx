@@ -63,7 +63,7 @@ export default function AdminHojeNoLeVille() {
   const [fDesc, setFDesc]                 = useState("");
   const [fMediaUrl, setFMediaUrl]         = useState("");
   const [fMediaType, setFMediaType]       = useState<"image"|"video">("image");
-  const [fOrientation, setFOrientation]   = useState<"horizontal"|"vertical"|"">("");
+  const [fAspect, setFAspect]             = useState<AspectRatio | "">("");
   const [fPublishedAt, setFPublishedAt]   = useState(nowLocalDatetime());
   const [fExpiresAt, setFExpiresAt]       = useState("");
   const [fHasExpiry, setFHasExpiry]       = useState(false);
