@@ -19,6 +19,7 @@ interface HojeItem {
   media_url: string;
   media_type: string;
   orientation: string;
+  aspect_ratio: string | null;
   published_at: string;
   expires_at: string | null;
   is_active: boolean;
