@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ChevronLeft, ChevronRight, Play, X, Clock } from "lucide-react";
 
+import { aspectStyle } from "@/components/AspectRatioPicker";
+
 interface HojeItem {
   id: string;
   title: string | null;
@@ -9,6 +11,7 @@ interface HojeItem {
   media_url: string;
   media_type: string;
   orientation: string;
+  aspect_ratio: string | null;
   expires_at: string | null;
   display_order: number;
 }
@@ -50,7 +53,8 @@ interface LightboxProps {
 function HojeLightbox({ items, index, onClose, onNav }: LightboxProps) {
   const item = items[index];
   const isVideo = item.media_type === "video";
-  const isVertical = item.orientation === "vertical";
+  const ar = item.aspect_ratio || (item.orientation === "vertical" ? "9:16" : "16:9");
+  const isVertical = ar === "9:16" || ar === "3:4";
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -100,7 +104,7 @@ function HojeLightbox({ items, index, onClose, onNav }: LightboxProps) {
       >
         <div
           className="rounded-2xl overflow-hidden bg-black w-full"
-          style={isVertical ? { aspectRatio: "9/16", maxHeight: "80vh" } : { aspectRatio: "16/9" }}
+          style={{ ...aspectStyle(ar), maxHeight: isVertical ? "80vh" : undefined }}
         >
           {isVideo ? (
             <video
@@ -151,7 +155,7 @@ export function HojeNoLeVilleSection() {
     const fetchItems = async () => {
       const now = new Date().toISOString();
       const { data } = await supabase
-        .from("hoje_no_le_ville" as any)
+        .from("hoje_no_le_ville")
         .select("*")
         .eq("is_active", true)
         .lte("published_at", now)
@@ -160,7 +164,7 @@ export function HojeNoLeVilleSection() {
         .order("published_at", { ascending: false });
 
       if (!cancelled) {
-        setItems(data || []);
+        setItems(((data as any) || []) as HojeItem[]);
         setLoading(false);
       }
     };
@@ -227,7 +231,8 @@ export function HojeNoLeVilleSection() {
           >
             {items.map((item, i) => {
               const isVideo = item.media_type === "video";
-              const isVertical = item.orientation === "vertical";
+              const ar = item.aspect_ratio || (item.orientation === "vertical" ? "9:16" : "16:9");
+              const isVertical = ar === "9:16" || ar === "3:4";
 
               return (
                 <button
@@ -239,7 +244,7 @@ export function HojeNoLeVilleSection() {
                       ? "w-[52vw] sm:w-[32vw] md:w-[22vw] lg:w-[16vw]"
                       : "w-[78vw] sm:w-[46vw] md:w-[36vw] lg:w-[28vw]"
                   }`}
-                  style={{ aspectRatio: isVertical ? "9/16" : "4/3" }}
+                  style={aspectStyle(ar)}
                   aria-label={item.title || "Ver item"}
                 >
                   {/* Mídia */}

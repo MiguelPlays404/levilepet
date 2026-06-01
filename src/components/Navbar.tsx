@@ -143,14 +143,17 @@ export function Navbar() {
             <Link
               key={link.id}
               to={link.path}
-              className={`px-6 py-4 font-heading font-semibold text-xl transition-colors ${
+              className={`relative px-6 py-4 font-heading font-semibold text-xl transition-colors ${
                 location.pathname === link.path
-                  ? "text-primary bg-primary/10 border-l-[3px] border-primary"
+                  ? "text-primary bg-primary/8"
                   : "text-white hover:text-primary hover:bg-primary/5"
               }`}
               style={{ animation: `fadeInLeft 0.3s ease ${i * 0.05}s both` }}
             >
-              {link.label}
+              {location.pathname === link.path && (
+                <span className="absolute left-[18px] top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-primary" />
+              )}
+              <span className={location.pathname === link.path ? "pl-4" : ""}>{link.label}</span>
             </Link>
           ))}
 

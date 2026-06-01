@@ -96,7 +96,7 @@ export async function getTransporteContent(): Promise<any> {
 
 export async function getConhecerContent(): Promise<any> {
   return fetchCached("conhecer_content", async () => {
-    const { data } = await supabase.from("venha_nos_conhecer_content").select("*").limit(1).maybeSingle();
+    const { data } = await supabase.from("conhecer_content").select("*").limit(1).maybeSingle();
     return data;
   });
 }
