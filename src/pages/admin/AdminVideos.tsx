@@ -174,8 +174,8 @@ export default function AdminVideos() {
     fetchVideos();
   };
 
-  const handleChangeOrientation = async (video: any, orientation: string) => {
-    await supabase.from("videos").update({ orientation } as any).eq("id", video.id);
+  const handleChangeAspect = async (video: any, aspect_ratio: string) => {
+    await supabase.from("videos").update({ aspect_ratio, orientation: aspectToOrientation(aspect_ratio) } as any).eq("id", video.id);
     fetchVideos();
   };
 
