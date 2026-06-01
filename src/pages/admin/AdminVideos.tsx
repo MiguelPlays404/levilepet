@@ -77,7 +77,7 @@ export default function AdminVideos() {
     } as any);
     if (error) { toast({ title: "Erro ao adicionar vídeo", description: error.message, variant: "destructive" }); return; }
     toast({ title: "✅ Vídeo adicionado!" });
-    setLinkUrl(""); setLinkTitle(""); setLinkOrientation("horizontal");
+    setLinkUrl(""); setLinkTitle(""); setLinkAspect("horizontal");
     fetchVideos();
   };
 
@@ -100,7 +100,7 @@ export default function AdminVideos() {
     } as any);
     if (error) { toast({ title: "Erro ao salvar vídeo", description: error.message, variant: "destructive" }); return; }
     toast({ title: "✅ Vídeo adicionado!" });
-    setUploadTitle(""); setUploadThumb(""); setPendingVideoUrl(""); setUploadOrientation("");
+    setUploadTitle(""); setUploadThumb(""); setPendingVideoUrl(""); setUploadAspect("");
     fetchVideos();
   };
 
@@ -206,7 +206,7 @@ export default function AdminVideos() {
           <input value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." className="bg-[#27272A] border border-[#3F3F46] rounded-lg px-3 py-2 text-sm text-white" />
           <button onClick={handleAddLink} className="btn-primary text-sm">Adicionar Link</button>
         </div>
-        <OrientationPicker value={linkAspect} onChange={setLinkOrientation} />
+        <AspectRatioPicker value={linkAspect} onChange={setLinkAspect} />
         <p className="text-[11px] text-[#71717A] mt-2">💡 YouTube é sempre horizontal. Mude só se for um vídeo vertical em outro link.</p>
       </div>
 
@@ -227,7 +227,7 @@ export default function AdminVideos() {
           </div>
         </div>
         <div className="mb-4">
-          <OrientationPicker value={uploadAspect} onChange={setUploadOrientation} />
+          <AspectRatioPicker value={uploadAspect} onChange={setUploadAspect} />
         </div>
         <button onClick={handleConfirmUpload} disabled={!pendingVideoUrl || !uploadAspect} className="btn-primary text-sm w-full disabled:opacity-50 disabled:cursor-not-allowed">
           ➕ Adicionar vídeo enviado
@@ -241,7 +241,7 @@ export default function AdminVideos() {
         </h3>
         <p className="text-xs text-[#71717A] mb-4">Arraste vários vídeos de uma vez. A orientação escolhida abaixo será aplicada a todos.</p>
         <div className="mb-4">
-          <OrientationPicker value={multiAspect} onChange={setMultiOrientation} />
+          <AspectRatioPicker value={multiAspect} onChange={setMultiAspect} />
         </div>
         <div className={!multiAspect ? "opacity-40 pointer-events-none" : ""}>
           <MediaUploader accept="video" multiple pathPrefix={`videos/${primaryCategory(addLocations)}`} onUploaded={handleMultiUploaded} label="" />
