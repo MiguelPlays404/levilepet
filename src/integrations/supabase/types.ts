@@ -80,6 +80,54 @@ export type Database = {
         }
         Relationships: []
       }
+      hoje_no_le_ville: {
+        Row: {
+          aspect_ratio: string
+          created_at: string
+          description: string | null
+          display_order: number
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          media_type: string
+          media_url: string
+          orientation: string
+          published_at: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          aspect_ratio?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          media_type?: string
+          media_url: string
+          orientation?: string
+          published_at?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          aspect_ratio?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          media_type?: string
+          media_url?: string
+          orientation?: string
+          published_at?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       home_sections: {
         Row: {
           description: string | null
@@ -217,6 +265,7 @@ export type Database = {
       }
       photos: {
         Row: {
+          aspect_ratio: string | null
           category: string
           created_at: string | null
           display_order: number | null
@@ -230,6 +279,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          aspect_ratio?: string | null
           category?: string
           created_at?: string | null
           display_order?: number | null
@@ -243,6 +293,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          aspect_ratio?: string | null
           category?: string
           created_at?: string | null
           display_order?: number | null
@@ -957,6 +1008,7 @@ export type Database = {
       }
       videos: {
         Row: {
+          aspect_ratio: string | null
           category: string | null
           created_at: string | null
           description: string | null
@@ -965,6 +1017,7 @@ export type Database = {
           is_featured: boolean | null
           likes_count: number | null
           locations: string[] | null
+          orientation: string | null
           publish_at: string | null
           published_at: string | null
           thumbnail_url: string | null
@@ -974,6 +1027,7 @@ export type Database = {
           video_url: string
         }
         Insert: {
+          aspect_ratio?: string | null
           category?: string | null
           created_at?: string | null
           description?: string | null
@@ -982,6 +1036,7 @@ export type Database = {
           is_featured?: boolean | null
           likes_count?: number | null
           locations?: string[] | null
+          orientation?: string | null
           publish_at?: string | null
           published_at?: string | null
           thumbnail_url?: string | null
@@ -991,6 +1046,7 @@ export type Database = {
           video_url: string
         }
         Update: {
+          aspect_ratio?: string | null
           category?: string | null
           created_at?: string | null
           description?: string | null
@@ -999,6 +1055,7 @@ export type Database = {
           is_featured?: boolean | null
           likes_count?: number | null
           locations?: string[] | null
+          orientation?: string | null
           publish_at?: string | null
           published_at?: string | null
           thumbnail_url?: string | null
