@@ -72,7 +72,8 @@ export default function AdminVideos() {
       category: primaryCategory(locations),
       locations,
       is_featured: locations.includes("home"),
-      orientation: linkAspect || "horizontal",
+      orientation: aspectToOrientation(linkAspect),
+      aspect_ratio: linkAspect || "16:9",
       likes_count: 0, is_active: true, published_at: new Date().toISOString(),
     } as any);
     if (error) { toast({ title: "Erro ao adicionar vídeo", description: error.message, variant: "destructive" }); return; }
