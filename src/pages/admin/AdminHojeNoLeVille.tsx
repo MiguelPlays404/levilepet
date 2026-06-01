@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
 import { MediaUploader } from "@/components/MediaUploader";
+import { AspectRatioPicker, aspectToOrientation, aspectStyle, type AspectRatio } from "@/components/AspectRatioPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
   Trash2, Eye, EyeOff, Clock, CheckCircle, XCircle,
-  Plus, ArrowUp, ArrowDown, Calendar, Maximize2, RectangleVertical,
+  Plus, ArrowUp, ArrowDown, Calendar,
   AlertCircle, Info
 } from "lucide-react";
 
