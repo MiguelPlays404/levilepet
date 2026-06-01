@@ -122,7 +122,8 @@ export default function AdminVideos() {
       category: primaryCategory(locations),
       locations,
       is_featured: locations.includes("home"),
-      orientation: multiAspect,
+      orientation: aspectToOrientation(multiAspect),
+      aspect_ratio: multiAspect,
       likes_count: 0, is_active: true, published_at: new Date().toISOString(),
     } as any);
     if (error) throw error;
