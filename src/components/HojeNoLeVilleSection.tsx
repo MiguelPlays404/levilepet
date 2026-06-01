@@ -231,7 +231,8 @@ export function HojeNoLeVilleSection() {
           >
             {items.map((item, i) => {
               const isVideo = item.media_type === "video";
-              const isVertical = item.orientation === "vertical";
+              const ar = item.aspect_ratio || (item.orientation === "vertical" ? "9:16" : "16:9");
+              const isVertical = ar === "9:16" || ar === "3:4";
 
               return (
                 <button
@@ -243,7 +244,7 @@ export function HojeNoLeVilleSection() {
                       ? "w-[52vw] sm:w-[32vw] md:w-[22vw] lg:w-[16vw]"
                       : "w-[78vw] sm:w-[46vw] md:w-[36vw] lg:w-[28vw]"
                   }`}
-                  style={{ aspectRatio: isVertical ? "9/16" : "4/3" }}
+                  style={aspectStyle(ar)}
                   aria-label={item.title || "Ver item"}
                 >
                   {/* Mídia */}
