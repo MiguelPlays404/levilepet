@@ -72,7 +72,7 @@ export default function AdminVideos() {
       category: primaryCategory(locations),
       locations,
       is_featured: locations.includes("home"),
-      orientation: linkOrientation || "horizontal",
+      orientation: linkAspect || "horizontal",
       likes_count: 0, is_active: true, published_at: new Date().toISOString(),
     } as any);
     if (error) { toast({ title: "Erro ao adicionar vídeo", description: error.message, variant: "destructive" }); return; }
@@ -85,7 +85,7 @@ export default function AdminVideos() {
 
   const handleConfirmUpload = async () => {
     if (!pendingVideoUrl) { toast({ title: "Envie o vídeo primeiro" }); return; }
-    if (!uploadOrientation) { toast({ title: "⚠️ Selecione a orientação do vídeo", variant: "destructive" }); return; }
+    if (!uploadAspect) { toast({ title: "⚠️ Selecione a orientação do vídeo", variant: "destructive" }); return; }
     const locations = addLocations.length ? addLocations : ["geral"];
     const { error } = await supabase.from("videos").insert({
       title: uploadTitle || "",
@@ -95,7 +95,7 @@ export default function AdminVideos() {
       category: primaryCategory(locations),
       locations,
       is_featured: locations.includes("home"),
-      orientation: uploadOrientation,
+      orientation: uploadAspect,
       likes_count: 0, is_active: true, published_at: new Date().toISOString(),
     } as any);
     if (error) { toast({ title: "Erro ao salvar vídeo", description: error.message, variant: "destructive" }); return; }
@@ -107,7 +107,7 @@ export default function AdminVideos() {
   // Multi-upload: pede orientação antes de enviar em lote
   const handleMultiUploaded = async (url: string) => {
     if (!url) return;
-    if (!multiOrientation) {
+    if (!multiAspect) {
       toast({ title: "⚠️ Selecione a orientação antes de enviar em lote", variant: "destructive" });
       return;
     }
@@ -120,7 +120,7 @@ export default function AdminVideos() {
       category: primaryCategory(locations),
       locations,
       is_featured: locations.includes("home"),
-      orientation: multiOrientation,
+      orientation: multiAspect,
       likes_count: 0, is_active: true, published_at: new Date().toISOString(),
     } as any);
     if (error) throw error;
@@ -206,7 +206,7 @@ export default function AdminVideos() {
           <input value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." className="bg-[#27272A] border border-[#3F3F46] rounded-lg px-3 py-2 text-sm text-white" />
           <button onClick={handleAddLink} className="btn-primary text-sm">Adicionar Link</button>
         </div>
-        <OrientationPicker value={linkOrientation} onChange={setLinkOrientation} />
+        <OrientationPicker value={linkAspect} onChange={setLinkOrientation} />
         <p className="text-[11px] text-[#71717A] mt-2">💡 YouTube é sempre horizontal. Mude só se for um vídeo vertical em outro link.</p>
       </div>
 
@@ -227,9 +227,9 @@ export default function AdminVideos() {
           </div>
         </div>
         <div className="mb-4">
-          <OrientationPicker value={uploadOrientation} onChange={setUploadOrientation} />
+          <OrientationPicker value={uploadAspect} onChange={setUploadOrientation} />
         </div>
-        <button onClick={handleConfirmUpload} disabled={!pendingVideoUrl || !uploadOrientation} className="btn-primary text-sm w-full disabled:opacity-50 disabled:cursor-not-allowed">
+        <button onClick={handleConfirmUpload} disabled={!pendingVideoUrl || !uploadAspect} className="btn-primary text-sm w-full disabled:opacity-50 disabled:cursor-not-allowed">
           ➕ Adicionar vídeo enviado
         </button>
       </div>
@@ -241,12 +241,12 @@ export default function AdminVideos() {
         </h3>
         <p className="text-xs text-[#71717A] mb-4">Arraste vários vídeos de uma vez. A orientação escolhida abaixo será aplicada a todos.</p>
         <div className="mb-4">
-          <OrientationPicker value={multiOrientation} onChange={setMultiOrientation} />
+          <OrientationPicker value={multiAspect} onChange={setMultiOrientation} />
         </div>
-        <div className={!multiOrientation ? "opacity-40 pointer-events-none" : ""}>
+        <div className={!multiAspect ? "opacity-40 pointer-events-none" : ""}>
           <MediaUploader accept="video" multiple pathPrefix={`videos/${primaryCategory(addLocations)}`} onUploaded={handleMultiUploaded} label="" />
         </div>
-        {!multiOrientation && (
+        {!multiAspect && (
           <p className="text-[11px] text-yellow-400 mt-2">⚠️ Selecione a orientação para habilitar o upload em lote</p>
         )}
       </div>
