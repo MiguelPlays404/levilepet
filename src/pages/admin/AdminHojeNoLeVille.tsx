@@ -321,7 +321,7 @@ export default function AdminHojeNoLeVille() {
           <div className="flex gap-3 pt-1">
             <button
               onClick={handleSave}
-              disabled={fSaving || !fMediaUrl || !fOrientation}
+              disabled={fSaving || !fMediaUrl || !fAspect}
               className="flex-1 bg-primary text-black font-heading font-bold py-3 rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               {fSaving ? "Salvando..." : "✅ Salvar publicação"}
