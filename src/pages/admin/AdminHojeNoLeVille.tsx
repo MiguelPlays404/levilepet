@@ -406,7 +406,7 @@ export default function AdminHojeNoLeVille() {
                   </span>
                   {/* Orientation badge */}
                   <span className="absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded bg-black/60 text-white border border-white/10">
-                    {isVertical ? "9:16" : "16:9"}
+                    {ar}
                   </span>
                 </div>
 
