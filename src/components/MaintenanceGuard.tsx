@@ -46,8 +46,7 @@ export function MaintenanceGuard({ children }: { children: React.ReactNode }) {
         if (maintenanceActive) {
           navigate("/manutencao", { replace: true });
         }
-      })
-      .catch(() => {
+      }, () => {
         // Em caso de falha de rede, não bloqueia o usuário
         maintenanceChecked = true;
         maintenanceActive = false;
