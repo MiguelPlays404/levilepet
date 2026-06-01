@@ -1,4 +1,4 @@
-import { Maximize2, RectangleVertical, Square, RectangleHorizontal } from "lucide-react";
+import { RectangleVertical, Square, RectangleHorizontal } from "lucide-react";
 
 export type AspectRatio = "16:9" | "4:3" | "1:1" | "3:4" | "9:16";
 
