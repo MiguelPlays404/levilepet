@@ -53,7 +53,8 @@ interface LightboxProps {
 function HojeLightbox({ items, index, onClose, onNav }: LightboxProps) {
   const item = items[index];
   const isVideo = item.media_type === "video";
-  const isVertical = item.orientation === "vertical";
+  const ar = item.aspect_ratio || (item.orientation === "vertical" ? "9:16" : "16:9");
+  const isVertical = ar === "9:16" || ar === "3:4";
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
