@@ -4,7 +4,7 @@ import { MediaUploader } from "@/components/MediaUploader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getYoutubeThumbnail } from "@/lib/youtube";
-import { Link2, Trash2, Eye, EyeOff, Heart, Star, Upload, CheckSquare } from "lucide-react";
+import { Link2, Trash2, Eye, EyeOff, Heart, Star, Upload, Maximize2, RectangleVertical } from "lucide-react";
 
 const TABS = [
   { key: "all", label: "Todos" },
@@ -29,6 +29,45 @@ const normalizeLocations = (video: any) => {
 
 const primaryCategory = (locations: string[]) => locations.find(l => l !== "home") || "geral";
 
+function OrientationPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div>
+      <label className="block text-xs text-[#A1A1AA] mb-2 font-heading">
+        Orientação do vídeo <span className="text-red-400">*obrigatório</span>
+      </label>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => onChange("horizontal")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-xs font-heading font-semibold transition-all ${
+            value === "horizontal"
+              ? "border-primary bg-primary/10 text-primary"
+              : "border-[#3F3F46] text-[#A1A1AA] hover:border-[#52525B]"
+          }`}
+        >
+          <Maximize2 className="w-3.5 h-3.5" />
+          Horizontal (16:9)
+        </button>
+        <button
+          type="button"
+          onClick={() => onChange("vertical")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-xs font-heading font-semibold transition-all ${
+            value === "vertical"
+              ? "border-primary bg-primary/10 text-primary"
+              : "border-[#3F3F46] text-[#A1A1AA] hover:border-[#52525B]"
+          }`}
+        >
+          <RectangleVertical className="w-3.5 h-3.5" />
+          Vertical (9:16)
+        </button>
+      </div>
+      {!value && (
+        <p className="text-[11px] text-red-400 mt-1">Selecione a orientação antes de salvar</p>
+      )}
+    </div>
+  );
+}
+
 export default function AdminVideos() {
   const [videos, setVideos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,6 +79,12 @@ export default function AdminVideos() {
   const [tab, setTab] = useState("all");
   const [addLocations, setAddLocations] = useState<string[]>(["geral"]);
   const [deleteVideo, setDeleteVideo] = useState<any>(null);
+
+  // Orientação — obrigatório para uploads
+  const [uploadOrientation, setUploadOrientation] = useState("");
+  const [multiOrientation, setMultiOrientation] = useState("");
+  const [linkOrientation, setLinkOrientation] = useState("horizontal"); // YouTube é sempre horizontal por padrão
+
   const { toast } = useToast();
 
   useEffect(() => { fetchVideos(); }, []);
@@ -52,6 +97,7 @@ export default function AdminVideos() {
 
   const handleAddLink = async () => {
     if (!linkUrl.trim()) return;
+    // YouTube links: horizontal por padrão mas ainda pode ser alterado
     const thumbnail = getYoutubeThumbnail(linkUrl);
     const isYoutube = linkUrl.includes("youtube") || linkUrl.includes("youtu.be");
     const locations = addLocations.length ? addLocations : ["geral"];
@@ -63,11 +109,12 @@ export default function AdminVideos() {
       category: primaryCategory(locations),
       locations,
       is_featured: locations.includes("home"),
+      orientation: linkOrientation || "horizontal",
       likes_count: 0, is_active: true, published_at: new Date().toISOString(),
     } as any);
     if (error) { toast({ title: "Erro ao adicionar vídeo", description: error.message, variant: "destructive" }); return; }
     toast({ title: "✅ Vídeo adicionado!" });
-    setLinkUrl(""); setLinkTitle("");
+    setLinkUrl(""); setLinkTitle(""); setLinkOrientation("horizontal");
     fetchVideos();
   };
 
@@ -75,6 +122,7 @@ export default function AdminVideos() {
 
   const handleConfirmUpload = async () => {
     if (!pendingVideoUrl) { toast({ title: "Envie o vídeo primeiro" }); return; }
+    if (!uploadOrientation) { toast({ title: "⚠️ Selecione a orientação do vídeo", variant: "destructive" }); return; }
     const locations = addLocations.length ? addLocations : ["geral"];
     const { error } = await supabase.from("videos").insert({
       title: uploadTitle || "",
@@ -84,17 +132,22 @@ export default function AdminVideos() {
       category: primaryCategory(locations),
       locations,
       is_featured: locations.includes("home"),
+      orientation: uploadOrientation,
       likes_count: 0, is_active: true, published_at: new Date().toISOString(),
     } as any);
     if (error) { toast({ title: "Erro ao salvar vídeo", description: error.message, variant: "destructive" }); return; }
     toast({ title: "✅ Vídeo adicionado!" });
-    setUploadTitle(""); setUploadThumb(""); setPendingVideoUrl("");
+    setUploadTitle(""); setUploadThumb(""); setPendingVideoUrl(""); setUploadOrientation("");
     fetchVideos();
   };
 
-  // Multi-upload: each video is inserted automatically without title
+  // Multi-upload: pede orientação antes de enviar em lote
   const handleMultiUploaded = async (url: string) => {
     if (!url) return;
+    if (!multiOrientation) {
+      toast({ title: "⚠️ Selecione a orientação antes de enviar em lote", variant: "destructive" });
+      return;
+    }
     const locations = addLocations.length ? addLocations : ["geral"];
     const { error } = await supabase.from("videos").insert({
       title: "",
@@ -104,6 +157,7 @@ export default function AdminVideos() {
       category: primaryCategory(locations),
       locations,
       is_featured: locations.includes("home"),
+      orientation: multiOrientation,
       likes_count: 0, is_active: true, published_at: new Date().toISOString(),
     } as any);
     if (error) throw error;
@@ -154,6 +208,11 @@ export default function AdminVideos() {
     fetchVideos();
   };
 
+  const handleChangeOrientation = async (video: any, orientation: string) => {
+    await supabase.from("videos").update({ orientation } as any).eq("id", video.id);
+    fetchVideos();
+  };
+
   const filtered = videos.filter(v => {
     if (tab === "all") return true;
     return normalizeLocations(v).includes(tab);
@@ -161,48 +220,72 @@ export default function AdminVideos() {
 
   return (
     <AdminLayout title="Gerenciar Vídeos">
-      {/* Add via Link */}
-      <div className="bg-[#18181B] rounded-2xl p-6 border border-white/[0.07] mb-4">
-        <div className="flex items-center gap-3 mb-4">
-          <h3 className="font-heading font-semibold text-sm flex items-center gap-2"><Link2 className="w-4 h-4 text-primary" /> Adicionar via Link (YouTube)</h3>
-        </div>
-        <div className="flex flex-wrap gap-2 mb-4">
+      {/* Locais para novos vídeos */}
+      <div className="bg-[#18181B] rounded-xl p-4 border border-white/[0.07] mb-4">
+        <p className="text-xs text-[#A1A1AA] mb-2 font-heading">Onde os novos vídeos vão aparecer:</p>
+        <div className="flex flex-wrap gap-2">
           {LOCATIONS.map(loc => (
-            <button key={loc.key} onClick={() => toggleAddLocation(loc.key)} className={`px-3 py-2 rounded-lg text-xs font-heading transition-colors ${addLocations.includes(loc.key) ? "bg-primary text-black" : "bg-[#27272A] text-[#A1A1AA] hover:text-white"}`}>
+            <button key={loc.key} onClick={() => toggleAddLocation(loc.key)}
+              className={`px-3 py-2 rounded-lg text-xs font-heading transition-colors ${addLocations.includes(loc.key) ? "bg-primary text-black font-semibold" : "bg-[#27272A] text-[#A1A1AA] hover:text-white"}`}>
               {addLocations.includes(loc.key) ? "✓ " : "+ "}{loc.label}
             </button>
           ))}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+      </div>
+
+      {/* Add via Link */}
+      <div className="bg-[#18181B] rounded-2xl p-6 border border-white/[0.07] mb-4">
+        <h3 className="font-heading font-semibold text-sm flex items-center gap-2 mb-4">
+          <Link2 className="w-4 h-4 text-primary" /> Adicionar via Link (YouTube / URL)
+        </h3>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-4">
           <input value={linkTitle} onChange={e => setLinkTitle(e.target.value)} placeholder="Título do vídeo" className="bg-[#27272A] border border-[#3F3F46] rounded-lg px-3 py-2 text-sm text-white" />
           <input value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." className="bg-[#27272A] border border-[#3F3F46] rounded-lg px-3 py-2 text-sm text-white" />
           <button onClick={handleAddLink} className="btn-primary text-sm">Adicionar Link</button>
         </div>
+        <OrientationPicker value={linkOrientation} onChange={setLinkOrientation} />
+        <p className="text-[11px] text-[#71717A] mt-2">💡 YouTube é sempre horizontal. Mude só se for um vídeo vertical em outro link.</p>
       </div>
 
-      {/* Upload File */}
-      <div className="bg-[#18181B] rounded-2xl p-6 border border-white/[0.07] mb-8">
-        <h3 className="font-heading font-semibold text-sm mb-4 flex items-center gap-2"><Upload className="w-4 h-4 text-primary" /> Enviar Arquivo de Vídeo (qualquer tamanho/duração)</h3>
-        <p className="text-xs text-[#71717A] mb-3">Título e capa são <strong className="text-primary">opcionais</strong>. Envie o vídeo e clique em "Adicionar".</p>
+      {/* Upload único */}
+      <div className="bg-[#18181B] rounded-2xl p-6 border border-white/[0.07] mb-4">
+        <h3 className="font-heading font-semibold text-sm mb-4 flex items-center gap-2">
+          <Upload className="w-4 h-4 text-primary" /> Enviar Arquivo de Vídeo
+        </h3>
         <input value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} placeholder="Título (opcional)" className="w-full mb-3 bg-[#27272A] border border-[#3F3F46] rounded-lg px-3 py-2 text-sm text-white" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <label className="text-xs text-[#A1A1AA] mb-2 block">🎬 Vídeo *</label>
             <MediaUploader accept="video" pathPrefix={`videos/${primaryCategory(addLocations)}`} currentUrl={pendingVideoUrl} onUploaded={handleUploadedVideo} label="" />
           </div>
           <div>
             <label className="text-xs text-[#A1A1AA] mb-2 block">🖼️ Capa (opcional)</label>
-            <MediaUploader accept="image" pathPrefix={`videos/thumbs`} currentUrl={uploadThumb} onUploaded={(url) => setUploadThumb(url)} label="" />
+            <MediaUploader accept="image" pathPrefix="videos/thumbs" currentUrl={uploadThumb} onUploaded={(url) => setUploadThumb(url)} label="" />
           </div>
         </div>
-        <button onClick={handleConfirmUpload} disabled={!pendingVideoUrl} className="btn-primary text-sm w-full disabled:opacity-50">➕ Adicionar vídeo enviado</button>
+        <div className="mb-4">
+          <OrientationPicker value={uploadOrientation} onChange={setUploadOrientation} />
+        </div>
+        <button onClick={handleConfirmUpload} disabled={!pendingVideoUrl || !uploadOrientation} className="btn-primary text-sm w-full disabled:opacity-50 disabled:cursor-not-allowed">
+          ➕ Adicionar vídeo enviado
+        </button>
       </div>
 
       {/* Multi-upload */}
       <div className="bg-[#18181B] rounded-2xl p-6 border border-white/[0.07] mb-8">
-        <h3 className="font-heading font-semibold text-sm mb-2 flex items-center gap-2"><Upload className="w-4 h-4 text-primary" /> Envio rápido em lote</h3>
-        <p className="text-xs text-[#71717A] mb-3">💡 Arraste vários vídeos de uma vez. Cada um é salvo sem título/capa — você pode editar depois. Locais selecionados acima serão aplicados.</p>
-        <MediaUploader accept="video" multiple pathPrefix={`videos/${primaryCategory(addLocations)}`} onUploaded={handleMultiUploaded} label="" />
+        <h3 className="font-heading font-semibold text-sm mb-2 flex items-center gap-2">
+          <Upload className="w-4 h-4 text-primary" /> Envio rápido em lote
+        </h3>
+        <p className="text-xs text-[#71717A] mb-4">Arraste vários vídeos de uma vez. A orientação escolhida abaixo será aplicada a todos.</p>
+        <div className="mb-4">
+          <OrientationPicker value={multiOrientation} onChange={setMultiOrientation} />
+        </div>
+        <div className={!multiOrientation ? "opacity-40 pointer-events-none" : ""}>
+          <MediaUploader accept="video" multiple pathPrefix={`videos/${primaryCategory(addLocations)}`} onUploaded={handleMultiUploaded} label="" />
+        </div>
+        {!multiOrientation && (
+          <p className="text-[11px] text-yellow-400 mt-2">⚠️ Selecione a orientação para habilitar o upload em lote</p>
+        )}
       </div>
 
       {/* Tabs */}
@@ -215,43 +298,72 @@ export default function AdminVideos() {
         ))}
       </div>
 
+      {/* Tabela */}
       <div className="bg-[#18181B] rounded-2xl border border-white/[0.07] overflow-hidden overflow-x-auto">
-        <table className="w-full text-sm min-w-[700px]">
+        <table className="w-full text-sm min-w-[800px]">
           <thead><tr className="border-b border-[#27272A]">
             <th className="text-left p-4 text-[#71717A]">Vídeo</th>
+            <th className="text-left p-4 text-[#71717A]">Orientação</th>
             <th className="text-left p-4 text-[#71717A]">Tipo</th>
-            <th className="text-left p-4 text-[#71717A]">Locais onde aparece</th>
+            <th className="text-left p-4 text-[#71717A]">Locais</th>
             <th className="text-center p-4 text-[#71717A]">❤️</th>
             <th className="text-right p-4 text-[#71717A]">Ações</th>
           </tr></thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} className="p-8 text-center text-[#71717A]">Carregando...</td></tr>
+              <tr><td colSpan={6} className="p-8 text-center text-[#71717A]">Carregando...</td></tr>
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={5} className="p-8 text-center text-[#71717A]">Nenhum vídeo nesta categoria.</td></tr>
+              <tr><td colSpan={6} className="p-8 text-center text-[#71717A]">Nenhum vídeo nesta categoria.</td></tr>
             ) : filtered.map(v => (
               <tr key={v.id} className="border-b border-[#27272A] last:border-0">
                 <td className="p-4">
                   <div className="flex items-center gap-3">
-                    {v.thumbnail_url && <img src={v.thumbnail_url} alt="" className="w-16 h-10 rounded object-cover" />}
+                    {v.thumbnail_url && <img src={v.thumbnail_url} alt="" className="w-16 h-10 rounded object-cover bg-[#27272A]" />}
                     <span className="text-[#ccc]">{v.title} {v.is_featured && <span className="text-primary">⭐</span>}</span>
+                  </div>
+                </td>
+                <td className="p-4">
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => handleChangeOrientation(v, "horizontal")}
+                      title="Horizontal"
+                      className={`p-1.5 rounded-lg border transition-colors ${(v.orientation || "horizontal") === "horizontal" ? "border-primary bg-primary/10 text-primary" : "border-[#3F3F46] text-[#666] hover:border-[#52525B]"}`}
+                    >
+                      <Maximize2 className="w-3 h-3" />
+                    </button>
+                    <button
+                      onClick={() => handleChangeOrientation(v, "vertical")}
+                      title="Vertical"
+                      className={`p-1.5 rounded-lg border transition-colors ${v.orientation === "vertical" ? "border-primary bg-primary/10 text-primary" : "border-[#3F3F46] text-[#666] hover:border-[#52525B]"}`}
+                    >
+                      <RectangleVertical className="w-3 h-3" />
+                    </button>
                   </div>
                 </td>
                 <td className="p-4 text-[#71717A] text-xs">{v.video_type}</td>
                 <td className="p-4">
-                  <div className="flex flex-wrap gap-1 max-w-[360px]">
+                  <div className="flex flex-wrap gap-1 max-w-[300px]">
                     {LOCATIONS.map(loc => {
                       const active = normalizeLocations(v).includes(loc.key);
-                      return <button key={loc.key} onClick={() => handleToggleLocation(v, loc.key)} className={`px-2 py-1 rounded text-[11px] font-heading ${active ? "bg-primary text-black" : "bg-[#27272A] text-[#A1A1AA] hover:text-white"}`}>{active ? "✓ " : "+ "}{loc.label}</button>;
+                      return <button key={loc.key} onClick={() => handleToggleLocation(v, loc.key)}
+                        className={`px-2 py-1 rounded text-[11px] font-heading transition-colors ${active ? "bg-primary text-black" : "bg-[#27272A] text-[#A1A1AA] hover:text-white"}`}>
+                        {active ? "✓ " : "+ "}{loc.label}
+                      </button>;
                     })}
                   </div>
                 </td>
                 <td className="p-4 text-center text-primary font-bold">{v.likes_count}</td>
                 <td className="p-4 text-right">
                   <div className="flex gap-1 justify-end">
-                    <button onClick={() => handleToggleFeatured(v)} title="Destaque na Home" className="p-2 rounded hover:bg-white/5"><Star className={`w-4 h-4 ${normalizeLocations(v).includes("home") ? "text-primary fill-primary" : "text-[#71717A]"}`} /></button>
-                    <button onClick={() => handleToggleActive(v.id, v.is_active)} className="p-2 rounded hover:bg-white/5">{v.is_active ? <Eye className="w-4 h-4 text-green-400" /> : <EyeOff className="w-4 h-4 text-red-400" />}</button>
-                    <button onClick={() => setDeleteVideo(v)} className="p-2 rounded hover:bg-white/5"><Trash2 className="w-4 h-4 text-red-400" /></button>
+                    <button onClick={() => handleToggleFeatured(v)} title="Destaque na Home" className="p-2 rounded hover:bg-white/5">
+                      <Star className={`w-4 h-4 ${normalizeLocations(v).includes("home") ? "text-primary fill-primary" : "text-[#71717A]"}`} />
+                    </button>
+                    <button onClick={() => handleToggleActive(v.id, v.is_active)} className="p-2 rounded hover:bg-white/5">
+                      {v.is_active ? <Eye className="w-4 h-4 text-green-400" /> : <EyeOff className="w-4 h-4 text-red-400" />}
+                    </button>
+                    <button onClick={() => setDeleteVideo(v)} className="p-2 rounded hover:bg-white/5">
+                      <Trash2 className="w-4 h-4 text-red-400" />
+                    </button>
                   </div>
                 </td>
               </tr>

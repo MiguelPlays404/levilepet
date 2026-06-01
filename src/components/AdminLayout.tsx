@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Image, Video, Hotel, Eye, Settings, Share2, Shield, LogOut, ExternalLink, Home, Type, Palette, Compass, BookOpen, Star, Truck, CalendarClock } from "lucide-react";
+import { LayoutDashboard, Image, Video, Hotel, Eye, Settings, Share2, Shield, LogOut, ExternalLink, Home, Type, Palette, Compass, BookOpen, Star, Truck, CalendarClock, Tv2 } from "lucide-react";
 import { destroyAdminSession } from "@/lib/adminSession";
 import { useToast } from "@/hooks/use-toast";
 
@@ -8,6 +8,7 @@ const navItems = [
   { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
   { type: "separator", label: "CONTEÚDO" },
   { label: "Gerenciar Home", path: "/admin/home", icon: Home },
+  { label: "Hoje no Le Ville", path: "/admin/hoje-le-ville", icon: Tv2 },
   { label: "Fotos", path: "/admin/fotos", icon: Image },
   { label: "Destaques da Semana", path: "/admin/destaques", icon: Star },
   { label: "Vídeos", path: "/admin/videos", icon: Video },

@@ -37,6 +37,7 @@ import AdminGuia from "./pages/admin/AdminGuia";
 import AdminDestaques from "./pages/admin/AdminDestaques";
 import AdminTransporte from "./pages/admin/AdminTransporte";
 import AdminAgendamento from "./pages/admin/AdminAgendamento";
+import AdminHojeNoLeVille from "./pages/admin/AdminHojeNoLeVille";
 import AdminLogin from "./pages/admin/AdminLogin";
 import { useEffect } from "react";
 import { getSiteConfig, prewarmCache } from "./lib/dataCache";
@@ -136,6 +137,7 @@ const App = () => (
                 <Route path="/admin/destaques" element={<ProtectedRoute><AdminDestaques /></ProtectedRoute>} />
                 <Route path="/admin/transporte" element={<ProtectedRoute><AdminTransporte /></ProtectedRoute>} />
                 <Route path="/admin/agendamento" element={<ProtectedRoute><AdminAgendamento /></ProtectedRoute>} />
+                <Route path="/admin/hoje-le-ville" element={<ProtectedRoute><AdminHojeNoLeVille /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </PageTransition>

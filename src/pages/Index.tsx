@@ -3,6 +3,7 @@ import { PublicLayout } from "@/components/PublicLayout";
 import { useState, useEffect } from "react";
 import { Lightbox } from "@/components/Lightbox";
 import { DestaquesSection } from "@/components/DestaquesSection";
+import { HojeNoLeVilleSection } from "@/components/HojeNoLeVilleSection";
 import { getSiteConfig, getHomeSections, getPhotos, getVideos } from "@/lib/dataCache";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import {
@@ -162,6 +163,9 @@ const Index = () => {
         </div>
       </section>
 
+      {/* ═══ HOJE NO LE VILLE — AGENDADO AUTOMÁTICO ═══ */}
+      <HojeNoLeVilleSection />
+
       {/* ═══ DESTAQUES DA SEMANA — HOME ═══ */}
       <DestaquesSection
         locationKey="destaques_home"
@@ -242,6 +246,8 @@ const Index = () => {
             />
           )
         );
+        const getAspect = (v: any) => v.orientation === 'vertical' ? 'aspect-[9/16]' : 'aspect-video';
+        const getMaxW = (v: any) => v.orientation === 'vertical' ? 'max-w-xs' : 'max-w-3xl';
         return (
           <section className="py-20 lg:py-24" style={{ background: '#FAFAF8' }}>
             <div className="container mx-auto px-6">
@@ -249,10 +255,10 @@ const Index = () => {
                 <h2 data-animate="fade-up" className="section-title text-black mb-3">{c.video_section_title || 'Em Destaque'}</h2>
                 <p data-animate="fade-up" data-delay="1" className="section-subtitle mx-auto">{c.video_section_subtitle || 'Assista aos nossos vídeos favoritos'}</p>
               </div>
-              <div className="max-w-3xl mx-auto space-y-8">
+              <div className="mx-auto space-y-8">
                 {visible.map((v, i) => (
-                  <div key={v.id} data-animate="fade-scale" data-delay={String(Math.min(i + 1, 4))}>
-                    <div className="aspect-video rounded-[20px] overflow-hidden bg-black" style={{ boxShadow: 'var(--shadow-xl)' }}>
+                  <div key={v.id} data-animate="fade-scale" data-delay={String(Math.min(i + 1, 4))} className={`${getMaxW(v)} mx-auto`}>
+                    <div className={`${getAspect(v)} rounded-[20px] overflow-hidden bg-black`} style={{ boxShadow: 'var(--shadow-xl)' }}>
                       {renderVideo(v)}
                     </div>
                     {v.title && <p className="text-center mt-3 font-heading font-semibold text-black/80">{v.title}</p>}
