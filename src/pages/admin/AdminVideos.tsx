@@ -43,10 +43,10 @@ export default function AdminVideos() {
   const [addLocations, setAddLocations] = useState<string[]>(["geral"]);
   const [deleteVideo, setDeleteVideo] = useState<any>(null);
 
-  // Orientação — obrigatório para uploads
-  const [uploadOrientation, setUploadOrientation] = useState("");
-  const [multiOrientation, setMultiOrientation] = useState("");
-  const [linkOrientation, setLinkOrientation] = useState("horizontal"); // YouTube é sempre horizontal por padrão
+  // Proporção — obrigatório para uploads (16:9, 4:3, 1:1, 3:4, 9:16)
+  const [uploadAspect, setUploadAspect] = useState<string>("");
+  const [multiAspect, setMultiAspect] = useState<string>("");
+  const [linkAspect, setLinkAspect] = useState<string>("16:9");
 
   const { toast } = useToast();
 
