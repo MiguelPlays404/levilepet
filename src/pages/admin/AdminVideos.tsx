@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
 import { MediaUploader } from "@/components/MediaUploader";
+import { AspectRatioPicker, aspectToOrientation, aspectClass, ASPECT_OPTIONS } from "@/components/AspectRatioPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getYoutubeThumbnail } from "@/lib/youtube";
-import { Link2, Trash2, Eye, EyeOff, Heart, Star, Upload, Maximize2, RectangleVertical } from "lucide-react";
+import { Link2, Trash2, Eye, EyeOff, Star, Upload } from "lucide-react";
 
 const TABS = [
   { key: "all", label: "Todos" },
@@ -29,44 +30,6 @@ const normalizeLocations = (video: any) => {
 
 const primaryCategory = (locations: string[]) => locations.find(l => l !== "home") || "geral";
 
-function OrientationPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  return (
-    <div>
-      <label className="block text-xs text-[#A1A1AA] mb-2 font-heading">
-        Orientação do vídeo <span className="text-red-400">*obrigatório</span>
-      </label>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => onChange("horizontal")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-xs font-heading font-semibold transition-all ${
-            value === "horizontal"
-              ? "border-primary bg-primary/10 text-primary"
-              : "border-[#3F3F46] text-[#A1A1AA] hover:border-[#52525B]"
-          }`}
-        >
-          <Maximize2 className="w-3.5 h-3.5" />
-          Horizontal (16:9)
-        </button>
-        <button
-          type="button"
-          onClick={() => onChange("vertical")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-xs font-heading font-semibold transition-all ${
-            value === "vertical"
-              ? "border-primary bg-primary/10 text-primary"
-              : "border-[#3F3F46] text-[#A1A1AA] hover:border-[#52525B]"
-          }`}
-        >
-          <RectangleVertical className="w-3.5 h-3.5" />
-          Vertical (9:16)
-        </button>
-      </div>
-      {!value && (
-        <p className="text-[11px] text-red-400 mt-1">Selecione a orientação antes de salvar</p>
-      )}
-    </div>
-  );
-}
 
 export default function AdminVideos() {
   const [videos, setVideos] = useState<any[]>([]);
