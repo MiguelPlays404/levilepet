@@ -126,9 +126,8 @@
   font-family: 'Poppins', sans-serif;
   font-size: clamp(2.8rem, 6.5vw, 5.5rem);
   font-weight: 900;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.035em;
   line-height: 1.02;
-  text-wrap: balance;
 }
 .hero-title .highlight {
   color: var(--yellow-brand);
@@ -152,9 +151,8 @@
   font-family: 'Poppins', sans-serif;
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.025em;
   line-height: 1.1;
-  text-wrap: balance;
 }
 .section-subtitle {
   font-family: 'Inter', sans-serif;
@@ -169,7 +167,6 @@
   font-size: 1.125rem;
   font-weight: 700;
   letter-spacing: -0.01em;
-  text-wrap: balance;
 }
 .body-large {
   font-family: 'Inter', sans-serif;
@@ -305,9 +302,8 @@
   min-height: 44px;
 }
 .btn-ghost:hover {
-  background: rgba(255,255,255,0.08);
-  border-color: rgba(255,255,255,0.75);
-  color: #fff;
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.7);
 }
 
 /* ═══ CARD STYLES ═══ */
@@ -321,9 +317,9 @@
   position: relative;
 }
 .card-light:hover {
-  transform: translateY(-6px) scale(1.008);
-  box-shadow: var(--shadow-yellow-sm), var(--shadow-lg);
-  border-color: transparent;
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--yellow-border);
 }
 .card-light::before {
   content: '';
@@ -486,38 +482,33 @@
   text-decoration: none;
 }
 .whatsapp-fab:hover {
-  transform: scale(1.14) rotate(-6deg);
+  transform: scale(1.14) rotate(-8deg);
   animation: none;
   box-shadow: 0 8px 32px rgba(37,211,102,0.6);
+}
+.whatsapp-fab::after {
+  content: 'Fale Conosco!';
+  position: absolute;
+  right: calc(100% + 12px);
+  background: #1A1A1A;
+  color: #FFF;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(6px);
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+.whatsapp-fab:hover::after {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
-/* ═══ PREFERS-REDUCED-MOTION — WCAG 2.3 ═══ */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-  [data-animate] {
-    opacity: 1 !important;
-    transform: none !important;
-    animation: none !important;
-  }
-  [data-animate].is-visible {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
-  .whatsapp-fab {
-    animation: none !important;
-  }
-}
 
 /* Hide Lovable badge */
 #lovable-badge,

@@ -192,7 +192,7 @@ const Index = () => {
             ]).map((card: any, i: number) => {
               const Icon = iconMap[card.icon] || Hotel;
               return (
-                <Link key={card.link_url || i} to={card.link_url} data-animate="card" data-delay={String(Math.min(i, 5))}
+                <Link key={card.link_url || i} to={card.link_url} data-animate="card" data-delay={String(i)}
                   className="card-light group block p-8 hover:cursor-pointer">
                   <div className="w-16 h-16 bg-primary rounded-[18px] flex items-center justify-center mb-5 group-hover:animate-[rotatePaw_0.5s_ease]">
                     <Icon className="w-7 h-7 text-black" />
@@ -326,7 +326,7 @@ const Index = () => {
               { icon: <MapPin className="w-7 h-7 text-primary" />, bg: 'rgba(245,192,0,0.15)', title: 'Localização', value: `${c.address_line1 || 'Villaggio Mall Center'}\n${c.address_line3 || 'Bauru-SP'}`, color: '#999', btnText: c.contact_maps_btn_text || 'Ver no Mapa', btnBg: '#F5C000', href: '/localizacao', internal: true },
               { icon: <svg className="w-7 h-7 text-pink-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>, bg: 'rgba(236,72,153,0.15)', title: 'Instagram', value: c.instagram_handle || '@levillepetbauru', color: '#F5C000', btnText: c.contact_instagram_btn_text || 'Seguir', btnBg: 'linear-gradient(135deg, #F56040, #E1306C, #833AB4)', href: c.instagram_url || 'https://www.instagram.com/levillepetbauru/' },
             ].map((card, i) => (
-              <div key={i} data-animate="card" data-delay={String(Math.min(i, 3))} className="rounded-[20px] p-8 text-center border border-white/[0.06] transition-all duration-300 hover:bg-[#222222] hover:border-white/[0.13] hover:-translate-y-1 cursor-default" style={{ background: '#1A1A1A' }}>
+              <div key={i} data-animate="card" data-delay={String(i)} className="rounded-[20px] p-8 text-center border border-white/5" style={{ background: '#1A1A1A' }}>
                 <div className="w-14 h-14 rounded-[14px] flex items-center justify-center mx-auto mb-4" style={{ background: card.bg }}>{card.icon}</div>
                 <h3 className="font-heading font-semibold text-white text-lg mb-1">{card.title}</h3>
                 <p className="font-heading font-bold text-lg mb-4 whitespace-pre-line" style={{ color: card.color }}>{card.value}</p>

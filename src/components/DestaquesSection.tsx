@@ -7,7 +7,6 @@ interface Props {
   locationKey: "destaques_home" | "destaques_hotel";
   title: string;
   subtitle?: string;
-  badge?: string;
   background?: string;
   textOnDark?: boolean;
 }
@@ -15,7 +14,7 @@ interface Props {
 const normalizeLocations = (p: any) =>
   Array.from(new Set([...(Array.isArray(p.locations) ? p.locations : []), p.category, p.is_featured ? "home" : null].filter(Boolean)));
 
-export function DestaquesSection({ locationKey, title, subtitle, badge, background = "#FAFAF8", textOnDark = false }: Props) {
+export function DestaquesSection({ locationKey, title, subtitle, background = "#FAFAF8", textOnDark = false }: Props) {
   const [photos, setPhotos] = useState<any[]>([]);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -47,11 +46,9 @@ export function DestaquesSection({ locationKey, title, subtitle, badge, backgrou
     <section className="py-20 lg:py-24" style={{ background }}>
       <div className="container mx-auto px-6">
         <div className="text-center mb-10">
-          {badge !== undefined && badge !== "" && (
-            <span data-animate="fade-up" className="inline-block text-primary text-xs font-heading font-semibold tracking-[0.15em] uppercase px-4 py-1.5 rounded-full mb-3" style={{ background: "rgba(245,192,0,0.12)", border: "1px solid rgba(245,192,0,0.35)" }}>
-              {badge}
-            </span>
-          )}
+          <span data-animate="fade-up" className="inline-block text-primary text-xs font-heading font-semibold tracking-[0.15em] uppercase px-4 py-1.5 rounded-full mb-3" style={{ background: "rgba(245,192,0,0.12)", border: "1px solid rgba(245,192,0,0.35)" }}>
+            ⭐ Em alta
+          </span>
           <h2 data-animate="fade-up" data-delay="1" className={`section-title mb-3 ${headingClass}`}>{title}</h2>
           {subtitle && <p data-animate="fade-up" data-delay="2" className={`section-subtitle mx-auto ${subClass}`}>{subtitle}</p>}
         </div>

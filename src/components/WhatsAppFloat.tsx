@@ -25,7 +25,7 @@ export function WhatsAppFloat() {
       aria-label="Fale Conosco no WhatsApp"
     >
       <MessageCircle className="w-7 h-7 text-text-on-dark" />
-      <span className="absolute right-full mr-3 bg-[#1A1A1A] text-white text-sm font-body px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 group-hover:translate-x-0 translate-x-1.5 transition-all duration-200 pointer-events-none hidden lg:block shadow-lg">
+      <span className="absolute right-full mr-3 bg-surface-dark text-text-on-dark text-sm font-body px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none hidden lg:block">
         Fale Conosco!
       </span>
     </a>
