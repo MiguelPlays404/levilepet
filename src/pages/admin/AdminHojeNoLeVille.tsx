@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
 import { MediaUploader } from "@/components/MediaUploader";
+import { AspectRatioPicker, aspectToOrientation, aspectStyle, type AspectRatio } from "@/components/AspectRatioPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
   Trash2, Eye, EyeOff, Clock, CheckCircle, XCircle,
-  Plus, ArrowUp, ArrowDown, Calendar, Maximize2, RectangleVertical,
+  Plus, ArrowUp, ArrowDown, Calendar,
   AlertCircle, Info
 } from "lucide-react";
 
@@ -18,6 +19,7 @@ interface HojeItem {
   media_url: string;
   media_type: string;
   orientation: string;
+  aspect_ratio: string | null;
   published_at: string;
   expires_at: string | null;
   is_active: boolean;
@@ -61,7 +63,7 @@ export default function AdminHojeNoLeVille() {
   const [fDesc, setFDesc]                 = useState("");
   const [fMediaUrl, setFMediaUrl]         = useState("");
   const [fMediaType, setFMediaType]       = useState<"image"|"video">("image");
-  const [fOrientation, setFOrientation]   = useState<"horizontal"|"vertical"|"">("");
+  const [fAspect, setFAspect]             = useState<AspectRatio | "">("");
   const [fPublishedAt, setFPublishedAt]   = useState(nowLocalDatetime());
   const [fExpiresAt, setFExpiresAt]       = useState("");
   const [fHasExpiry, setFHasExpiry]       = useState(false);
@@ -70,11 +72,11 @@ export default function AdminHojeNoLeVille() {
   const load = async () => {
     setLoading(true);
     const { data } = await supabase
-      .from("hoje_no_le_ville" as any)
+      .from("hoje_no_le_ville")
       .select("*")
       .order("display_order", { ascending: true })
       .order("published_at", { ascending: false });
-    setItems(data || []);
+    setItems((data as any) || []);
     setLoading(false);
   };
 
@@ -94,13 +96,13 @@ export default function AdminHojeNoLeVille() {
     const isVid = /\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(url);
     setFMediaType(isVid ? "video" : "image");
     if (isVid) {
-      setFOrientation(""); // forçar escolha ao salvar
+      setFAspect(""); // forçar escolha ao salvar
     }
   };
 
   const resetForm = () => {
     setFTitle(""); setFDesc(""); setFMediaUrl(""); setFMediaType("image");
-    setFOrientation(""); setFPublishedAt(nowLocalDatetime()); setFExpiresAt("");
+    setFAspect(""); setFPublishedAt(nowLocalDatetime()); setFExpiresAt("");
     setFHasExpiry(false); setShowForm(false);
   };
 
@@ -108,16 +110,17 @@ export default function AdminHojeNoLeVille() {
     if (!fMediaUrl) {
       toast({ title: "Envie uma imagem ou vídeo antes de salvar", variant: "destructive" }); return;
     }
-    if (!fOrientation) {
-      toast({ title: "⚠️ Selecione a orientação (obrigatório)", variant: "destructive" }); return;
+    if (!fAspect) {
+      toast({ title: "⚠️ Selecione a proporção (obrigatório)", variant: "destructive" }); return;
     }
     setFSaving(true);
-    const { error } = await supabase.from("hoje_no_le_ville" as any).insert({
+    const { error } = await supabase.from("hoje_no_le_ville").insert({
       title: fTitle || null,
       description: fDesc || null,
       media_url: fMediaUrl,
       media_type: fMediaType,
-      orientation: fOrientation,
+      orientation: aspectToOrientation(fAspect),
+      aspect_ratio: fAspect,
       published_at: new Date(fPublishedAt).toISOString(),
       expires_at: fHasExpiry && fExpiresAt ? new Date(fExpiresAt).toISOString() : null,
       is_active: true,
@@ -131,7 +134,7 @@ export default function AdminHojeNoLeVille() {
   };
 
   const toggleActive = async (item: HojeItem) => {
-    await supabase.from("hoje_no_le_ville" as any).update({ is_active: !item.is_active }).eq("id", item.id);
+    await supabase.from("hoje_no_le_ville").update({ is_active: !item.is_active }).eq("id", item.id);
     load();
   };
 
@@ -141,13 +144,13 @@ export default function AdminHojeNoLeVille() {
       const path = item.media_url.split("/levillepet-media/")[1];
       if (path) await supabase.storage.from("levillepet-media").remove([path]);
     }
-    await supabase.from("hoje_no_le_ville" as any).delete().eq("id", item.id);
+    await supabase.from("hoje_no_le_ville").delete().eq("id", item.id);
     toast({ title: "✅ Removido" });
     load();
   };
 
   const reorder = async (item: HojeItem, dir: -1 | 1) => {
-    await supabase.from("hoje_no_le_ville" as any)
+    await supabase.from("hoje_no_le_ville")
       .update({ display_order: (item.display_order || 0) + dir })
       .eq("id", item.id);
     load();
@@ -155,7 +158,7 @@ export default function AdminHojeNoLeVille() {
 
   const updateExpiry = async (item: HojeItem, val: string) => {
     const expires_at = val ? new Date(val).toISOString() : null;
-    await supabase.from("hoje_no_le_ville" as any).update({ expires_at }).eq("id", item.id);
+    await supabase.from("hoje_no_le_ville").update({ expires_at }).eq("id", item.id);
     load();
   };
 
@@ -242,43 +245,9 @@ export default function AdminHojeNoLeVille() {
             )}
           </div>
 
-          {/* Orientação — OBRIGATÓRIO */}
-          <div>
-            <label className="block text-xs text-[#A1A1AA] mb-2 font-heading">
-              Orientação da mídia <span className="text-red-400">*obrigatório</span>
-            </label>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setFOrientation("horizontal")}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 text-sm font-heading font-semibold transition-all ${
-                  fOrientation === "horizontal"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-[#3F3F46] text-[#A1A1AA] hover:border-[#52525B]"
-                }`}
-              >
-                <Maximize2 className="w-4 h-4" />
-                Horizontal (16:9)
-              </button>
-              <button
-                type="button"
-                onClick={() => setFOrientation("vertical")}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 text-sm font-heading font-semibold transition-all ${
-                  fOrientation === "vertical"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-[#3F3F46] text-[#A1A1AA] hover:border-[#52525B]"
-                }`}
-              >
-                <RectangleVertical className="w-4 h-4" />
-                Vertical (9:16)
-              </button>
-            </div>
-            {!fOrientation && (
-              <p className="text-[11px] text-red-400 mt-1.5 font-heading">
-                Selecione a orientação para continuar
-              </p>
-            )}
-          </div>
+          {/* Proporção — OBRIGATÓRIO */}
+          <AspectRatioPicker value={fAspect} onChange={setFAspect} required />
+
 
           {/* Título e descrição */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -352,7 +321,7 @@ export default function AdminHojeNoLeVille() {
           <div className="flex gap-3 pt-1">
             <button
               onClick={handleSave}
-              disabled={fSaving || !fMediaUrl || !fOrientation}
+              disabled={fSaving || !fMediaUrl || !fAspect}
               className="flex-1 bg-primary text-black font-heading font-bold py-3 rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               {fSaving ? "Salvando..." : "✅ Salvar publicação"}
@@ -390,7 +359,8 @@ export default function AdminHojeNoLeVille() {
           {filtered.map((item) => {
             const status = getStatus(item);
             const isVideo = item.media_type === "video";
-            const isVertical = item.orientation === "vertical";
+            const ar = (item.aspect_ratio || (item.orientation === "vertical" ? "9:16" : "16:9"));
+            const isVertical = ar === "9:16" || ar === "3:4";
 
             const statusBadge = {
               live:      { label: "🟢 No ar", cls: "bg-green-500/20 text-green-300 border-green-500/30" },
@@ -412,7 +382,7 @@ export default function AdminHojeNoLeVille() {
                 {/* Preview */}
                 <div
                   className="relative bg-black overflow-hidden"
-                  style={{ aspectRatio: isVertical ? "9/16" : "4/3", maxHeight: isVertical ? "240px" : "180px" }}
+                  style={{ ...aspectStyle(ar), maxHeight: isVertical ? "240px" : "180px" }}
                 >
                   {isVideo ? (
                     <video
@@ -436,7 +406,7 @@ export default function AdminHojeNoLeVille() {
                   </span>
                   {/* Orientation badge */}
                   <span className="absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded bg-black/60 text-white border border-white/10">
-                    {isVertical ? "9:16" : "16:9"}
+                    {ar}
                   </span>
                 </div>
 
