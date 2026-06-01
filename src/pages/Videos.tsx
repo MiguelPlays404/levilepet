@@ -93,7 +93,7 @@ const Videos = () => {
                 const isLiked = likedSet.has(video.id);
                 return (
                   <div key={video.id} data-animate="card" data-delay={String(Math.min(i, 5))} className="bg-white rounded-[14px] overflow-hidden border border-[#E5E5E5] shadow-sm group">
-                    <div className="relative aspect-video cursor-pointer overflow-hidden bg-[#E5E5E5]" onClick={() => setPlayerVideo(video)}>
+                    <div className={`relative ${({'16:9':'aspect-video','4:3':'aspect-[4/3]','1:1':'aspect-square','3:4':'aspect-[3/4]','9:16':'aspect-[9/16]'} as any)[video.aspect_ratio || (video.orientation === 'vertical' ? '9:16' : '16:9')] || 'aspect-video'} cursor-pointer overflow-hidden bg-[#E5E5E5]`} onClick={() => setPlayerVideo(video)}>
                       <img src={getThumbnail(video)} alt={video.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         loading="lazy"
