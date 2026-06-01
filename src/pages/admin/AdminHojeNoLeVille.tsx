@@ -74,7 +74,7 @@ export default function AdminHojeNoLeVille() {
       .select("*")
       .order("display_order", { ascending: true })
       .order("published_at", { ascending: false });
-    setItems(data || []);
+    setItems((data as any) || []);
     setLoading(false);
   };
 
