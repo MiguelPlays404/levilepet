@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ChevronLeft, ChevronRight, Play, X, Clock } from "lucide-react";
 
+import { aspectStyle } from "@/components/AspectRatioPicker";
+
 interface HojeItem {
   id: string;
   title: string | null;
@@ -9,6 +11,7 @@ interface HojeItem {
   media_url: string;
   media_type: string;
   orientation: string;
+  aspect_ratio: string | null;
   expires_at: string | null;
   display_order: number;
 }
