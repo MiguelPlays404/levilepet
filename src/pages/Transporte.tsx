@@ -1,314 +1,193 @@
+import { useEffect, useMemo, useState } from "react";
 import { PublicLayout } from "@/components/PublicLayout";
 import { PageHero } from "@/components/PageHero";
-import { useScrollAnimation } from "@/hooks/useScrollAnimation";
-import {
-  MessageCircle, Truck, Shield, Heart, Clock, MapPin, PawPrint,
-  Snowflake, Star, CheckCircle, Phone, Calendar, Home, ArrowRight,
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import { getSiteConfig, getTransporteContent, getPhotos } from "@/lib/dataCache";
 import { Lightbox } from "@/components/Lightbox";
+import { SectionHeader, GlassCard, StatCard } from "@/components/ModernBlocks";
+import { getPhotos, getSiteConfig, getTransporteContent } from "@/lib/dataCache";
+import { CheckCircle2, Clock3, MapPinned, ShieldCheck, Sparkles, Truck, Waves } from "lucide-react";
 
 const ICON_MAP: Record<string, any> = {
-  Truck, Shield, Heart, Clock, MapPin, PawPrint, Snowflake, Star, CheckCircle, Phone, Calendar, Home,
+  Truck,
+  ShieldCheck,
+  Clock3,
+  MapPinned,
+  Sparkles,
+  Waves,
+  CheckCircle2,
 };
 
-const normalizeLocations = (p: any) =>
-  Array.from(new Set([...(Array.isArray(p.locations) ? p.locations : []), p.category].filter(Boolean)));
+const norm = (value: string | undefined) => (value || "").toLowerCase().replace(/\s+/g, "");
 
-const Transporte = () => {
+export default function Transporte() {
   const [content, setContent] = useState<any>(null);
   const [waNum, setWaNum] = useState("5514997145610");
-  const [extraPhotos, setExtraPhotos] = useState<any[]>([]);
-  const [lightbox, setLightbox] = useState<number | null>(null);
-  useScrollAnimation();
+  const [photos, setPhotos] = useState<any[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([
-      getTransporteContent(),
-      getSiteConfig(),
-      getPhotos(),
-    ]).then(([transporteData, siteConfig, allPhotos]) => {
+    Promise.all([getTransporteContent(), getSiteConfig(), getPhotos()]).then(([data, site, allPhotos]) => {
       if (cancelled) return;
-      setContent(transporteData);
-      if (siteConfig?.whatsapp_number) setWaNum(siteConfig.whatsapp_number);
-      setExtraPhotos((allPhotos || []).filter(p => normalizeLocations(p).includes("transporte")));
+      setContent(data);
+      if (site?.whatsapp_number) setWaNum(site.whatsapp_number);
+      setPhotos((allPhotos || []).filter((photo: any) => ["transporte", "transport", "home"].includes(norm(photo.category)) || (photo.locations || []).some((loc: string) => norm(loc) === "transporte")).slice(0, 8));
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const highlights = content ? [1, 2, 3, 4, 5, 6].map(n => ({
-    icon: content[`highlight_${n}_icon`],
-    title: content[`highlight_${n}_title`],
-    text: content[`highlight_${n}_text`],
-  })).filter(h => h.title) : [];
+  const highlights = useMemo(() => {
+    return [1, 2, 3, 4, 5, 6]
+      .map((n) => ({
+        icon: content?.[`highlight_${n}_icon`],
+        title: content?.[`highlight_${n}_title`],
+        text: content?.[`highlight_${n}_text`],
+      }))
+      .filter((item) => item.title);
+  }, [content]);
 
-  const steps = content ? [1, 2, 3, 4].map(n => ({
-    title: content[`step_${n}_title`],
-    text: content[`step_${n}_text`],
-  })).filter(s => s.title) : [];
+  const steps = useMemo(() => {
+    return [1, 2, 3, 4]
+      .map((n) => ({
+        title: content?.[`step_${n}_title`],
+        text: content?.[`step_${n}_text`],
+      }))
+      .filter((item) => item.title);
+  }, [content]);
 
-  const faqs = content ? [1, 2, 3, 4].map(n => ({
-    q: content[`faq_q${n}`],
-    a: content[`faq_a${n}`],
-  })).filter(f => f.q) : [];
-
-  const allLightboxImages = [
-    content?.photo_main_url ? { url: content.photo_main_url, title: content.driver_name || "Motorista" } : null,
-    ...extraPhotos.map(p => ({ url: p.image_url, title: p.title || "Transporte" })),
-  ].filter(Boolean) as { url: string; title: string }[];
-
-  const waMsg = encodeURIComponent(content?.whatsapp_message || "Olá! Gostaria de agendar o transporte para o meu pet.");
-  const waHref = `https://wa.me/${waNum}?text=${waMsg}`;
   const neighborhoods = (content?.coverage_neighborhoods || "").split("·").map((s: string) => s.trim()).filter(Boolean);
 
   return (
     <PublicLayout>
       <PageHero
-        badge="🚐 Transporte"
-        title={content?.page_title || "Transporte Pet"}
-        subtitle={content?.page_subtitle || "Buscamos e levamos seu pet com segurança e carinho"}
+        badge="🚐 transporte"
+        title={content?.page_title || "Transporte pet com segurança e presença"}
+        subtitle={content?.page_subtitle || "Uma apresentação visual mais forte para um serviço que precisa transmitir confiança em segundos."}
         bgImage={content?.hero_image_url || undefined}
       />
 
-      {/* Intro */}
-      <section className="py-20" style={{ background: "#FFFFFF" }}>
-        <div className="container mx-auto px-4 max-w-3xl">
-          <p data-animate="fade-up" className="text-[#444] text-lg leading-[1.8] text-center" style={{ fontFamily: "Inter" }}>
-            {content?.intro_text}
-          </p>
-        </div>
-      </section>
-
-      {/* Highlights / Selos — Pearl */}
-      {highlights.length > 0 && (
-        <section className="py-20" style={{ background: "#F8F8F6" }}>
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {highlights.map((h, i) => {
-                const Icon = ICON_MAP[h.icon] || Truck;
+      <section id="conteudo" className="py-16 lg:py-20">
+        <div className="container-safe grid gap-8 lg:grid-cols-[.9fr_1.1fr]">
+          <GlassCard className="p-6 lg:p-8">
+            <SectionHeader
+              kicker="resumo"
+              title="O serviço ganhou leitura imediata."
+              subtitle={content?.intro_text || content?.description_text || "Buscamos e levamos seu pet com carinho, ar-condicionado e atenção ao percurso."}
+            />
+            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+              <StatCard label="Motorista" value={content?.driver_name || "Tio João"} helper={content?.driver_section_title || "experiência e cuidado"} />
+              <StatCard label="Cobertura" value={neighborhoods.length ? `${neighborhoods.length}+` : "Local"} helper="regiões próximas" />
+            </div>
+            <div className="mt-8 grid gap-4">
+              {highlights.map((item: any) => {
+                const Icon = ICON_MAP[item.icon] || Sparkles;
                 return (
-                  <div key={i} data-animate="card" data-delay={String(Math.min(i, 5))} className="bg-white rounded-[18px] p-8 text-center border border-[#E8E8E8] shadow-sm">
-                    <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <Icon className="w-8 h-8 text-black" strokeWidth={2} />
+                  <div key={item.title} className="flex gap-4 rounded-3xl border border-white/8 bg-white/[0.04] p-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                      <Icon className="h-5 w-5" />
                     </div>
-                    <h3 className="font-heading font-bold text-lg text-black mb-2">{h.title}</h3>
-                    <p className="text-[#666] text-sm leading-relaxed" style={{ fontFamily: "Inter" }}>{h.text}</p>
+                    <div>
+                      <h3 className="text-lg font-bold text-white">{item.title}</h3>
+                      <p className="mt-1 text-sm leading-7 text-slate-300">{item.text}</p>
+                    </div>
                   </div>
                 );
               })}
             </div>
-          </div>
-        </section>
-      )}
+          </GlassCard>
 
-      {/* Description block — White */}
-      {content?.description_text && (
-        <section className="py-20" style={{ background: "#FFFFFF" }}>
-          <div className="container mx-auto px-4 max-w-3xl">
-            <p data-animate="fade-up" className="text-[#444] text-base leading-[1.8] text-center" style={{ fontFamily: "Inter" }}>
-              {content.description_text}
-            </p>
-          </div>
-        </section>
-      )}
-
-      {/* How it works steps — Pearl */}
-      {steps.length > 0 && (
-        <section className="py-20" style={{ background: "#F8F8F6" }}>
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 data-animate="fade-up" className="section-title text-black mb-3">{content?.how_it_works_title}</h2>
-              {content?.how_it_works_subtitle && <p data-animate="fade-up" data-delay="1" className="text-[#666] max-w-xl mx-auto" style={{ fontFamily: "Inter" }}>{content.how_it_works_subtitle}</p>}
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-              {steps.map((s, i) => (
-                <div key={i} data-animate="card" data-delay={String(i)} className="relative bg-white rounded-2xl p-6 border border-[#E8E8E8] shadow-sm">
-                  <div className="absolute -top-4 left-6 w-10 h-10 bg-primary text-black font-heading font-extrabold text-lg rounded-full flex items-center justify-center shadow-md">{i + 1}</div>
-                  <h3 className="font-heading font-bold text-base text-black mt-4 mb-2">{s.title}</h3>
-                  <p className="text-[#666] text-sm leading-relaxed" style={{ fontFamily: "Inter" }}>{s.text}</p>
+          <GlassCard className="p-6 lg:p-8">
+            <SectionHeader
+              kicker="como funciona"
+              title={content?.how_it_works_title || "Como o transporte foi organizado"}
+              subtitle={content?.how_it_works_subtitle || "Processo simples, com passos claros e sem texto demais."}
+            />
+            <div className="mt-8 grid gap-4">
+              {steps.map((step, index) => (
+                <div key={step.title} className="rounded-3xl border border-white/8 bg-white/[0.04] p-5">
+                  <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Passo {index + 1}</div>
+                  <h3 className="mt-2 text-lg font-bold text-white">{step.title}</h3>
+                  <p className="mt-2 text-sm leading-7 text-slate-300">{step.text}</p>
                 </div>
               ))}
             </div>
-          </div>
-        </section>
-      )}
-
-      {/* Driver section + main photo — Dark */}
-      {(content?.driver_section_title || content?.photo_main_url) && (
-        <section className="py-20" style={{ background: "#0D0D0D" }}>
-          <div className="container mx-auto px-4 max-w-5xl">
-            {content?.driver_section_title && (
-              <h2 data-animate="fade-up" className="section-title text-white text-center mb-4">{content.driver_section_title}</h2>
-            )}
-            {content?.driver_text && (
-              <p data-animate="fade-up" data-delay="1" className="text-[#AAA] text-center max-w-2xl mx-auto mb-10" style={{ fontFamily: "Inter" }}>
-                {content.driver_text}
-              </p>
-            )}
-            {content?.photo_main_url && (
-              <button
-                data-animate="fade-scale"
-                onClick={() => setLightbox(0)}
-                className="block w-full rounded-2xl overflow-hidden bg-[#222] aspect-[16/10] group"
-              >
-                <img
-                  src={content.photo_main_url}
-                  alt={content.driver_name || "Motorista"}
-                  className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                  onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
-                />
-              </button>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Safety — White */}
-      {content?.safety_text && (
-        <section className="py-20" style={{ background: "#FFFFFF" }}>
-          <div className="container mx-auto px-4 max-w-3xl text-center">
-            <div data-animate="fade-up" className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-5">
-              <Shield className="w-7 h-7 text-black" />
-            </div>
-            <h2 data-animate="fade-up" data-delay="1" className="section-title text-black mb-4">{content.safety_title}</h2>
-            <p data-animate="fade-up" data-delay="2" className="text-[#444] leading-[1.8]" style={{ fontFamily: "Inter" }}>{content.safety_text}</p>
-          </div>
-        </section>
-      )}
-
-      {/* Coverage — Pearl */}
-      {content?.coverage_text && (
-        <section className="py-20" style={{ background: "#F8F8F6" }}>
-          <div className="container mx-auto px-4 max-w-4xl">
-            <div className="text-center mb-8">
-              <div data-animate="fade-up" className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-5">
-                <MapPin className="w-7 h-7 text-black" />
-              </div>
-              <h2 data-animate="fade-up" data-delay="1" className="section-title text-black mb-4">{content.coverage_title}</h2>
-              <p data-animate="fade-up" data-delay="2" className="text-[#444] leading-[1.8]" style={{ fontFamily: "Inter" }}>{content.coverage_text}</p>
-            </div>
-            {neighborhoods.length > 0 && (
-              <div data-animate="fade-up" data-delay="3" className="flex flex-wrap justify-center gap-2 mt-6">
-                {neighborhoods.map((n: string, i: number) => (
-                  <span key={i} className="bg-white border border-[#E8E8E8] text-black text-sm font-heading font-medium px-4 py-2 rounded-full shadow-sm">
-                    {n}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Extra gallery (unlimited photos from photos table) */}
-      {extraPhotos.length > 0 && (
-        <section className="py-20" style={{ background: "#FAFAF8" }}>
-          <div className="container mx-auto px-4">
-            {content?.gallery_section_title && (
-              <h2 data-animate="fade-up" className="section-title text-black text-center mb-10">{content.gallery_section_title}</h2>
-            )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {extraPhotos.map((p, idx) => (
-                <button
-                  key={p.id}
-                  data-animate="fade-scale"
-                  data-delay={String(Math.min(idx, 5))}
-                  onClick={() => setLightbox((content?.photo_main_url ? 1 : 0) + idx)}
-                  className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-[#222] shadow-md hover:shadow-[0_15px_40px_-10px_rgba(245,192,0,0.4)] transition-all duration-500"
-                >
-                  <img
-                    src={p.image_url}
-                    alt={p.title || `Transporte ${idx + 1}`}
-                    loading="lazy"
-                    onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
-                    className="w-full h-full object-cover group-hover:scale-[1.08] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                  />
-                  {p.title && (
-                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                      <p className="text-white text-sm font-heading font-semibold truncate">{p.title}</p>
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Pricing — White */}
-      {content?.pricing_text && (
-        <section className="py-20" style={{ background: "#FFFFFF" }}>
-          <div className="container mx-auto px-4 max-w-3xl text-center">
-            <h2 data-animate="fade-up" className="section-title text-black mb-4">{content.pricing_title}</h2>
-            <p data-animate="fade-up" data-delay="1" className="text-[#444] leading-[1.8] mb-6" style={{ fontFamily: "Inter" }}>{content.pricing_text}</p>
-            <a data-animate="fade-up" data-delay="2" href={waHref} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-primary font-heading font-semibold hover:gap-3 transition-all">
-              Pedir orçamento <ArrowRight className="w-4 h-4" />
-            </a>
-          </div>
-        </section>
-      )}
-
-      {/* Testimonial — Dark */}
-      {content?.testimonial_text && (
-        <section className="py-20" style={{ background: "#0D0D0D" }}>
-          <div className="container mx-auto px-4 max-w-3xl text-center">
-            <div data-animate="fade-up" className="flex justify-center gap-1 mb-5">
-              {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-5 h-5 fill-primary text-primary" />)}
-            </div>
-            <p data-animate="fade-up" data-delay="1" className="text-white text-xl lg:text-2xl font-heading italic leading-relaxed mb-5">
-              “{content.testimonial_text}”
-            </p>
-            {content.testimonial_author && (
-              <p data-animate="fade-up" data-delay="2" className="text-primary font-heading font-semibold tracking-wide">— {content.testimonial_author}</p>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* FAQ — Pearl */}
-      {faqs.length > 0 && (
-        <section className="py-20" style={{ background: "#F8F8F6" }}>
-          <div className="container mx-auto px-4 max-w-3xl">
-            <h2 data-animate="fade-up" className="section-title text-black text-center mb-10">{content?.faq_title}</h2>
-            <div className="space-y-3">
-              {faqs.map((f, i) => (
-                <details key={i} data-animate="fade-up" data-delay={String(Math.min(i, 5))} className="group bg-white rounded-2xl border border-[#E8E8E8] overflow-hidden shadow-sm">
-                  <summary className="cursor-pointer px-5 py-4 font-heading font-bold text-black flex items-center justify-between gap-4 list-none">
-                    <span>{f.q}</span>
-                    <span className="text-primary text-xl shrink-0 transition-transform group-open:rotate-45">+</span>
-                  </summary>
-                  <div className="px-5 pb-5 text-[#555] text-sm leading-relaxed" style={{ fontFamily: "Inter" }}>{f.a}</div>
-                </details>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* CTA — Yellow */}
-      <section className="py-20" style={{ background: "#F5C000" }}>
-        <div className="container mx-auto px-4 text-center">
-          <h2 data-animate="fade-up" className="font-heading font-extrabold text-black text-2xl lg:text-3xl mb-6">
-            {content?.cta_title || "Quer agendar o transporte?"}
-          </h2>
-          <a data-animate="fade-up" data-delay="1" href={waHref} target="_blank" rel="noopener noreferrer" className="btn-dark inline-flex items-center gap-2 text-lg">
-            <MessageCircle className="w-6 h-6" />
-            {content?.cta_btn_text || "🚐 Agendar pelo WhatsApp"}
-          </a>
+            {content?.pricing_text ? <p className="mt-6 text-sm leading-7 text-slate-300">{content.pricing_text}</p> : null}
+            {content?.safety_text ? <p className="mt-3 text-sm leading-7 text-slate-300">{content.safety_text}</p> : null}
+            {content?.testimonial_text ? <p className="mt-3 text-sm leading-7 text-slate-300">{content.testimonial_text}</p> : null}
+          </GlassCard>
         </div>
       </section>
 
-      {lightbox !== null && allLightboxImages.length > 0 && (
-        <Lightbox
-          images={allLightboxImages}
-          initialIndex={Math.min(lightbox, allLightboxImages.length - 1)}
-          onClose={() => setLightbox(null)}
-        />
-      )}
+      <section className="py-14 lg:py-20">
+        <div className="container-safe grid gap-8 lg:grid-cols-[.95fr_1.05fr]">
+          <div>
+            <SectionHeader
+              kicker="cobertura"
+              title={content?.cta_title || "Regiões atendidas"}
+              subtitle={content?.coverage_text || "Lista visível de bairros e pontos atendidos para reduzir dúvida do visitante."}
+            />
+            <div className="mt-6 flex flex-wrap gap-2">
+              {neighborhoods.length ? neighborhoods.map((n: string) => (
+                <span key={n} className="badge-soft">{n}</span>
+              )) : <span className="badge-soft">Região local</span>}
+            </div>
+          </div>
+
+          <GlassCard className="p-6 lg:p-8">
+            <SectionHeader
+              kicker="galeria"
+              title={content?.gallery_section_title || "Imagens do transporte"}
+              subtitle="Um mosaico simples para reforçar o serviço sem quebrar a página em blocos iguais."
+            />
+            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+              {photos.map((photo, index) => (
+                <button key={photo.id} type="button" onClick={() => setLightboxIndex(index)} className="overflow-hidden rounded-[26px]">
+                  <img
+                    src={photo.image_url}
+                    alt={photo.title || "Transporte pet"}
+                    className="aspect-[4/3] h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+                    loading="lazy"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "/placeholder.svg";
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
+          </GlassCard>
+        </div>
+      </section>
+
+      <section className="py-16 lg:py-20">
+        <div className="container-safe">
+          <GlassCard className="overflow-hidden">
+            <div className="grid gap-0 lg:grid-cols-[1fr_.85fr]">
+              <div className="p-8 lg:p-12">
+                <SectionHeader
+                  kicker="contato"
+                  title={content?.cta_title || "Pronto para agendar o percurso?"}
+                  subtitle={content?.cta_text || "Uma chamada de ação direta, sem dispersar o visitante."}
+                />
+                <a href={`https://wa.me/${waNum}?text=${encodeURIComponent(content?.whatsapp_message || "Olá! Quero agendar o transporte.")}`} target="_blank" rel="noopener noreferrer" className="btn-dark mt-8 w-fit">
+                  Agendar no WhatsApp
+                </a>
+              </div>
+              <div className="relative min-h-[280px] bg-[radial-gradient(circle_at_top_right,rgba(245,192,0,0.28),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] p-8 lg:p-12">
+                <div className="absolute inset-0 soft-grid opacity-30" />
+                <div className="relative grid gap-3 content-end">
+                  <span className="hero-kicker w-fit">segurança + conforto</span>
+                  <p className="text-sm leading-7 text-slate-300">{content?.driver_text || "Transporte com atenção e experiência local."}</p>
+                </div>
+              </div>
+            </div>
+          </GlassCard>
+        </div>
+      </section>
+
+      {lightboxIndex !== null && photos.length ? (
+        <Lightbox images={photos.map((p) => ({ url: p.image_url, title: p.title }))} initialIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />
+      ) : null}
     </PublicLayout>
   );
-};
-
-export default Transporte;
+}

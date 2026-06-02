@@ -1,160 +1,102 @@
+import { useEffect, useState } from "react";
 import { PublicLayout } from "@/components/PublicLayout";
 import { PageHero } from "@/components/PageHero";
-import { useScrollAnimation } from "@/hooks/useScrollAnimation";
-import { Heart, Play, Video, X } from "lucide-react";
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { getSiteConfig } from "@/lib/dataCache";
-import { getYoutubeId } from "@/lib/youtube";
+import { SectionHeader, GlassCard } from "@/components/ModernBlocks";
+import { getSiteConfig, getVideos } from "@/lib/dataCache";
+import { PlayCircle, Video } from "lucide-react";
 
-function getUserId(): string {
-  let id = localStorage.getItem("lvp_user_id");
-  if (!id) { id = crypto.randomUUID(); localStorage.setItem("lvp_user_id", id); }
-  return id;
-}
+const getYoutubeId = (url: string) => {
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{6,})/i);
+  return match?.[1] || null;
+};
 
-const Videos = () => {
+const toEmbedUrl = (url: string) => {
+  if (/\.(mp4|webm|mov|m4v)(\?|$)/i.test(url)) return url;
+  const yt = getYoutubeId(url);
+  return yt ? `https://www.youtube.com/embed/${yt}?autoplay=1&rel=0&modestbranding=1` : url;
+};
+
+export default function Videos() {
+  const [c, setC] = useState<any>(null);
   const [videos, setVideos] = useState<any[]>([]);
-  const [likedSet, setLikedSet] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(true);
-  const [playerVideo, setPlayerVideo] = useState<any>(null);
-  const [cfg, setCfg] = useState<any>(null);
-  useScrollAnimation();
+  const [openUrl, setOpenUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    loadData();
-    getSiteConfig().then((data) => setCfg(data));
-    const localLikes = JSON.parse(localStorage.getItem("lvp_likes") || "[]");
-    setLikedSet(new Set(localLikes));
+    Promise.all([getSiteConfig(), getVideos()]).then(([cfg, allVideos]) => {
+      setC(cfg);
+      setVideos(allVideos || []);
+    });
   }, []);
-
-  const loadData = async () => {
-    const { data } = await supabase.from("videos").select("*").eq("is_active", true).order("published_at", { ascending: false });
-    setVideos(data || []);
-    setLoading(false);
-  };
-
-  const toggleLike = async (videoId: string) => {
-    const userId = getUserId();
-    const isLiked = likedSet.has(videoId);
-    const video = videos.find(v => v.id === videoId);
-    if (!video) return;
-
-    const newLiked = new Set(likedSet);
-
-    if (isLiked) {
-      newLiked.delete(videoId);
-      await supabase.from("video_likes").delete().eq("video_id", videoId).eq("device_id", userId);
-      await supabase.from("videos").update({ likes_count: Math.max(0, (video.likes_count || 1) - 1) }).eq("id", videoId);
-    } else {
-      newLiked.add(videoId);
-      await supabase.from("video_likes").insert({ video_id: videoId, device_id: userId });
-      await supabase.from("videos").update({ likes_count: (video.likes_count || 0) + 1 }).eq("id", videoId);
-    }
-
-    setLikedSet(newLiked);
-    localStorage.setItem("lvp_likes", JSON.stringify([...newLiked]));
-    setVideos(prev => prev.map(v =>
-      v.id === videoId ? { ...v, likes_count: isLiked ? Math.max(0, (v.likes_count || 1) - 1) : (v.likes_count || 0) + 1 } : v
-    ));
-  };
-
-  const getThumbnail = (video: any) => {
-    if (video.thumbnail_url) return video.thumbnail_url;
-    const ytId = getYoutubeId(video.video_url);
-    return ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : '/placeholder.svg';
-  };
-
-  const getEmbedUrl = (url: string) => {
-    const ytId = getYoutubeId(url);
-    return ytId ? `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1` : url;
-  };
-
-  const getTimeAgo = (date: string) => {
-    const days = Math.floor((Date.now() - new Date(date).getTime()) / 86400000);
-    if (days === 0) return "hoje";
-    if (days === 1) return "há 1 dia";
-    return `há ${days} dias`;
-  };
 
   return (
     <PublicLayout>
-      <PageHero badge="🎥 Vídeos" title={cfg?.videos_page_title || "Nossos Vídeos"} subtitle={cfg?.videos_page_subtitle || "Curta, compartilhe, sorria!"} bgImage={cfg?.videos_hero_image_url || undefined} />
+      <PageHero
+        badge="🎥 vídeos"
+        title={c?.videos_page_title || "Vídeos em destaque"}
+        subtitle={c?.videos_page_subtitle || "Cards limpos, thumbnails grandes e um modal simples para abrir o conteúdo."}
+        bgImage={c?.videos_hero_image_url || undefined}
+      />
 
-      <section className="py-16" style={{ background: '#FFFFFF' }}>
-        <div className="container mx-auto px-4">
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {Array.from({ length: 6 }).map((_, i) => <div key={i} className="aspect-video bg-[#E5E5E5] rounded-[14px] animate-pulse" />)}
-            </div>
-          ) : videos.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {videos.map((video, i) => {
-                const isLiked = likedSet.has(video.id);
-                return (
-                  <div key={video.id} data-animate="card" data-delay={String(Math.min(i, 5))} className="bg-white rounded-[14px] overflow-hidden border border-[#E5E5E5] shadow-sm group">
-                    <div className={`relative ${({'16:9':'aspect-video','4:3':'aspect-[4/3]','1:1':'aspect-square','3:4':'aspect-[3/4]','9:16':'aspect-[9/16]'} as any)[video.aspect_ratio || (video.orientation === 'vertical' ? '9:16' : '16:9')] || 'aspect-video'} cursor-pointer overflow-hidden bg-[#E5E5E5]`} onClick={() => setPlayerVideo(video)}>
-                      <img src={getThumbnail(video)} alt={video.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        loading="lazy"
-                        onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
-                        <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center group-hover:scale-110 transition-transform"
-                          style={{ background: 'rgba(245,192,0,0.92)' }}>
-                          <Play className="w-7 h-7 text-black ml-1" fill="currentColor" />
+      <section id="conteudo" className="py-16 lg:py-20">
+        <div className="container-safe">
+          <SectionHeader
+            kicker="conteúdo"
+            title="Vídeos organizados para não pesar a página"
+            subtitle="Cada bloco mostra o preview e abre o vídeo por cima sem quebrar a navegação."
+          />
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {videos.map((video) => {
+              const thumb = video.thumbnail_url || (getYoutubeId(video.video_url) ? `https://img.youtube.com/vi/${getYoutubeId(video.video_url)}/hqdefault.jpg` : "/placeholder.svg");
+              return (
+                <GlassCard key={video.id} className="overflow-hidden p-0">
+                  <button type="button" onClick={() => setOpenUrl(video.video_url)} className="block w-full text-left">
+                    <div className="relative aspect-video bg-slate-900">
+                      <img src={thumb} alt={video.title || "Vídeo"} className="h-full w-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }} />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur-xl">
+                          <PlayCircle className="h-8 w-8 text-white" />
                         </div>
                       </div>
                     </div>
-                    <div className="p-4">
-                      <h3 className="font-heading font-semibold text-black text-base mb-1 line-clamp-2">{video.title}</h3>
-                      <p className="text-[#AAA] text-[13px] mb-3" style={{ fontFamily: 'Inter' }}>{getTimeAgo(video.published_at)}</p>
-                      <button onClick={() => toggleLike(video.id)} className="flex items-center gap-2 group/like">
-                        <Heart className={`w-5 h-5 transition-all ${isLiked ? "text-primary fill-primary" : "text-[#A1A1AA] group-hover/like:text-primary"}`}
-                          style={isLiked ? { animation: 'heartBeat 0.5s ease' } : undefined} />
-                        <span className={`text-sm ${isLiked ? 'text-primary' : 'text-[#A1A1AA]'}`} style={{ fontFamily: 'Inter', fontWeight: 500 }}>
-                          {video.likes_count || 0}
-                        </span>
-                      </button>
+                    <div className="p-5">
+                      <div className="flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-slate-500">
+                        <Video className="h-3.5 w-3.5 text-primary" />
+                        vídeo
+                      </div>
+                      <h3 className="mt-3 text-lg font-bold text-white">{video.title || "Sem título"}</h3>
+                      {video.description ? <p className="mt-2 text-sm leading-7 text-slate-300">{video.description}</p> : null}
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-20">
-              <Video className="w-16 h-16 text-primary mx-auto mb-4" />
-              <p className="text-[#888] text-lg" style={{ fontFamily: 'Inter' }}>Nenhum vídeo ainda.</p>
-            </div>
-          )}
+                  </button>
+                </GlassCard>
+              );
+            })}
+          </div>
         </div>
       </section>
 
-      {playerVideo && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.96)', backdropFilter: 'blur(8px)' }} onClick={() => setPlayerVideo(null)}>
-          <div className="w-full max-w-[920px] mx-4" onClick={e => e.stopPropagation()} style={{ animation: 'lightboxOpen 0.25s ease both' }}>
-            <button onClick={() => setPlayerVideo(null)} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
-              <X className="w-9 h-9" />
-            </button>
-            <div className={`${({'16:9':'aspect-video','4:3':'aspect-[4/3]','1:1':'aspect-square','3:4':'aspect-[3/4]','9:16':'aspect-[9/16]'} as any)[playerVideo.aspect_ratio || (playerVideo.orientation === 'vertical' ? '9:16' : '16:9')] || 'aspect-video'} rounded-2xl overflow-hidden bg-black`}>
-              {playerVideo.video_type === 'upload' ? (
-                <video src={playerVideo.video_url} className="w-full h-full" controls autoPlay />
+      {openUrl ? (
+        <div className="fixed inset-0 z-[10000] bg-slate-950/95 p-4 backdrop-blur-2xl">
+          <button type="button" onClick={() => setOpenUrl(null)} className="absolute right-4 top-4 btn-ghost-dark px-4 py-2">
+            Fechar
+          </button>
+          <div className="mx-auto flex h-full max-w-5xl items-center justify-center">
+            <GlassCard className="w-full overflow-hidden">
+              {/\.(mp4|webm|mov|m4v)(\?|$)/i.test(openUrl) ? (
+                <video src={openUrl} className="aspect-video w-full" controls autoPlay playsInline />
               ) : (
-                <iframe src={getEmbedUrl(playerVideo.video_url)} className="w-full h-full" allowFullScreen allow="autoplay" />
+                <iframe
+                  src={toEmbedUrl(openUrl)}
+                  title="Vídeo selecionado"
+                  className="aspect-video w-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
               )}
-            </div>
-            <div className="mt-4 flex items-center justify-between">
-              <h3 className="text-white font-heading font-semibold text-lg">{playerVideo.title}</h3>
-              <button onClick={() => toggleLike(playerVideo.id)} className="flex items-center gap-2">
-                <Heart className={`w-5 h-5 ${likedSet.has(playerVideo.id) ? "text-primary fill-primary" : "text-white/60 hover:text-primary"}`} />
-                <span className="text-sm text-white/60">{videos.find(v => v.id === playerVideo.id)?.likes_count || 0}</span>
-              </button>
-            </div>
+            </GlassCard>
           </div>
         </div>
-      )}
+      ) : null}
     </PublicLayout>
   );
-};
-
-export default Videos;
+}

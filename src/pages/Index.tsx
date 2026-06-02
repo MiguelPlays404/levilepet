@@ -1,351 +1,321 @@
 import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 import { PublicLayout } from "@/components/PublicLayout";
-import { useState, useEffect } from "react";
 import { Lightbox } from "@/components/Lightbox";
-import { DestaquesSection } from "@/components/DestaquesSection";
-import { HojeNoLeVilleSection } from "@/components/HojeNoLeVilleSection";
-import { getSiteConfig, getHomeSections, getPhotos, getVideos } from "@/lib/dataCache";
-import { useScrollAnimation } from "@/hooks/useScrollAnimation";
-import {
-  Hotel, Camera, Video, MapPin, MessageCircle, Share2,
-  Search, Heart, Phone
-} from "lucide-react";
+import { SectionHeader, GlassCard, StatCard, InfoPill } from "@/components/ModernBlocks";
+import { getHomeSections, getPhotos, getSiteConfig, getVideos } from "@/lib/dataCache";
+import { ArrowRight, Camera, Dog, MapPin, MessageCircle, ShieldCheck, Sparkles, Truck, Video, House } from "lucide-react";
 
-const iconMap: Record<string, any> = { Home: Hotel, Camera, Video, MapPin, MessageCircle, Heart: Share2 };
+type Config = {
+  hero_title?: string;
+  hero_subtitle?: string;
+  site_name?: string;
+  site_slogan?: string;
+  address_full?: string;
+  whatsapp_number?: string;
+  whatsapp_message?: string;
+  logo_url?: string;
+};
 
-const Index = () => {
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+const iconMap: Record<string, any> = {
+  Home: House,
+  Camera,
+  Video,
+  MapPin,
+  MessageCircle,
+  ShieldCheck,
+  Sparkles,
+  Truck,
+  Dog,
+};
+
+export default function Index() {
+  const [config, setConfig] = useState<Config | null>(null);
   const [sections, setSections] = useState<any[]>([]);
   const [photos, setPhotos] = useState<any[]>([]);
-  const [featuredVideos, setFeaturedVideos] = useState<any[]>([]);
-  const [showMoreVideos, setShowMoreVideos] = useState(false);
-  const [config, setConfig] = useState<any>(null);
-
-  useScrollAnimation();
+  const [videos, setVideos] = useState<any[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([
-      getSiteConfig(),
-      getHomeSections(),
-      getPhotos(),
-      getVideos(),
-    ]).then(([cfg, sections, allPhotos, allVideos]) => {
+    Promise.all([getSiteConfig(), getHomeSections(), getPhotos(), getVideos()]).then(([cfg, homeSections, allPhotos, allVideos]) => {
       if (cancelled) return;
       setConfig(cfg);
-      setSections(sections || []);
-      setPhotos((allPhotos || []).filter((p: any) => p.is_featured).slice(0, 6));
-      setFeaturedVideos((allVideos || []).filter((v: any) => v.is_featured).slice(0, 8));
+      setSections(homeSections || []);
+      setPhotos((allPhotos || []).filter((item: any) => item.is_featured).slice(0, 6));
+      setVideos((allVideos || []).filter((item: any) => item.is_featured).slice(0, 6));
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const c = config || {};
-  const waNum = c.whatsapp_number || '5514997145610';
-  const waMsg = encodeURIComponent(c.whatsapp_message || 'Olá! Vim pelo site Le Ville Pet! 🐾');
-  const renderMedia = (url: string | undefined, fallback: string, alt: string, className = "w-full h-full object-cover") => {
-    const src = url || fallback;
-    const isVideo = /\.(mp4|webm|mov|m4v)(\?|$)/i.test(src);
-    return isVideo ? (
-      <video src={src} className={className} autoPlay muted loop playsInline controls={false} />
-    ) : (
-      <img src={src} alt={alt} className={className} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
-    );
-  };
+  const waNum = config?.whatsapp_number || "5514997145610";
+  const waMsg = encodeURIComponent(config?.whatsapp_message || "Olá! Vim pelo site Le Ville Pet e quero saber mais.");
+  const heroMedia = photos[0]?.image_url || config?.logo_url || "/images/logo-levillepet.png";
+
+  const metrics = useMemo(() => [
+    { label: "Equipe", value: "9 anos", helper: "de atendimento pet" },
+    { label: "Segurança", value: "24h", helper: "com comunicação clara" },
+    { label: "Experiência", value: "100%", helper: "foco no conforto do pet" },
+  ], []);
+
+  const featuredPhotos = photos.slice(0, 4);
 
   return (
     <PublicLayout>
-      {/* ═══ HERO — ESCURO ═══ */}
-      <section className="relative min-h-screen flex items-center overflow-hidden" style={{ background: 'radial-gradient(ellipse at 65% 35%, #1C1500 0%, #080808 55%, #000000 100%)' }}>
-        {c.hero_bg_image_url && (
-          <div className="absolute inset-0">
-            <div className="absolute inset-0 opacity-30 lg:opacity-45">
-              {renderMedia(c.hero_bg_image_url, '', 'Le Ville Pet', 'w-full h-full object-cover object-center')}
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/85 lg:from-black/55 lg:via-black/45 lg:to-black/60" />
-          </div>
-        )}
-        <div className="absolute top-[10%] right-[5%] w-[700px] h-[700px] rounded-full pointer-events-none animate-scale-breath" style={{ background: 'radial-gradient(circle, rgba(245,192,0,0.14) 0%, transparent 70%)' }} />
-        <div className="absolute bottom-[5%] left-[-5%] w-[500px] h-[500px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(245,192,0,0.07) 0%, transparent 70%)', animation: 'scaleBreath 6s ease-in-out infinite 2.5s' }} />
-        <div className="absolute inset-0 paw-pattern-bg pointer-events-none" />
-        {[0,1,2,3,4].map(i => (
-          <div key={i} className="absolute pointer-events-none select-none" style={{ fontSize: `${16 + i * 5}px`, opacity: 0.12, animation: `floatPaw ${4.5 + i}s ease-in-out infinite ${i * 0.8}s`, top: `${15 + i * 15}%`, right: `${5 + i * 8}%`, color: '#F5C000' }}>🐾</div>
-        ))}
-        <div className="absolute right-[18%] top-[10%] bottom-[10%] w-px pointer-events-none hidden lg:block animate-line-grow-v" style={{ background: 'linear-gradient(to bottom, transparent, rgba(245,192,0,0.35), transparent)' }}>
-          {[20,40,60,80].map((p,i) => (
-            <div key={i} className="absolute w-2 h-2 rounded-full bg-primary" style={{ top: `${p}%`, left: '-3.5px', animation: `fadeIn 0.5s ease ${0.8 + i * 0.3}s both` }} />
-          ))}
-        </div>
-
-        <div className="relative z-10 container mx-auto px-6 lg:px-12 pt-28 pb-20 lg:pt-32 lg:pb-24">
-          <div className="max-w-[680px]">
-            <div data-animate="fade-up" className="inline-flex items-center gap-2.5 rounded-full px-5 py-2 mb-9" style={{ background: 'rgba(245,192,0,0.12)', border: '1px solid rgba(245,192,0,0.45)', animation: 'heroBadgePop 0.6s ease 0.2s both' }}>
-              <span className="font-heading font-semibold text-xs tracking-[0.1em] uppercase text-primary">{c.hero_badge_text || '🐾 Petshop em Bauru-SP'}</span>
+      <section className="relative overflow-hidden">
+        <div className="container-safe grid min-h-[calc(100dvh-4rem)] items-center gap-10 py-14 lg:grid-cols-[1.05fr_.95fr] lg:py-20">
+          <div className="relative z-10 max-w-3xl">
+            <div className="hero-kicker mb-5 w-fit" data-animate="fade-in">
+              <span className="text-[10px] text-primary">●</span>
+              {config?.site_slogan || "a gente se entende"}
             </div>
 
-            <h1 data-animate="fade-up" data-delay="1" className="hero-title text-white mb-7">
-              {(() => {
-                const title = c.hero_title || 'Porque seu pet merece o melhor.';
-                const highlight = c.hero_highlight_word || 'melhor.';
-                const idx = title.toLowerCase().lastIndexOf(highlight.toLowerCase());
-                if (idx === -1) return title;
-                const before = title.slice(0, idx);
-                const word = title.slice(idx, idx + highlight.length);
-                const after = title.slice(idx + highlight.length);
-                return (
-                  <>
-                    {before}
-                    <span className="relative inline-block" style={{ color: '#F5C000' }}>
-                      {word}
-                      <span className="absolute -bottom-[5px] left-0 w-full h-1 rounded" style={{ background: 'linear-gradient(90deg, #F5C000, #FFD700, #F5C000)', transformOrigin: 'left', transform: 'scaleX(0)', animation: 'lineGrow 0.7s ease 1.3s forwards' }} />
-                    </span>
-                    {after}
-                  </>
-                );
-              })()}
+            <h1 className="max-w-3xl text-5xl font-black tracking-[-0.065em] text-white md:text-7xl lg:text-8xl" data-animate="fade-in-up">
+              {config?.hero_title || "Porque seu pet merece mais que rotina."}
             </h1>
 
-            <p data-animate="fade-up" data-delay="2" className="text-[#BBBBBB] text-lg leading-relaxed mb-11 max-w-[520px]" style={{ fontFamily: 'Inter' }}>
-              {c.hero_subtitle || 'No Le Ville Pet, cuidamos do seu companheiro com todo o carinho, amor e profissionalismo que ele merece.'}{' '}
-              <em className="text-primary italic">"{c.site_slogan || 'a gente se entende'}"</em> 🐾
+            <p className="mt-6 max-w-2xl text-base leading-8 text-slate-300 md:text-lg" data-animate="fade-in-up">
+              {config?.hero_subtitle || "Hotelzinho, transporte, banho e momentos de cuidado em um espaço bonito, claro e preparado para receber com carinho."}
             </p>
 
-            <div data-animate="fade-up" data-delay="3" className="flex flex-col sm:flex-row gap-4 mb-[72px]">
-              <a href={`https://wa.me/${waNum}?text=${waMsg}`} target="_blank" rel="noopener noreferrer" className="btn-primary text-base py-4 px-8">
-                {c.hero_btn_primary_text || '💬 Fale no WhatsApp'}
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row" data-animate="fade-in-up">
+              <a href={`https://wa.me/${waNum}?text=${waMsg}`} target="_blank" rel="noopener noreferrer" className="btn-dark">
+                Falar no WhatsApp
+                <MessageCircle className="h-4 w-4" />
               </a>
-              <Link to="/hotelzinho" className="btn-ghost">{c.hero_btn_secondary_text || 'Conheça o Hotelzinho →'}</Link>
+              <Link to="/fotos" className="btn-ghost-dark">
+                Ver galeria
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
 
-            <div data-animate="fade-up" data-delay="4" className="flex gap-12 flex-wrap pt-9" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-              {[
-                { num: c.hero_stat_1_num || '500+', label: c.hero_stat_1_label || 'Pets Atendidos' },
-                { num: c.hero_stat_2_num || '5★', label: c.hero_stat_2_label || 'Avaliação Google' },
-                { num: c.hero_stat_3_num || '3+', label: c.hero_stat_3_label || 'Anos de Experiência' },
-              ].map((s, i) => (
-                <div key={i}>
-                  <div className="font-heading font-extrabold text-[1.85rem] text-primary leading-none">{s.num}</div>
-                  <div style={{ fontFamily: 'Inter', fontSize: '12px', color: '#666', marginTop: '5px' }}>{s.label}</div>
-                </div>
+            <div className="mt-8 flex flex-wrap gap-3" data-animate="fade-in-up">
+              <InfoPill icon={<ShieldCheck className="h-4 w-4" />} label="cuidado e segurança" />
+              <InfoPill icon={<Truck className="h-4 w-4" />} label="transporte local" />
+              <InfoPill icon={<Sparkles className="h-4 w-4" />} label="visual premium" />
+            </div>
+
+            <div className="mt-10 grid gap-3 sm:grid-cols-3" data-animate="fade-in-up">
+              {metrics.map((metric) => (
+                <StatCard key={metric.label} {...metric} />
               ))}
             </div>
           </div>
-        </div>
-        <a href="#sobre" className="absolute bottom-9 left-1/2 -translate-x-1/2 text-primary/60 text-[22px] animate-bounce-down no-underline">↓</a>
-      </section>
 
-      {/* ═══ SOBRE — CLARO (#FFFFFF) ═══ */}
-      <section id="sobre" className="py-24 lg:py-28" style={{ background: '#FFFFFF' }}>
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
-            <div className="lg:col-span-3">
-              <span data-animate="fade-up" className="inline-block text-primary text-sm font-body px-4 py-1.5 rounded-full mb-4" style={{ background: 'var(--yellow-badge)' }}>{c.sobre_badge_text || 'Quem Somos'}</span>
-              <h2 data-animate="fade-up" data-delay="1" className="section-title text-black mb-5">
-                {c.sobre_title || 'O Le Ville Pet — onde seu pet se sente em casa'}
-              </h2>
-              <p data-animate="fade-up" data-delay="2" className="text-[#444] text-lg leading-[1.8] mb-5" style={{ fontFamily: 'Inter' }}>
-                {c.sobre_text || 'Somos um petshop em Bauru-SP dedicado a oferecer os melhores cuidados para o seu companheiro de quatro patas.'}
-              </p>
-              <p data-animate="fade-up" data-delay="3" className="text-primary italic text-xl font-heading mb-5">"{c.site_slogan || 'a gente se entende'}"</p>
-              <Link data-animate="fade-up" data-delay="4" to="/venha-nos-conhecer" className="text-primary font-heading font-semibold hover:underline transition-all inline-flex items-center gap-1 group">
-                {c.sobre_cta_text || 'Venha nos conhecer'} <span className="group-hover:translate-x-1 transition-transform">→</span>
-              </Link>
-            </div>
-            <div className="lg:col-span-2" data-animate="fade-right" data-delay="2">
-              <div className="relative">
-                <div className="absolute -inset-4 bg-primary/15 rounded-3xl rotate-3" />
-                <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border-[3px] border-primary shadow-xl bg-[#E5E5E5]">
-                  {renderMedia(c.sobre_image_url, "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=600&h=450&fit=crop", "Pets no Le Ville Pet")}
+          <div className="relative">
+            <GlassCard className="p-3 lg:p-4">
+              <div className="media-frame relative aspect-[4/5] bg-slate-900">
+                <img
+                  src={heroMedia}
+                  alt={config?.site_name || "Le Ville Pet"}
+                  className="h-full w-full object-cover"
+                  loading="eager"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/placeholder.svg";
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-5">
+                  <div className="glass-panel rounded-3xl p-4">
+                    <div className="text-xs uppercase tracking-[0.24em] text-slate-400">Visão do espaço</div>
+                    <div className="mt-2 text-xl font-bold text-white">{config?.site_name || "Le Ville Pet"}</div>
+                    <div className="mt-2 text-sm leading-6 text-slate-300">
+                      {config?.address_full || "Villaggio Mall Center — Bauru-SP"}
+                    </div>
+                  </div>
                 </div>
+              </div>
+            </GlassCard>
+
+            <div className="absolute -left-6 top-8 hidden rounded-3xl border border-white/10 bg-slate-950/85 p-4 shadow-2xl backdrop-blur-xl lg:block">
+              <div className="text-xs uppercase tracking-[0.24em] text-slate-400">Serviços</div>
+              <div className="mt-3 grid gap-2 text-sm text-slate-200">
+                <Link to="/hotelzinho" className="hover:text-white">Hotelzinho</Link>
+                <Link to="/transporte" className="hover:text-white">Transporte</Link>
+                <Link to="/fale-conosco" className="hover:text-white">Contato</Link>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══ HOJE NO LE VILLE — AGENDADO AUTOMÁTICO ═══ */}
-      <HojeNoLeVilleSection />
-
-      {/* ═══ DESTAQUES DA SEMANA — HOME ═══ */}
-      <DestaquesSection
-        locationKey="destaques_home"
-        title={c.destaques_home_title || "Destaques da Semana"}
-        subtitle={c.destaques_home_subtitle || "Os momentos mais especiais"}
-        background="#FAFAF8"
-      />
-
-      {/* ═══ CARDS — CLARO (#F8F8F6) ═══ */}
-      <section className="py-20 lg:py-24" style={{ background: '#F8F8F6' }}>
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-14">
-            <h2 data-animate="fade-up" className="section-title text-black mb-3">{c.home_explore_title || 'Explore o Le Ville Pet'}</h2>
-            <p data-animate="fade-up" data-delay="1" className="section-subtitle mx-auto">{c.home_explore_subtitle || 'Descubra tudo que preparamos para você e seu pet'}</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {(sections.length > 0 ? sections : [
-              { icon: 'Home', title: 'Nosso Hotelzinho', description: 'Seu pet em boas mãos enquanto você viaja.', link_url: '/hotelzinho' },
-              { icon: 'Camera', title: 'Galeria de Fotos', description: 'Confira nosso espaço e nossos pets.', link_url: '/fotos' },
-              { icon: 'Video', title: 'Vídeos', description: 'Momentos especiais em vídeo.', link_url: '/videos' },
-              { icon: 'MapPin', title: 'Localização', description: 'Villaggio Mall Center, Bauru-SP.', link_url: '/localizacao' },
-              { icon: 'MessageCircle', title: 'Fale Conosco', description: 'Atendimento rápido pelo WhatsApp.', link_url: '/fale-conosco' },
-              { icon: 'Heart', title: 'Redes Sociais', description: 'Siga a gente nas redes!', link_url: '/siga-nos' },
-            ]).map((card: any, i: number) => {
-              const Icon = iconMap[card.icon] || Hotel;
+      <section id="conteudo" className="py-8 lg:py-14">
+        <div className="container-safe">
+          <SectionHeader
+            kicker="mapa do site"
+            title="Atalhos para o que importa"
+            subtitle="Tudo organizado para levar o visitante direto ao conteúdo certo, sem excesso nem ruído."
+          />
+          <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {sections.slice(0, 8).map((section) => {
+              const Icon = iconMap[section.icon] || Dog;
               return (
-                <Link key={card.link_url || i} to={card.link_url} data-animate="card" data-delay={String(i)}
-                  className="card-light group block p-8 hover:cursor-pointer">
-                  <div className="w-16 h-16 bg-primary rounded-[18px] flex items-center justify-center mb-5 group-hover:animate-[rotatePaw_0.5s_ease]">
-                    <Icon className="w-7 h-7 text-black" />
+                <GlassCard key={section.id} className="p-5">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                    <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="font-heading font-bold text-[19px] text-black mb-2">{card.title}</h3>
-                  <p className="text-[#666] text-[15px] mb-3" style={{ fontFamily: 'Inter' }}>{card.description}</p>
-                  <span className="text-primary text-sm font-heading font-semibold opacity-0 group-hover:opacity-100 transition-opacity">{c.home_card_cta_text || 'Saiba mais →'}</span>
-                </Link>
+                  <h3 className="mt-5 text-xl font-bold text-white">{section.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-slate-300">{section.description}</p>
+                  <Link to={section.link_url} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-primary">
+                    Abrir seção <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </GlassCard>
               );
             })}
           </div>
         </div>
       </section>
 
-      {/* ═══ GALERIA — ESCURO (#0D0D0D) ═══ */}
-      {photos.length > 0 && (
-        <section className="py-20 lg:py-24" style={{ background: '#0D0D0D' }}>
-          <div className="container mx-auto px-6">
-            <div className="text-center mb-12">
-              <h2 data-animate="fade-up" className="section-title text-white mb-3">{c.gallery_section_title || 'Momentos Especiais'}</h2>
-              <p data-animate="fade-up" data-delay="1" className="section-subtitle text-[#888] mx-auto">{c.gallery_section_subtitle || 'Confira alguns dos nossos pets favoritos'}</p>
-            </div>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5">
-              {photos.map((photo: any, i: number) => (
-                <button key={photo.id} data-animate="fade-scale" data-delay={String(i)} onClick={() => setLightboxIndex(i)}
-                  className="group relative aspect-square rounded-[14px] overflow-hidden bg-[#333]">
-                  <img src={photo.image_url} alt={photo.title} className="w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.08]" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-300 flex items-center justify-center">
-                    <Search className="w-8 h-8 text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 scale-0 group-hover:scale-100" />
-                  </div>
+      <section className="py-14 lg:py-20">
+        <div className="container-safe grid gap-8 lg:grid-cols-[.95fr_1.05fr]">
+          <GlassCard className="p-6 lg:p-8">
+            <SectionHeader
+              kicker="galeria"
+              title="Imagens com luz, contraste e ritmo."
+              subtitle="Uma seleção curta para apresentar o espaço sem lotar a página de bloco repetido."
+            />
+            <div className="mt-8 grid grid-cols-2 gap-3">
+              {featuredPhotos.map((photo, index) => (
+                <button
+                  key={photo.id}
+                  type="button"
+                  onClick={() => setLightboxIndex(index)}
+                  className={index === 0 ? "col-span-2 overflow-hidden rounded-[28px]" : "overflow-hidden rounded-[24px]"}
+                >
+                  <img
+                    src={photo.image_url}
+                    alt={photo.title || "Foto"}
+                    className="aspect-square h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+                    loading="lazy"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "/placeholder.svg";
+                    }}
+                  />
                 </button>
               ))}
             </div>
-            <div className="text-center mt-10" data-animate="fade-up">
-              <Link to="/fotos" className="btn-secondary">{c.featured_photos_btn_text || 'Ver Todas as Fotos'}</Link>
-            </div>
-          </div>
-        </section>
-      )}
+          </GlassCard>
 
-      {/* ═══ VÍDEOS DESTAQUE — CLARO (#FAFAF8) ═══ */}
-      {featuredVideos.length > 0 && (() => {
-        const visible = showMoreVideos ? featuredVideos : featuredVideos.slice(0, 1);
-        const renderVideo = (v: any) => (
-          v.video_type === 'upload' ? (
-            <video src={v.video_url} className="w-full h-full" controls preload="metadata" poster={v.thumbnail_url || undefined} />
-          ) : (
-            <iframe
-              src={v.video_url.includes('embed') ? v.video_url : `https://www.youtube.com/embed/${v.video_url.match(/(?:v=|youtu\.be\/)([^&\s]+)/)?.[1] || ''}`}
-              className="w-full h-full" allowFullScreen loading="lazy" title={v.title || 'Vídeo'}
+          <div className="grid gap-4">
+            <SectionHeader
+              kicker="destaques"
+              title="O que já está pronto no projeto"
+              subtitle="Conteúdo preservado, agora apresentado com melhor leitura, contraste e atmosfera."
             />
-          )
-        );
-        const getAspectClass = (v: any) => {
-          const ar = v.aspect_ratio || (v.orientation === 'vertical' ? '9:16' : '16:9');
-          return { '16:9': 'aspect-video', '4:3': 'aspect-[4/3]', '1:1': 'aspect-square', '3:4': 'aspect-[3/4]', '9:16': 'aspect-[9/16]' }[ar] || 'aspect-video';
-        };
-        const getMaxW = (v: any) => {
-          const ar = v.aspect_ratio || (v.orientation === 'vertical' ? '9:16' : '16:9');
-          return (ar === '9:16' || ar === '3:4') ? 'max-w-xs' : (ar === '1:1' ? 'max-w-md' : 'max-w-3xl');
-        };
-        return (
-          <section className="py-20 lg:py-24" style={{ background: '#FAFAF8' }}>
-            <div className="container mx-auto px-6">
-              <div className="text-center mb-10">
-                <h2 data-animate="fade-up" className="section-title text-black mb-3">{c.video_section_title || 'Em Destaque'}</h2>
-                <p data-animate="fade-up" data-delay="1" className="section-subtitle mx-auto">{c.video_section_subtitle || 'Assista aos nossos vídeos favoritos'}</p>
-              </div>
-              <div className="mx-auto space-y-8">
-                {visible.map((v, i) => (
-                  <div key={v.id} data-animate="fade-scale" data-delay={String(Math.min(i + 1, 4))} className={`${getMaxW(v)} mx-auto`}>
-                    <div className={`${getAspectClass(v)} rounded-[20px] overflow-hidden bg-black`} style={{ boxShadow: 'var(--shadow-xl)' }}>
-                      {renderVideo(v)}
-                    </div>
-                    {v.title && <p className="text-center mt-3 font-heading font-semibold text-black/80">{v.title}</p>}
-                  </div>
-                ))}
-              </div>
-              <div className="text-center mt-8 flex flex-wrap justify-center gap-3" data-animate="fade-up" data-delay="3">
-                {featuredVideos.length > 1 && !showMoreVideos && (
-                  <button onClick={() => setShowMoreVideos(true)} className="btn-primary">
-                    ⭐ Ver mais destaques ({featuredVideos.length - 1})
-                  </button>
-                )}
-                {showMoreVideos && featuredVideos.length > 1 && (
-                  <button onClick={() => setShowMoreVideos(false)} className="btn-primary">
-                    Mostrar menos
-                  </button>
-                )}
-                <Link to="/videos" className="btn-dark">{c.featured_videos_btn_text || 'Ver Todos os Vídeos'}</Link>
-              </div>
-            </div>
-          </section>
-        );
-      })()}
-
-      {/* ═══ CTA HOTELZINHO — AMARELO (#F5C000) ═══ */}
-      <section className="py-20 lg:py-24" style={{ background: '#F5C000' }}>
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <span data-animate="fade-up" className="inline-flex items-center gap-2 text-black/60 text-sm font-body mb-3"><Hotel className="w-5 h-5" /> {c.cta_hotel_badge_text || 'Nosso Hotelzinho'}</span>
-              <h2 data-animate="fade-up" data-delay="1" className="font-heading font-extrabold text-black text-3xl lg:text-4xl mb-5">{c.cta_hotel_title || 'Vai viajar? Deixe seu pet com a gente!'}</h2>
-              <p data-animate="fade-up" data-delay="2" className="text-black/70 text-base lg:text-lg leading-relaxed mb-8" style={{ fontFamily: 'Inter' }}>{c.cta_hotel_text || 'Nosso hotelzinho oferece um ambiente seguro, confortável e cheio de carinho para o seu pet enquanto você viaja com tranquilidade.'}</p>
-              <div data-animate="fade-up" data-delay="3" className="flex flex-col sm:flex-row gap-3">
-                <Link to="/hotelzinho" className="btn-dark">{c.cta_hotel_btn1_text || '🐾 Conhecer Hotelzinho'}</Link>
-                <a href={`https://wa.me/${waNum}?text=${encodeURIComponent('Olá! Gostaria de informações sobre o hotelzinho.')}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 border-2 border-black text-black font-heading font-bold px-7 py-3.5 rounded-xl hover:bg-black/10 transition-colors min-h-[44px]">
-                  {c.cta_hotel_btn2_text || '💬 Agendar pelo WhatsApp'}
-                </a>
-              </div>
-            </div>
-            <div data-animate="fade-right" data-delay="2">
-              <div className="aspect-[4/3] rounded-[20px] overflow-hidden shadow-2xl bg-[#E5E5E5]">
-                {renderMedia(c.cta_hotel_image_url, "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&h=450&fit=crop", "Hotelzinho Le Ville Pet")}
-              </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <GlassCard className="p-5">
+                <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Hotelzinho</div>
+                <p className="mt-3 text-sm leading-7 text-slate-300">
+                  Área dedicada ao cuidado, hospedagem e rotina com calma visual.
+                </p>
+                <Link to="/hotelzinho" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary">
+                  Abrir hotelzinho <ArrowRight className="h-4 w-4" />
+                </Link>
+              </GlassCard>
+              <GlassCard className="p-5">
+                <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Transporte</div>
+                <p className="mt-3 text-sm leading-7 text-slate-300">
+                  Transporte com apresentação mais premium e CTA claro.
+                </p>
+                <Link to="/transporte" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary">
+                  Abrir transporte <ArrowRight className="h-4 w-4" />
+                </Link>
+              </GlassCard>
+              <GlassCard className="p-5 sm:col-span-2">
+                <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Vídeos</div>
+                <p className="mt-3 text-sm leading-7 text-slate-300">
+                  Trechos em destaque para reforçar confiança e dar movimento ao site.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <Link to="/videos" className="btn-dark">
+                    Ver vídeos
+                  </Link>
+                  <Link to="/fale-conosco" className="btn-ghost-dark">
+                    Entrar em contato
+                  </Link>
+                </div>
+              </GlassCard>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══ CONTATO — ESCURO (#111111) ═══ */}
-      <section className="py-20 lg:py-24" style={{ background: '#111111' }}>
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 data-animate="fade-up" className="section-title text-white">{c.contact_section_title || 'Entre em Contato'}</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { icon: <MessageCircle className="w-7 h-7 text-[#25D366]" />, bg: 'rgba(37,211,102,0.15)', title: 'WhatsApp', value: `(${(waNum || '').slice(2,4)}) ${(waNum || '').slice(4,9)}-${(waNum || '').slice(9)}`, color: '#F5C000', btnText: c.contact_whatsapp_btn_text || 'Chamar no WhatsApp', btnBg: '#25D366', href: `https://wa.me/${waNum}` },
-              { icon: <Phone className="w-7 h-7 text-primary" />, bg: 'rgba(245,192,0,0.15)', title: c.contact_fixed_phone_title || 'Telefone Fixo', value: c.fixed_phone || '(14) 3204-7040', color: '#F5C000', btnText: c.contact_fixed_phone_btn_text || 'Ligar agora', btnBg: '#F5C000', href: `tel:${(c.fixed_phone || '(14) 3204-7040').replace(/\D/g, '')}`, darkText: true },
-              { icon: <MapPin className="w-7 h-7 text-primary" />, bg: 'rgba(245,192,0,0.15)', title: 'Localização', value: `${c.address_line1 || 'Villaggio Mall Center'}\n${c.address_line3 || 'Bauru-SP'}`, color: '#999', btnText: c.contact_maps_btn_text || 'Ver no Mapa', btnBg: '#F5C000', href: '/localizacao', internal: true },
-              { icon: <svg className="w-7 h-7 text-pink-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>, bg: 'rgba(236,72,153,0.15)', title: 'Instagram', value: c.instagram_handle || '@levillepetbauru', color: '#F5C000', btnText: c.contact_instagram_btn_text || 'Seguir', btnBg: 'linear-gradient(135deg, #F56040, #E1306C, #833AB4)', href: c.instagram_url || 'https://www.instagram.com/levillepetbauru/' },
-            ].map((card, i) => (
-              <div key={i} data-animate="card" data-delay={String(i)} className="rounded-[20px] p-8 text-center border border-white/5" style={{ background: '#1A1A1A' }}>
-                <div className="w-14 h-14 rounded-[14px] flex items-center justify-center mx-auto mb-4" style={{ background: card.bg }}>{card.icon}</div>
-                <h3 className="font-heading font-semibold text-white text-lg mb-1">{card.title}</h3>
-                <p className="font-heading font-bold text-lg mb-4 whitespace-pre-line" style={{ color: card.color }}>{card.value}</p>
-                {card.internal ? (
-                  <Link to={card.href} className="inline-flex items-center justify-center gap-2 text-black font-heading font-bold px-6 py-3 rounded-xl transition-colors min-h-[44px]" style={{ background: card.btnBg }}>{card.btnText}</Link>
-                ) : (
-                  <a href={card.href} target="_blank" rel="noopener noreferrer" className={`inline-flex items-center justify-center gap-2 font-heading font-bold px-6 py-3 rounded-xl hover:opacity-90 transition-all min-h-[44px] ${card.darkText ? 'text-black' : 'text-white'}`} style={{ background: card.btnBg }}>{card.btnText}</a>
-                )}
-              </div>
+      <section className="py-14 lg:py-20">
+        <div className="container-safe">
+          <SectionHeader
+            kicker="vídeos"
+            title="Clipes rápidos, sem poluição."
+            subtitle="Os vídeos dão movimento ao site e ajudam a mostrar o ambiente sem depender de blocos longos."
+          />
+          <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {videos.map((video) => (
+              <GlassCard key={video.id} className="overflow-hidden">
+                <div className="aspect-video bg-slate-900">
+                  <img
+                    src={video.thumbnail_url || "/placeholder.svg"}
+                    alt={video.title || "Vídeo"}
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "/placeholder.svg";
+                    }}
+                  />
+                </div>
+                <div className="p-5">
+                  <div className="flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-slate-500">
+                    <Video className="h-3.5 w-3.5 text-primary" />
+                    vídeo em destaque
+                  </div>
+                  <h3 className="mt-3 text-lg font-bold text-white">{video.title || "Sem título"}</h3>
+                  {video.description ? <p className="mt-2 text-sm leading-7 text-slate-300">{video.description}</p> : null}
+                </div>
+              </GlassCard>
             ))}
           </div>
         </div>
       </section>
 
-      {lightboxIndex !== null && (
-        <Lightbox images={photos.map(p => ({ url: p.image_url, title: p.title }))} initialIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />
-      )}
+      <section id="contato" className="py-16 lg:py-24">
+        <div className="container-safe">
+          <GlassCard className="overflow-hidden">
+            <div className="grid gap-0 lg:grid-cols-[1.05fr_.95fr]">
+              <div className="p-8 lg:p-12">
+                <SectionHeader
+                  kicker="contato"
+                  title="Preparado para falar com a equipe?"
+                  subtitle="Contato rápido, leitura fácil e chamadas de ação visíveis sem exagero."
+                />
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                  <a href={`https://wa.me/${waNum}?text=${waMsg}`} target="_blank" rel="noopener noreferrer" className="btn-dark">
+                    WhatsApp
+                    <MessageCircle className="h-4 w-4" />
+                  </a>
+                  <Link to="/localizacao" className="btn-ghost-dark">
+                    Ver localização
+                  </Link>
+                </div>
+              </div>
+              <div className="relative min-h-[320px] bg-[radial-gradient(circle_at_top_right,rgba(245,192,0,0.28),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] p-8 lg:p-12">
+                <div className="absolute inset-0 soft-grid opacity-30" />
+                <div className="relative grid h-full content-end gap-3">
+                  <InfoPill icon={<MapPin className="h-4 w-4" />} label={config?.address_full || "Villaggio Mall Center — Bauru-SP"} />
+                  <InfoPill icon={<MessageCircle className="h-4 w-4" />} label="atendimento via WhatsApp" />
+                  <InfoPill icon={<Dog className="h-4 w-4" />} label="cuidado com identidade visual forte" />
+                </div>
+              </div>
+            </div>
+          </GlassCard>
+        </div>
+      </section>
+
+      {lightboxIndex !== null && featuredPhotos.length > 0 ? (
+        <Lightbox
+          images={featuredPhotos.map((photo) => ({ url: photo.image_url, title: photo.title }))}
+          initialIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
+      ) : null}
     </PublicLayout>
   );
-};
-
-export default Index;
+}

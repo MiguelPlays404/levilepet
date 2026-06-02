@@ -1,141 +1,123 @@
+import { useEffect, useState } from "react";
 import { PublicLayout } from "@/components/PublicLayout";
 import { PageHero } from "@/components/PageHero";
-import { useScrollAnimation } from "@/hooks/useScrollAnimation";
-import { Video, MessageCircle } from "lucide-react";
-import { useState, useEffect } from "react";
 import { Lightbox } from "@/components/Lightbox";
-import { getSiteConfig, getConhecerContent, getPhotos } from "@/lib/dataCache";
+import { SectionHeader, GlassCard } from "@/components/ModernBlocks";
+import { getConhecerContent, getPhotos, getSiteConfig } from "@/lib/dataCache";
+import { ArrowRight, Camera, MessageCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 
-const VenhaNosConhecer = () => {
+export default function VenhaNosConhecer() {
   const [content, setContent] = useState<any>(null);
   const [photos, setPhotos] = useState<any[]>([]);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const [waNum, setWaNum] = useState('5514997145610');
-  const [waMsg, setWaMsg] = useState('Olá! Vim pelo site e gostaria de conhecer o Le Ville Pet.');
+  const [waNum, setWaNum] = useState("5514997145610");
+  const [waMsg, setWaMsg] = useState("Olá! Vim pelo site e gostaria de conhecer o Le Ville Pet.");
   const [cfg, setCfg] = useState<any>(null);
-  useScrollAnimation();
-
-  const mediaLocations = (item: any) => Array.from(new Set([...(Array.isArray(item.locations) ? item.locations : []), item.category, item.is_featured ? "home" : null].filter(Boolean)));
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([getConhecerContent(), getPhotos(), getSiteConfig()]).then(([conhecerData, allPhotos, siteConfig]) => {
+    Promise.all([getConhecerContent(), getPhotos(), getSiteConfig()]).then(([data, allPhotos, site]) => {
       if (cancelled) return;
-      setContent(conhecerData);
-      setPhotos((allPhotos || []).filter((media: any) => mediaLocations(media).includes("conhecer")));
-      if (siteConfig) {
-        setWaNum(siteConfig.whatsapp_number);
-        setWaMsg(siteConfig.whatsapp_message || 'Olá! Vim pelo site e gostaria de conhecer o Le Ville Pet.');
-        setCfg(siteConfig);
-      }
+      setContent(data);
+      setPhotos((allPhotos || []).filter((item: any) => ["conhecer", "home"].includes((item.category || "").toLowerCase())).slice(0, 6));
+      setCfg(site);
+      if (site?.whatsapp_number) setWaNum(site.whatsapp_number);
+      if (site?.whatsapp_message) setWaMsg(site.whatsapp_message);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
     <PublicLayout>
       <PageHero
-        badge="📍 Venha Nos Conhecer"
-        title={content?.page_title || "Conheça o Nosso Espaço"}
-        subtitle={content?.page_subtitle || "Um ambiente preparado com amor para você e seu pet"}
+        badge="📍 conhecer"
+        title={content?.page_title || "Conheça o nosso espaço"}
+        subtitle={content?.page_subtitle || "Uma página para mostrar o ambiente com mais espaço, mais contraste e mais calma visual."}
         bgImage={cfg?.conhecer_hero_image_url || undefined}
       />
 
-      {/* About — WHITE */}
-      <section className="py-20" style={{ background: '#FFFFFF' }}>
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-            <div>
-              <h2 data-animate="fade-up" className="section-title text-black mb-5">
-                {cfg?.conhecer_about_title || 'Sobre o Le Ville Pet'}
-              </h2>
-              <div data-animate="fade-up" data-delay="1" className="text-[#444] text-base leading-relaxed whitespace-pre-line" style={{ fontFamily: 'Inter' }}>
-                {content?.about_text || 'O Le Ville Pet nasceu do amor pelos animais e da vontade de oferecer um espaço de confiança.'}
-              </div>
+      <section id="conteudo" className="py-16 lg:py-20">
+        <div className="container-safe grid gap-8 lg:grid-cols-[1fr_.95fr]">
+          <div>
+            <SectionHeader
+              kicker="sobre"
+              title={cfg?.conhecer_about_title || "Sobre o Le Ville Pet"}
+              subtitle={content?.about_text || "O espaço foi pensado para quem gosta de clareza, carinho e apresentação visual bem resolvida."}
+            />
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <a href={`https://wa.me/${waNum}?text=${encodeURIComponent(waMsg)}`} target="_blank" rel="noopener noreferrer" className="btn-dark">
+                Falar no WhatsApp
+                <MessageCircle className="h-4 w-4" />
+              </a>
+              <Link to="/localizacao" className="btn-ghost-dark">
+                Ver localização
+              </Link>
             </div>
-            <div data-animate="fade-right" data-delay="2" className="grid grid-cols-2 gap-3">
-              {photos.slice(0, 3).map((photo, i) => (
+          </div>
+
+          <GlassCard className="p-6 lg:p-8">
+            <div className="grid gap-4 sm:grid-cols-2">
+              {photos.slice(0, 4).map((photo, index) => (
                 <button
                   key={photo.id}
-                  className={`rounded-xl overflow-hidden cursor-pointer group bg-[#E5E5E5] ${i === 0 ? "col-span-2 aspect-[16/9]" : "aspect-square"}`}
-                  onClick={() => setLightboxIndex(i)}
+                  type="button"
+                  onClick={() => setLightboxIndex(index)}
+                  className={index === 0 ? "sm:col-span-2 overflow-hidden rounded-[28px]" : "overflow-hidden rounded-[24px]"}
                 >
-                  <img src={photo.image_url} alt={photo.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
+                  <img
+                    src={photo.image_url}
+                    alt={photo.title || "Conheça o espaço"}
+                    className="aspect-square h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+                    loading="lazy"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "/placeholder.svg";
+                    }}
+                  />
                 </button>
               ))}
             </div>
-          </div>
+          </GlassCard>
         </div>
       </section>
 
-      {/* Produtos que utilizamos — PEARL */}
-      {cfg && (cfg.conhecer_produtos_title || cfg.conhecer_produtos_image_url) && (
-        <section className="py-14 lg:py-20" style={{ background: '#F8F8F6' }}>
-          <div className="container mx-auto px-5 sm:px-6 max-w-4xl">
-            <div className="text-center mb-7 lg:mb-10">
-              {cfg.conhecer_produtos_badge && (
-                <span data-animate="fade-up" className="inline-block bg-primary/15 text-black border border-primary/30 px-3 py-1 rounded-full text-xs font-heading font-semibold mb-4">{cfg.conhecer_produtos_badge}</span>
-              )}
-              <h2 data-animate="fade-up" data-delay="1" className="section-title text-black px-2">{cfg.conhecer_produtos_title || 'Produtos que utilizamos'}</h2>
+      <section className="py-14 lg:py-20">
+        <div className="container-safe">
+          <GlassCard className="overflow-hidden">
+            <div className="grid gap-0 lg:grid-cols-[.9fr_1.1fr]">
+              <div className="relative min-h-[280px] bg-[radial-gradient(circle_at_top_right,rgba(245,192,0,0.25),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] p-8 lg:p-12">
+                <div className="absolute inset-0 soft-grid opacity-30" />
+                <div className="relative grid h-full content-end">
+                  <span className="hero-kicker w-fit">ambiente</span>
+                  <div className="mt-4 text-3xl font-black tracking-[-0.05em] text-white">Recepção, carinho e identidade visual.</div>
+                </div>
+              </div>
+              <div className="p-8 lg:p-12">
+                <SectionHeader
+                  kicker="galeria"
+                  title={cfg?.conhecer_gallery_title || "Galeria do espaço"}
+                  subtitle="Seis imagens no máximo para manter a página elegante e rápida."
+                />
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Link to="/fotos" className="btn-dark">
+                    Ver todas as fotos
+                    <Camera className="h-4 w-4" />
+                  </Link>
+                  <a href={`https://wa.me/${waNum}?text=${encodeURIComponent(waMsg)}`} target="_blank" rel="noopener noreferrer" className="btn-ghost-dark">
+                    Agendar visita
+                  </a>
+                </div>
+              </div>
             </div>
-            <div data-animate="fade-up" data-delay="2" className="rounded-2xl overflow-hidden bg-[#E5E5E5] aspect-[4/3] sm:aspect-[16/10] lg:aspect-[16/9] mb-7 lg:mb-9 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.18)]">
-              {cfg.conhecer_produtos_image_url && /\.(mp4|webm|mov)(\?|$)/i.test(cfg.conhecer_produtos_image_url) ? (
-                <video src={cfg.conhecer_produtos_image_url} className="w-full h-full object-cover" autoPlay muted loop playsInline />
-              ) : (
-                <img src={cfg.conhecer_produtos_image_url || '/placeholder.svg'} alt={cfg.conhecer_produtos_title} className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
-              )}
-            </div>
-            <p data-animate="fade-up" data-delay="3" className="text-[#444] text-[15px] sm:text-base leading-relaxed whitespace-pre-line text-center max-w-2xl mx-auto px-1" style={{ fontFamily: 'Inter' }}>{cfg.conhecer_produtos_text || ''}</p>
-          </div>
-        </section>
-      )}
-
-      {/* Gallery — PEARL */}
-      {photos.length > 0 && (
-        <section className="py-20" style={{ background: '#F8F8F6' }}>
-          <div className="container mx-auto px-4">
-            <h2 data-animate="fade-up" className="section-title text-black text-center mb-10">{cfg?.conhecer_gallery_title || 'Galeria do Espaço'}</h2>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              {photos.map((photo, i) => (
-                <button key={photo.id} data-animate="fade-scale" data-delay={String(Math.min(i, 7))}
-                  onClick={() => setLightboxIndex(i)}
-                  className="group relative aspect-square rounded-xl overflow-hidden bg-[#E5E5E5]">
-                  <img src={photo.image_url} alt={photo.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center">
-                    <span className="text-primary text-xl opacity-0 group-hover:opacity-100 transition-opacity">🔍</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* CTA — YELLOW */}
-      <section className="py-20" style={{ background: '#F5C000' }}>
-        <div className="container mx-auto px-4 text-center">
-          <h2 data-animate="fade-up" className="font-heading font-extrabold text-black text-2xl lg:text-3xl mb-6">
-            {cfg?.conhecer_cta_title || 'Venha nos visitar!'}
-          </h2>
-          <a
-            data-animate="fade-up"
-            data-delay="1"
-            href={`https://wa.me/${waNum}?text=${encodeURIComponent(waMsg)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-dark inline-flex items-center gap-2"
-          >
-            <MessageCircle className="w-6 h-6" />
-            {cfg?.conhecer_cta_btn_text || 'Fale Conosco'}
-          </a>
+          </GlassCard>
         </div>
       </section>
 
-      {lightboxIndex !== null && (
-        <Lightbox images={photos.map(p => ({ url: p.image_url, title: p.title }))} initialIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />
-      )}
+      {lightboxIndex !== null && photos.length ? (
+        <Lightbox images={photos.map((p) => ({ url: p.image_url, title: p.title }))} initialIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />
+      ) : null}
     </PublicLayout>
   );
-};
-
-export default VenhaNosConhecer;
+}

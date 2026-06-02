@@ -1,144 +1,129 @@
+import { useEffect, useMemo, useState } from "react";
 import { PublicLayout } from "@/components/PublicLayout";
 import { PageHero } from "@/components/PageHero";
-import { useScrollAnimation } from "@/hooks/useScrollAnimation";
-import { Shield, Heart, CheckCircle, MessageCircle } from "lucide-react";
-import { useState, useEffect } from "react";
-import { getSiteConfig, getHotelzinhoContent, getPhotos } from "@/lib/dataCache";
 import { Lightbox } from "@/components/Lightbox";
-import { DestaquesSection } from "@/components/DestaquesSection";
+import { SectionHeader, GlassCard } from "@/components/ModernBlocks";
+import { getHotelzinhoContent, getPhotos, getSiteConfig } from "@/lib/dataCache";
+import { ArrowRight, CalendarHeart, ShieldCheck, Sparkles, UtensilsCrossed } from "lucide-react";
+import { Link } from "react-router-dom";
 
-const Hotelzinho = () => {
+export default function Hotelzinho() {
   const [content, setContent] = useState<any>(null);
   const [photos, setPhotos] = useState<any[]>([]);
+  const [waNum, setWaNum] = useState("5514997145610");
+  const [waMsg, setWaMsg] = useState("Olá! Quero saber mais sobre o hotelzinho.");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const [waNum, setWaNum] = useState('5514997145610');
-  const [cfg, setCfg] = useState<any>(null);
-  useScrollAnimation();
-
-  const mediaLocations = (item: any) => Array.from(new Set([...(Array.isArray(item.locations) ? item.locations : []), item.category, item.is_featured ? "home" : null].filter(Boolean)));
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([
-      getHotelzinhoContent(),
-      getPhotos(),
-      getSiteConfig(),
-    ]).then(([hotelContent, allPhotos, siteConfig]) => {
+    Promise.all([getHotelzinhoContent(), getPhotos(), getSiteConfig()]).then(([data, allPhotos, site]) => {
       if (cancelled) return;
-      setContent(hotelContent);
-      setPhotos((allPhotos || []).filter(media => mediaLocations(media).includes("hotelzinho")));
-      if (siteConfig) { setWaNum(siteConfig.whatsapp_number || '5514997145610'); setCfg(siteConfig); }
+      setContent(data);
+      setPhotos((allPhotos || []).filter((photo: any) => ["hotel", "hotelzinho", "home"].includes((photo.category || "").toLowerCase()) || photo.is_featured).slice(0, 8));
+      if (site?.whatsapp_number) setWaNum(site.whatsapp_number);
+      if (site?.whatsapp_message) setWaMsg(site.whatsapp_message);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const iconMap: Record<string, typeof Shield> = { '🛡️': Shield, '❤️': Heart, '🍽️': CheckCircle };
-  const highlights = content ? [
-    { icon: iconMap[content.highlight_1_icon] || Shield, title: content.highlight_1_title, text: content.highlight_1_text },
-    { icon: iconMap[content.highlight_2_icon] || Heart, title: content.highlight_2_title, text: content.highlight_2_text },
-    { icon: iconMap[content.highlight_3_icon] || CheckCircle, title: content.highlight_3_title, text: content.highlight_3_text },
-  ] : [];
-
-  const waMsg = encodeURIComponent(content?.whatsapp_message || 'Olá! Gostaria de agendar o hotelzinho para o meu pet.');
+  const highlights = useMemo(() => [
+    { icon: ShieldCheck, title: content?.highlight_1_title || "Segurança", text: content?.highlight_1_text || "Ambiente pensado para a tranquilidade do pet." },
+    { icon: UtensilsCrossed, title: content?.highlight_2_title || "Rotina", text: content?.highlight_2_text || "Atenção à alimentação, descanso e horários." },
+    { icon: Sparkles, title: content?.highlight_3_title || "Conforto", text: content?.highlight_3_text || "Tudo organizado para uma estadia agradável." },
+  ], [content]);
 
   return (
     <PublicLayout>
       <PageHero
-        badge="🏨 Hotelzinho"
-        title={content?.page_title || "Nosso Hotelzinho"}
-        subtitle={content?.page_subtitle || "O lar temporário do seu pet"}
-        bgImage={cfg?.hotel_hero_image_url || undefined}
+        badge="🏨 hotelzinho"
+        title={content?.page_title || "Hotelzinho com clima de casa"}
+        subtitle={content?.intro_text || "Hospedagem com presença, cuidado e um visual mais sofisticado para valorizar o serviço."}
+        bgImage={content?.hotel_hero_image_url || undefined}
       />
 
-      {/* Intro — WHITE */}
-      <section className="py-20" style={{ background: '#FFFFFF' }}>
-        <div className="container mx-auto px-4 max-w-3xl">
-          <p data-animate="fade-up" className="text-[#444] text-lg leading-[1.8] text-center" style={{ fontFamily: 'Inter' }}>
-            {content?.intro_text || 'Sabemos que deixar seu pet pode ser uma decisão difícil. É por isso que criamos um espaço especialmente pensado para que ele se sinta em casa.'}
-          </p>
+      <section id="conteudo" className="py-16 lg:py-20">
+        <div className="container-safe grid gap-8 lg:grid-cols-[.95fr_1.05fr]">
+          <div className="grid gap-4">
+            <SectionHeader
+              kicker="detalhes"
+              title="O hotelzinho foi apresentado de forma mais elegante."
+              subtitle="Três blocos de informação, sem poluição visual e sem repetir o mesmo layout em sequência."
+            />
+            <div className="grid gap-4">
+              {[content?.description_block_1, content?.description_block_2, content?.description_block_3].filter(Boolean).map((text: string, index) => (
+                <GlassCard key={index} className="p-5">
+                  <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Bloco {index + 1}</div>
+                  <p className="mt-3 text-sm leading-7 text-slate-300 whitespace-pre-line">{text}</p>
+                </GlassCard>
+              ))}
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <a href={`https://wa.me/${waNum}?text=${encodeURIComponent(waMsg)}`} target="_blank" rel="noopener noreferrer" className="btn-dark">
+                {content?.cta_text || "Agendar pelo WhatsApp"}
+                <ArrowRight className="h-4 w-4" />
+              </a>
+              <Link to="/fale-conosco" className="btn-ghost-dark">
+                Falar com a equipe
+              </Link>
+            </div>
+          </div>
+
+          <GlassCard className="p-6 lg:p-8">
+            <SectionHeader
+              kicker="destaques"
+              title={content?.destaques_hotel_title || "Pontos que reforçam confiança"}
+              subtitle={content?.destaques_hotel_subtitle || "Seis pontos máximos para leitura rápida e objetiva."}
+            />
+            <div className="mt-8 grid gap-4">
+              {highlights.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.title} className="flex gap-4 rounded-3xl border border-white/8 bg-white/[0.04] p-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-white">{item.title}</h3>
+                      <p className="mt-1 text-sm leading-7 text-slate-300">{item.text}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </GlassCard>
         </div>
       </section>
 
-      {/* Highlights — PEARL */}
-      {highlights.length > 0 && (
-        <section className="py-20" style={{ background: '#F8F8F6' }}>
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {highlights.map((h, i) => (
-                <div key={i} data-animate="card" data-delay={String(i)} className="bg-white rounded-[18px] p-8 text-center border border-[#E8E8E8] shadow-sm">
-                  <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <h.icon className="w-8 h-8 text-black" />
-                  </div>
-                  <h3 className="font-heading font-bold text-lg text-black mb-2">{h.title}</h3>
-                  <p className="text-[#666] text-sm leading-relaxed" style={{ fontFamily: 'Inter' }}>{h.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Description Blocks — WHITE */}
-      {(content?.description_block_1 || content?.description_block_2 || content?.description_block_3) && (
-        <section className="py-20" style={{ background: '#FFFFFF' }}>
-          <div className="container mx-auto px-4 max-w-3xl space-y-6">
-            {[content?.description_block_1, content?.description_block_2, content?.description_block_3].filter(Boolean).map((block: string, i: number) => (
-              <p key={i} data-animate="fade-up" data-delay={String(i)} className="text-[#444] text-base leading-[1.8]" style={{ fontFamily: 'Inter' }}>{block}</p>
+      <section className="py-16 lg:py-20">
+        <div className="container-safe">
+          <SectionHeader
+            kicker="galeria"
+            title={content?.hotel_gallery_section_title || "Imagens do hotelzinho"}
+            subtitle="Uma grade limpa para mostrar o ambiente sem deixar o layout pesado."
+          />
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {photos.map((photo, index) => (
+              <button key={photo.id} type="button" onClick={() => setLightboxIndex(index)} className="overflow-hidden rounded-[28px]">
+                <img
+                  src={photo.image_url}
+                  alt={photo.title || "Foto do hotelzinho"}
+                  className="aspect-square h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+                  loading="lazy"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/placeholder.svg";
+                  }}
+                />
+              </button>
             ))}
           </div>
-        </section>
-      )}
-
-      {/* Destaques da Semana */}
-      <DestaquesSection
-        locationKey="destaques_hotel"
-        title={cfg?.destaques_hotel_title || "Destaques da Semana"}
-        subtitle={cfg?.destaques_hotel_subtitle || "Pets que passaram por aqui"}
-        background="#FAFAF8"
-      />
-
-      {/* Gallery — DARK */}
-      {photos.length > 0 && (
-        <section className="py-20" style={{ background: '#0D0D0D' }}>
-          <div className="container mx-auto px-4">
-            <h2 data-animate="fade-up" className="section-title text-white text-center mb-10">{cfg?.hotel_gallery_section_title || 'Nosso Espaço'}</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {photos.map((photo, i) => (
-                <button key={photo.id} data-animate="fade-scale" data-delay={String(Math.min(i, 5))} onClick={() => setLightboxIndex(i)}
-                  className="group relative aspect-[4/3] rounded-[14px] overflow-hidden bg-[#333]">
-                  <img src={photo.image_url} alt={photo.title}
-                    className="w-full h-full object-cover group-hover:scale-[1.08] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                    loading="lazy"
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center">
-                    <span className="text-primary text-2xl opacity-0 group-hover:opacity-100 transition-opacity">🔍</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* CTA — YELLOW */}
-      <section className="py-20" style={{ background: '#F5C000' }}>
-        <div className="container mx-auto px-4 text-center">
-          <h2 data-animate="fade-up" className="font-heading font-extrabold text-black text-2xl lg:text-3xl mb-6">
-            {cfg?.hotel_cta_title || 'Quer agendar uma estadia para o seu pet?'}
-          </h2>
-          <a data-animate="fade-up" data-delay="1" href={`https://wa.me/${waNum}?text=${waMsg}`} target="_blank" rel="noopener noreferrer" className="btn-dark inline-flex items-center gap-2 text-lg">
-            <MessageCircle className="w-6 h-6" />
-            {content?.cta_text || 'Agendar pelo WhatsApp 🐾'}
-          </a>
         </div>
       </section>
 
-      {lightboxIndex !== null && (
-        <Lightbox images={photos.map(p => ({ url: p.image_url, title: p.title }))} initialIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />
-      )}
+      {lightboxIndex !== null && photos.length ? (
+        <Lightbox images={photos.map((p) => ({ url: p.image_url, title: p.title }))} initialIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />
+      ) : null}
     </PublicLayout>
   );
-};
-
-export default Hotelzinho;
+}

@@ -1,7 +1,3 @@
-// RoutePersistence foi removido — era a causa do bug de "não volta ao início"
-// e do flash de tela branca. O componente foi substituído por um hook simples
-// que não bloqueia o render.
-
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -19,7 +15,6 @@ const PUBLIC_PATHS = [
   "/fale-conosco",
 ];
 
-// Hook que apenas rastreia a rota atual — sem redirect, sem return null, sem estado
 export function useRoutePersistence() {
   const location = useLocation();
 
@@ -30,7 +25,6 @@ export function useRoutePersistence() {
   }, [location.pathname]);
 }
 
-// Componente wrapper que NÃO bloqueia o render — só rastreia
 export function RoutePersistence({ children }: { children: React.ReactNode }) {
   useRoutePersistence();
   return <>{children}</>;

@@ -44,44 +44,45 @@ import { getSiteConfig, prewarmCache } from "./lib/dataCache";
 
 function BrandingApplier() {
   useEffect(() => {
-    // Pré-aquece o cache em background assim que o app monta
     prewarmCache();
 
     getSiteConfig().then((data) => {
-        if (!data) return;
-        if (data.favicon_url) {
-          let link = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;
-          if (!link) {
-            link = document.createElement("link");
-            link.rel = "icon";
-            document.head.appendChild(link);
-          }
-          link.href = data.favicon_url;
+      if (!data) return;
+
+      if (data.favicon_url) {
+        let link = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;
+        if (!link) {
+          link = document.createElement("link");
+          link.rel = "icon";
+          document.head.appendChild(link);
         }
-        if (data.font_heading || data.font_body) {
-          const fams = [data.font_heading, data.font_body]
-            .filter(Boolean)
-            .map((f) => `family=${encodeURIComponent(f!)}:wght@400;500;600;700&`)
-            .join("");
-          const id = "dynamic-fonts";
-          let s = document.getElementById(id) as HTMLLinkElement | null;
-          if (!s) {
-            s = document.createElement("link");
-            s.id = id;
-            s.rel = "stylesheet";
-            document.head.appendChild(s);
-          }
-          s.href = `https://fonts.googleapis.com/css2?${fams}display=swap`;
+        link.href = data.favicon_url;
+      }
+
+      if (data.font_heading || data.font_body) {
+        const fams = [data.font_heading, data.font_body]
+          .filter(Boolean)
+          .map((f) => `family=${encodeURIComponent(f!)}:wght@400;500;600;700;800;900&`)
+          .join("");
+        const id = "dynamic-fonts";
+        let s = document.getElementById(id) as HTMLLinkElement | null;
+        if (!s) {
+          s = document.createElement("link");
+          s.id = id;
+          s.rel = "stylesheet";
+          document.head.appendChild(s);
         }
-      });
+        s.href = `https://fonts.googleapis.com/css2?${fams}display=swap`;
+      }
+    });
   }, []);
+
   return null;
 }
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Evita refetch excessivo em navegações rápidas
       staleTime: 30_000,
       gcTime: 5 * 60_000,
     },
@@ -94,21 +95,14 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        {/* ScrollToTop: rola para o topo em toda troca de rota */}
         <ScrollToTop />
         <SecurityHeaders />
         <BrandingApplier />
         <NavigationProgress />
         <RoutePersistence>
           <MaintenanceGuard>
-            {/*
-              PageTransition envolve TODAS as rotas UMA VEZ (não por rota).
-              Isso garante que a mesma instância persiste entre navegações,
-              eliminando race conditions de mount/unmount.
-            */}
             <PageTransition>
               <Routes>
-                {/* Rotas públicas */}
                 <Route path="/" element={<Index />} />
                 <Route path="/manutencao" element={<Manutencao />} />
                 <Route path="/fale-conosco" element={<FaleConosco />} />
@@ -119,7 +113,7 @@ const App = () => (
                 <Route path="/fotos" element={<Fotos />} />
                 <Route path="/videos" element={<Videos />} />
                 <Route path="/siga-nos" element={<SigaNos />} />
-                {/* Rotas admin */}
+
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
                 <Route path="/admin/home" element={<ProtectedRoute><AdminHome /></ProtectedRoute>} />
