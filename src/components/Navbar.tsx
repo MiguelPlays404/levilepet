@@ -1,146 +1,171 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, MessageCircle, PawPrint } from "lucide-react";
-import { getNavItems, getSiteConfig } from "@/lib/dataCache";
-import { cn } from "@/lib/utils";
-
-type NavItem = { id?: string; label: string; path: string; show_in_navbar?: boolean };
-
-type SiteConfig = {
-  site_name?: string;
-  site_slogan?: string;
-  logo_url?: string;
-  whatsapp_number?: string;
-  whatsapp_message?: string;
-};
+import { Menu, X, MessageCircle } from "lucide-react";
+import { getSiteConfig, getNavItems } from "@/lib/dataCache";
 
 export function Navbar() {
-  const [open, setOpen] = useState(false);
-  const [config, setConfig] = useState<SiteConfig | null>(null);
-  const [navItems, setNavItems] = useState<NavItem[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [config, setConfig] = useState<any>(null);
+  const [navItems, setNavItems] = useState<any[]>([]);
   const location = useLocation();
+  const isOpenRef = useRef(false);
 
+  // Fechar menu ao trocar de rota
   useEffect(() => {
-    setOpen(false);
+    if (isOpen) setIsOpen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
+  // Controlar overflow do body — com garantia de restauração
+  useEffect(() => {
+    isOpenRef.current = isOpen;
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  // Carregar do cache (instantâneo na 2ª+ visita)
   useEffect(() => {
     let cancelled = false;
     Promise.all([getSiteConfig(), getNavItems()]).then(([cfg, nav]) => {
       if (cancelled) return;
       setConfig(cfg);
-      setNavItems((nav || []).filter((item: NavItem) => item.show_in_navbar !== false));
+      setNavItems((nav || []).filter((n: any) => n.show_in_navbar));
     });
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
-  const waNum = config?.whatsapp_number || "5514997145610";
-  const waMsg = encodeURIComponent(config?.whatsapp_message || "Olá! Vim pelo site Le Ville Pet e gostaria de conhecer melhor.");
-  const items = useMemo(() => navItems.slice(0, 6), [navItems]);
+  const waNum = config?.whatsapp_number || '5514997145610';
+  const waMsg = encodeURIComponent(
+    config?.whatsapp_message || 'Olá! Vim pelo site Le Ville Pet!'
+  );
+  const waText = config?.nav_whatsapp_btn_text || '💬 WhatsApp';
+
+  const closeMenu = () => setIsOpen(false);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-[10000] border-b border-white/8 bg-slate-950/72 backdrop-blur-2xl">
-      <div className="container-safe flex h-16 items-center justify-between gap-3 lg:h-[72px]">
-        <Link to="/" className="group flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-lg">
-            <img
-              src={config?.logo_url || "/images/logo-levillepet.png"}
-              alt={config?.site_name || "Le Ville Pet"}
-              className="h-8 w-8 rounded-xl object-contain"
-            />
-          </div>
-          <div className="hidden sm:block">
-            <div className="flex items-center gap-2 text-sm font-semibold text-white">
-              {config?.site_name || "Le Ville Pet"}
-              <PawPrint className="h-4 w-4 text-primary" />
-            </div>
-            <div className="text-[11px] uppercase tracking-[0.24em] text-slate-400">
-              {config?.site_slogan || "a gente se entende"}
-            </div>
-          </div>
+    <nav
+      className="fixed top-0 left-0 right-0 z-[9999] transition-all duration-300 bg-[#0D0D0D] shadow-lg border-b border-[rgba(245,192,0,0.15)]"
+      style={{ position: 'fixed', transform: 'translateZ(0)', isolation: 'isolate' }}
+    >
+      <div className="container mx-auto flex items-center justify-between h-16 lg:h-[72px] px-4">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2 hover:scale-[1.04] transition-transform">
+          <img
+            src={config?.logo_url || "/images/logo-levillepet.png"}
+            alt={config?.site_name || 'Le Ville Pet'}
+            className="h-10 lg:h-[46px] rounded-lg"
+          />
         </Link>
 
-        <nav className="hidden items-center gap-1 lg:flex">
-          {items.map((item) => {
-            const active = location.pathname === item.path;
+        {/* Links desktop */}
+        <div className="hidden lg:flex items-center gap-1">
+          {navItems.map((link) => {
+            const active = location.pathname === link.path;
             return (
               <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "rounded-2xl px-4 py-2 text-sm font-medium transition-all",
-                  active
-                    ? "bg-white/10 text-white"
-                    : "text-slate-300 hover:bg-white/6 hover:text-white"
-                )}
+                key={link.id}
+                to={link.path}
+                className={`relative px-3 py-2 rounded-lg text-[15px] transition-colors duration-200 ${
+                  active ? "text-primary" : "text-white hover:text-primary"
+                }`}
+                style={{ fontFamily: 'Inter', fontWeight: 500 }}
               >
-                {item.label}
+                {link.label}
+                {active && (
+                  <span
+                    className="absolute bottom-0 left-3 right-3 h-0.5 bg-primary rounded-full"
+                    style={{ animation: 'lineGrow 0.3s ease forwards' }}
+                  />
+                )}
               </Link>
             );
           })}
-        </nav>
+        </div>
 
-        <div className="hidden items-center gap-3 lg:flex">
+        {/* Botão WhatsApp desktop */}
+        <div className="hidden lg:block">
           <a
             href={`https://wa.me/${waNum}?text=${waMsg}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-ghost-dark px-4 py-2"
+            className="btn-primary text-sm py-2.5 px-5"
           >
-            <MessageCircle className="h-4 w-4" />
-            WhatsApp
-          </a>
-          <a href="#contato" className="btn-dark px-4 py-2">
-            Agendar visita
+            {waText}
           </a>
         </div>
 
+        {/* Botão hamburguer mobile */}
         <button
-          type="button"
-          onClick={() => setOpen((s) => !s)}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white lg:hidden"
-          aria-label={open ? "Fechar menu" : "Abrir menu"}
+          onClick={() => setIsOpen(true)}
+          className="lg:hidden text-white p-2"
+          aria-label="Abrir menu"
         >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          <Menu className="w-6 h-6" />
         </button>
       </div>
 
+      {/* Overlay escuro mobile */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/70 z-[9998] lg:hidden"
+          onClick={closeMenu}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Drawer mobile */}
       <div
-        className={cn(
-          "border-t border-white/8 bg-slate-950/95 backdrop-blur-2xl transition-all duration-300 lg:hidden",
-          open ? "max-h-[75dvh] opacity-100" : "pointer-events-none max-h-0 overflow-hidden opacity-0"
-        )}
+        className={`fixed top-0 right-0 h-dvh w-[280px] z-[10000] transform transition-transform duration-300 lg:hidden shadow-2xl ${
+          isOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+        style={{ background: '#0D0D0D', isolation: 'isolate' }}
       >
-        <div className="container-safe py-4">
-          <div className="grid gap-2">
-            {items.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className="rounded-2xl border border-white/8 bg-white/[0.04] px-4 py-3 text-sm text-slate-100"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div
+          className="flex items-center justify-between p-4 border-b"
+          style={{ borderColor: 'rgba(245,192,0,0.15)', background: '#0D0D0D' }}
+        >
+          <span className="font-heading font-bold text-primary text-lg">
+            {config?.site_name || 'Le Ville Pet'}
+          </span>
+          <button onClick={closeMenu} className="text-white p-2" aria-label="Fechar menu">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        <div className="flex flex-col py-4">
+          {navItems.map((link, i) => (
+            <Link
+              key={link.id}
+              to={link.path}
+              className={`px-6 py-4 font-heading font-semibold text-xl transition-colors ${
+                location.pathname === link.path
+                  ? "text-primary bg-primary/10 border-l-[3px] border-primary"
+                  : "text-white hover:text-primary hover:bg-primary/5"
+              }`}
+              style={{ animation: `fadeInLeft 0.3s ease ${i * 0.05}s both` }}
+            >
+              {link.label}
+            </Link>
+          ))}
+
+          <div className="px-6 pt-4">
             <a
               href={`https://wa.me/${waNum}?text=${waMsg}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-dark"
+              className="flex items-center justify-center gap-2 bg-[#25D366] text-white font-heading font-bold text-base w-full py-3.5 rounded-xl hover:bg-[#128C7E] transition-colors"
             >
-              <MessageCircle className="h-4 w-4" />
-              WhatsApp
-            </a>
-            <a href="#contato" className="btn-ghost-dark">
-              Agendar visita
+              <MessageCircle className="w-5 h-5" /> Fale no WhatsApp
             </a>
           </div>
         </div>
       </div>
-    </header>
+    </nav>
   );
 }

@@ -14,19 +14,15 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         if (!cancelled) navigate("/admin/login", { replace: true });
-        setChecking(false);
         return;
       }
-
       const { data } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
         .eq("role", "admin")
         .maybeSingle();
-
       if (cancelled) return;
-
       if (data) {
         setAuthorized(true);
       } else {
@@ -36,8 +32,6 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
       setChecking(false);
     };
 
-    verify();
-
     const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
       if (!session) {
         setAuthorized(false);
@@ -45,16 +39,14 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
       }
     });
 
-    return () => {
-      cancelled = true;
-      sub.subscription.unsubscribe();
-    };
+    verify();
+    return () => { cancelled = true; sub.subscription.unsubscribe(); };
   }, [navigate]);
 
   if (checking) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
-        <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      <div className="flex items-center justify-center h-screen bg-[#0A0A0A]">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full" style={{ animation: 'spinSmooth 1s linear infinite' }} />
       </div>
     );
   }

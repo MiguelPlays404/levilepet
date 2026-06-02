@@ -1,89 +1,110 @@
-import { useEffect, useMemo, useState } from "react";
 import { PublicLayout } from "@/components/PublicLayout";
 import { PageHero } from "@/components/PageHero";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { useState, useEffect } from "react";
 import { Lightbox } from "@/components/Lightbox";
-import { SectionHeader, GlassCard } from "@/components/ModernBlocks";
-import { getPhotos, getSiteConfig } from "@/lib/dataCache";
+import { Search, Camera } from "lucide-react";
+import { getSiteConfig, getPhotos } from "@/lib/dataCache";
 
-const FILTERS = ["all", "galeria", "hotel", "conhecer"];
+const catKeys = ["all", "galeria", "hotelzinho", "conhecer"] as const;
 
-export default function Fotos() {
-  const [c, setC] = useState<any>(null);
-  const [photos, setPhotos] = useState<any[]>([]);
-  const [filter, setFilter] = useState("all");
+const photoLocations = (photo: any) => {
+  const list = Array.isArray(photo.locations) ? photo.locations : [];
+  const legacy = [photo.category || "galeria", photo.is_featured ? "home" : null].filter(Boolean);
+  return Array.from(new Set([...list, ...legacy]));
+};
+
+const Fotos = () => {
+  const [activeKey, setActiveKey] = useState<typeof catKeys[number]>("all");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [photos, setPhotos] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(12);
+  const [cfg, setCfg] = useState<any>(null);
+  useScrollAnimation();
 
   useEffect(() => {
-    Promise.all([getSiteConfig(), getPhotos()]).then(([cfg, allPhotos]) => {
-      setC(cfg);
-      setPhotos(allPhotos || []);
+    getPhotos().then((data) => {
+      setPhotos(data || []);
+      setLoading(false);
     });
+    getSiteConfig().then((data) => setCfg(data));
   }, []);
 
-  const filtered = useMemo(() => {
-    if (filter === "all") return photos;
-    return photos.filter((photo) => (photo.category || "").toLowerCase() === filter);
-  }, [photos, filter]);
+  const filterLabels: Record<typeof catKeys[number], string> = {
+    all: cfg?.fotos_filter_all || "Todas",
+    galeria: cfg?.fotos_filter_galeria || "Galeria",
+    hotelzinho: cfg?.fotos_filter_hotel || "Hotelzinho",
+    conhecer: cfg?.fotos_filter_conhecer || "Nosso Espaço",
+  };
+
+  const filtered = activeKey === "all" ? photos : photos.filter((p) => photoLocations(p).includes(activeKey));
+  const visible = filtered.slice(0, visibleCount);
 
   return (
     <PublicLayout>
-      <PageHero
-        badge="🖼 fotos"
-        title={c?.fotos_page_title || "Galeria de fotos"}
-        subtitle={c?.fotos_page_subtitle || "Um fluxo limpo para navegar por imagens sem perder a sensação premium."}
-        bgImage={c?.fotos_hero_image_url || undefined}
-      />
+      <PageHero badge="📸 Fotos" title={cfg?.fotos_page_title || "Galeria de Momentos"} subtitle={cfg?.fotos_page_subtitle || "Os pets mais lindos de Bauru"} bgImage={cfg?.fotos_hero_image_url || undefined} />
 
-      <section id="conteudo" className="py-16 lg:py-20">
-        <div className="container-safe">
-          <SectionHeader
-            kicker="filtros"
-            title="Escolha o recorte da galeria"
-            subtitle="Botões simples, sem excesso, para organizar o conteúdo por tema."
-          />
-          <div className="mt-6 flex flex-wrap gap-2">
-            {FILTERS.map((key) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setFilter(key)}
-                className={filter === key ? "btn-dark px-4 py-2" : "btn-ghost-dark px-4 py-2"}
-              >
-                {key === "all" ? c?.fotos_filter_all || "Tudo" :
-                 key === "galeria" ? c?.fotos_filter_galeria || "Galeria" :
-                 key === "hotel" ? c?.fotos_filter_hotel || "Hotelzinho" :
-                 c?.fotos_filter_conhecer || "Conhecer"}
+      <section className="py-16" style={{ background: '#FFFFFF' }}>
+        <div className="container mx-auto px-4">
+          <div className="flex flex-wrap gap-2 justify-center mb-10">
+            {catKeys.map((k) => (
+              <button key={k} onClick={() => { setActiveKey(k); setVisibleCount(12); }}
+                className={`px-5 py-2 rounded-full text-sm font-heading font-semibold transition-all min-h-[44px] ${
+                  activeKey === k
+                    ? "bg-primary text-black"
+                    : "bg-transparent border border-[#D4D4D4] text-[#666] hover:border-primary hover:text-primary"
+                }`}>
+                {filterLabels[k]}
               </button>
             ))}
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {filtered.map((photo, index) => (
-              <GlassCard key={photo.id} className="overflow-hidden p-0">
-                <button type="button" onClick={() => setLightboxIndex(index)} className="block w-full">
-                  <img
-                    src={photo.image_url}
-                    alt={photo.title || "Foto"}
-                    className="aspect-[4/3] h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
-                    loading="lazy"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = "/placeholder.svg";
-                    }}
-                  />
-                </button>
-                <div className="p-4">
-                  <h3 className="text-base font-bold text-white">{photo.title || "Sem título"}</h3>
-                  <p className="mt-1 text-xs uppercase tracking-[0.22em] text-slate-500">{photo.category || "galeria"}</p>
+          {loading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {Array.from({ length: 8 }).map((_, i) => <div key={i} className="aspect-square bg-[#E5E5E5] rounded-xl animate-pulse" />)}
+            </div>
+          ) : visible.length > 0 ? (
+            <>
+              <p className="text-center text-[#888] text-sm mb-4" style={{ fontFamily: 'Inter' }}>
+                Exibindo {visible.length} de {filtered.length} fotos
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {visible.map((photo, i) => (
+                  <button key={photo.id} data-animate="fade-scale" data-delay={String(Math.min(i, 6))}
+                    onClick={() => setLightboxIndex(i)}
+                    className="group relative aspect-square rounded-[12px] overflow-hidden bg-[#E5E5E5]">
+                    <img src={photo.image_url} alt={photo.title}
+                      className="w-full h-full object-cover group-hover:scale-[1.08] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                      loading="lazy"
+                      onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all flex items-center justify-center">
+                      <Search className="w-7 h-7 text-primary opacity-0 group-hover:opacity-100 transition-all scale-0 group-hover:scale-100" />
+                    </div>
+                  </button>
+                ))}
+              </div>
+              {visibleCount < filtered.length && (
+                <div className="text-center mt-8">
+                  <button onClick={() => setVisibleCount(c => c + 12)} className="btn-secondary">Ver mais fotos</button>
                 </div>
-              </GlassCard>
-            ))}
-          </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-20">
+              <Camera className="w-16 h-16 text-primary mx-auto mb-4" />
+              <p className="text-[#888] text-lg" style={{ fontFamily: 'Inter' }}>Nenhuma foto nesta categoria.</p>
+            </div>
+          )}
         </div>
       </section>
 
-      {lightboxIndex !== null && filtered.length ? (
-        <Lightbox images={filtered.map((p) => ({ url: p.image_url, title: p.title }))} initialIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />
-      ) : null}
+      {lightboxIndex !== null && (
+        <Lightbox images={visible.map(p => ({ url: p.image_url, title: p.title }))} initialIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />
+      )}
     </PublicLayout>
   );
-}
+};
+
+export default Fotos;

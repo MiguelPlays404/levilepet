@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Hammer, ArrowRight, CheckCircle2, ShieldCheck } from "lucide-react";
+import { Hammer, ArrowRight, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
 
 export default function Manutencao() {
   const [name, setName] = useState("");
@@ -13,8 +14,11 @@ export default function Manutencao() {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Check if maintenance mode is actually on
     supabase.from("site_config").select("maintenance_mode").single().then(({ data }) => {
-      if (data && !data.maintenance_mode) navigate("/");
+      if (data && !data.maintenance_mode) {
+        navigate("/");
+      }
     });
   }, [navigate]);
 
@@ -23,78 +27,123 @@ export default function Manutencao() {
     if (!name.trim()) return;
 
     setLoading(true);
+
     setTimeout(() => {
       sessionStorage.setItem("maintenance_bypass", "true");
-      setStatus("success");
-      toast({ title: "Acesso liberado", description: "Redirecionando para a área administrativa." });
       navigate("/admin/login");
       setLoading(false);
-    }, 350);
+    }, 400);
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4">
-      <div className="fluid-orb fluid-orb--yellow left-[-6rem] top-[-6rem] h-72 w-72" />
-      <div className="fluid-orb fluid-orb--white right-[-4rem] bottom-[-4rem] h-64 w-64" />
-      <div className="soft-grid absolute inset-0 opacity-40" />
+    <div className="min-h-screen bg-[#0A0A0B] flex items-center justify-center p-6 overflow-hidden relative">
+      {/* Background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary/10 rounded-full blur-[120px]" />
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-primary/10 rounded-full blur-[120px]" />
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 18 }}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-panel-strong relative z-10 w-full max-w-lg rounded-[32px] p-8 md:p-12"
+        className="max-w-md w-full bg-[#18181B] border border-white/[0.08] rounded-3xl p-8 md:p-12 shadow-2xl relative z-10"
       >
-        <div className="flex flex-col items-center text-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-primary/15 text-primary">
-            <Hammer className="h-10 w-10" />
+        <div className="flex flex-col items-center text-center space-y-6">
+          <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-2">
+            <Hammer className="w-10 h-10 text-primary" />
           </div>
 
-          <h1 className="mt-6 text-4xl font-black tracking-[-0.05em] text-white">Voltaremos em breve</h1>
-          <p className="mt-4 text-sm leading-7 text-slate-300">
-            Estamos executando melhorias no site para manter a experiência mais rápida, limpa e estável.
-          </p>
+          <div className="space-y-2">
+            <h1 className="text-3xl md:text-4xl font-heading font-bold text-white tracking-tight">
+              Voltaremos em breve
+            </h1>
+            <p className="text-[#A1A1AA] text-sm md:text-base leading-relaxed">
+              Estamos realizando melhorias para oferecer a melhor experiência para você e seu pet.
+            </p>
+          </div>
 
           <AnimatePresence mode="wait">
             {status === "idle" ? (
-              <motion.form
+              <motion.form 
                 key="form"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                exit={{ opacity: 0, scale: 0.97 }}
+                exit={{ opacity: 0, scale: 0.95 }}
                 onSubmit={handleSubmit}
-                className="mt-8 w-full space-y-4"
+                className="w-full space-y-4 pt-4"
               >
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Digite seu nome"
-                  className="input-glass"
-                  required
-                />
-                <button type="submit" disabled={loading} className="btn-dark w-full">
-                  {loading ? "Verificando..." : "Continuar"}
-                  <ArrowRight className="h-4 w-4" />
+                <div className="relative group">
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Digite seu nome..."
+                    className="w-full bg-[#0A0A0B] border border-[#3F3F46] focus:border-primary/50 rounded-xl px-5 py-4 text-white text-sm outline-none transition-all placeholder:text-[#52525B] group-hover:border-[#52525B]"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full btn-primary py-4 rounded-xl flex items-center justify-center gap-2 group transition-all"
+                >
+                  {loading ? (
+                    <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      Enviar <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
                 </button>
               </motion.form>
-            ) : (
-              <motion.div
+            ) : status === "success" ? (
+              <motion.div 
                 key="success"
-                initial={{ opacity: 0, scale: 0.96 }}
+                initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="mt-8 rounded-[28px] border border-white/10 bg-white/[0.05] p-6"
+                className="pt-6 space-y-4 text-center"
               >
-                <CheckCircle2 className="mx-auto h-10 w-10 text-primary" />
-                <p className="mt-3 text-sm text-slate-200">Acesso validado. Indo para o login administrativo.</p>
+                <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle2 className="w-8 h-8 text-green-500" />
+                </div>
+                <h2 className="text-xl font-heading font-semibold text-white">
+                  Obrigado, {name}!
+                </h2>
+                <p className="text-[#A1A1AA] text-sm leading-relaxed">
+                  Avisaremos assim que retornarmos. Fique de olho em nossas redes sociais para novidades!
+                </p>
+                <button 
+                  onClick={() => setStatus("idle")}
+                  className="text-xs text-primary hover:underline pt-4"
+                >
+                  Voltar
+                </button>
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="admin"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="pt-6 space-y-4 text-center"
+              >
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle2 className="w-8 h-8 text-primary" />
+                </div>
+                <h2 className="text-xl font-heading font-semibold text-white">
+                  Acesso Autorizado
+                </h2>
+                <p className="text-[#A1A1AA] text-sm">
+                  Redirecionando você para o site...
+                </p>
               </motion.div>
             )}
           </AnimatePresence>
-
-          <div className="mt-8 flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-slate-500">
-            <ShieldCheck className="h-4 w-4 text-primary" />
-            modo manutenção
-          </div>
         </div>
       </motion.div>
+      
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-[10px] text-[#3F3F46] font-heading uppercase tracking-widest">
+        Le Ville Pet &copy; {new Date().getFullYear()}
+      </div>
     </div>
   );
 }

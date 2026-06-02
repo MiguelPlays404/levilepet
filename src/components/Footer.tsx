@@ -1,106 +1,72 @@
 import { Link } from "react-router-dom";
-import { Instagram, MapPin, Phone, MessageCircle } from "lucide-react";
-import { useEffect, useState } from "react";
-import { getNavItems, getSiteConfig } from "@/lib/dataCache";
-import { cn } from "@/lib/utils";
-
-type SiteConfig = {
-  site_name?: string;
-  site_slogan?: string;
-  logo_url?: string;
-  address_full?: string;
-  phone?: string;
-  whatsapp_number?: string;
-  instagram_url?: string;
-  instagram_handle?: string;
-};
+import { MapPin, Phone, Instagram } from "lucide-react";
+import { AdminAccessField } from "./AdminAccessField";
+import { useState, useEffect } from "react";
+import { getSiteConfig, getNavItems } from "@/lib/dataCache";
 
 export function Footer() {
-  const [config, setConfig] = useState<SiteConfig | null>(null);
-  const [footerLinks, setFooterLinks] = useState<{ label: string; path: string }[]>([]);
+  const [c, setC] = useState<any>(null);
+  const [footerLinks, setFooterLinks] = useState<any[]>([]);
 
   useEffect(() => {
     let cancelled = false;
     Promise.all([getSiteConfig(), getNavItems()]).then(([cfg, nav]) => {
       if (cancelled) return;
-      setConfig(cfg);
-      setFooterLinks((nav || []).filter((item: any) => item.show_in_footer !== false).slice(0, 6));
+      setC(cfg);
+      setFooterLinks((nav || []).filter((n: any) => n.show_in_footer));
     });
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
-  const waNum = config?.whatsapp_number || "5514997145610";
+  const waNum = c?.whatsapp_number || '5514997145610';
 
   return (
-    <footer className="relative z-10 mt-16 border-t border-white/8 bg-slate-950/80">
-      <div className="container-safe py-10 lg:py-14">
-        <div className="grid gap-10 lg:grid-cols-[1.2fr_.8fr_.9fr]">
-          <div className="max-w-md">
-            <Link to="/" className="flex items-center gap-3">
-              <img
-                src={config?.logo_url || "/images/logo-levillepet.png"}
-                alt={config?.site_name || "Le Ville Pet"}
-                className="h-12 w-12 rounded-2xl object-contain ring-1 ring-white/10"
-              />
-              <div>
-                <div className="text-lg font-bold text-white">{config?.site_name || "Le Ville Pet"}</div>
-                <div className="text-sm text-slate-400">{config?.site_slogan || "a gente se entende"}</div>
-              </div>
-            </Link>
-            <p className="mt-4 max-w-md text-sm leading-7 text-slate-300">
-              Um espaço pensado para hotelzinho, transporte, banho e experiências com acabamento moderno, equipe atenciosa e comunicação clara.
-            </p>
+    <footer style={{ background: '#0A0A0A' }} className="py-5 border-t border-white/[0.06]">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+          <Link to="/" className="flex items-center gap-2 group">
+            <img src={c?.logo_url || "/images/logo-levillepet.png"} alt={c?.site_name || 'Le Ville Pet'} className="h-8 rounded-md" />
+            <span className="font-heading italic text-primary text-xs hidden sm:inline">"{c?.site_slogan || 'a gente se entende'}"</span>
+          </Link>
+
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+            {footerLinks.slice(0, 5).map((link) => (
+              <Link key={link.id} to={link.path}
+                className="text-[#888] text-xs hover:text-primary transition-colors"
+                style={{ fontFamily: 'Inter' }}>
+                {link.label}
+              </Link>
+            ))}
           </div>
 
-          <div>
-            <div className="text-xs uppercase tracking-[0.25em] text-slate-500">Navegação</div>
-            <div className="mt-4 grid gap-2">
-              {footerLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className="rounded-2xl border border-white/8 bg-white/[0.04] px-4 py-3 text-sm text-slate-200 transition-colors hover:bg-white/[0.07] hover:text-white"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div className="text-xs uppercase tracking-[0.25em] text-slate-500">Contato</div>
-            <div className="mt-4 grid gap-3 text-sm text-slate-300">
-              {config?.address_full ? (
-                <div className="flex gap-3 rounded-2xl border border-white/8 bg-white/[0.04] p-4">
-                  <MapPin className="mt-0.5 h-4 w-4 text-primary" />
-                  <span>{config.address_full}</span>
-                </div>
-              ) : null}
-              {config?.phone ? (
-                <a href={`tel:${config.phone}`} className="flex gap-3 rounded-2xl border border-white/8 bg-white/[0.04] p-4 hover:bg-white/[0.07]">
-                  <Phone className="mt-0.5 h-4 w-4 text-primary" />
-                  <span>{config.phone}</span>
-                </a>
-              ) : null}
-              <a href={`https://wa.me/${waNum}`} target="_blank" rel="noopener noreferrer" className="flex gap-3 rounded-2xl border border-white/8 bg-white/[0.04] p-4 hover:bg-white/[0.07]">
-                <MessageCircle className="mt-0.5 h-4 w-4 text-primary" />
-                <span>WhatsApp</span>
+          <div className="flex items-center gap-4 text-[#666] text-xs" style={{ fontFamily: 'Inter' }}>
+            {c?.address && (
+              <span className="flex items-center gap-1">
+                <MapPin className="w-3 h-3 text-primary" />
+                {c.address}
+              </span>
+            )}
+            {c?.phone && (
+              <a href={`tel:${c.phone}`} className="flex items-center gap-1 hover:text-primary transition-colors">
+                <Phone className="w-3 h-3 text-primary" />
+                {c.phone}
               </a>
-              {config?.instagram_url ? (
-                <a href={config.instagram_url} target="_blank" rel="noopener noreferrer" className="flex gap-3 rounded-2xl border border-white/8 bg-white/[0.04] p-4 hover:bg-white/[0.07]">
-                  <Instagram className="mt-0.5 h-4 w-4 text-primary" />
-                  <span>{config.instagram_handle || "Instagram"}</span>
-                </a>
-              ) : null}
-            </div>
+            )}
+            {c?.instagram_url && (
+              <a href={c.instagram_url} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1 hover:text-primary transition-colors">
+                <Instagram className="w-3 h-3 text-primary" />
+                Instagram
+              </a>
+            )}
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col gap-3 border-t border-white/8 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-          <span>© {new Date().getFullYear()} Le Ville Pet. Todos os direitos reservados.</span>
-          <span className={cn("text-slate-500")}>Design refeito com foco em velocidade, legibilidade e presença visual.</span>
+        <div className="mt-4 pt-4 border-t border-white/[0.04] flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p className="text-[#444] text-[11px]" style={{ fontFamily: 'Inter' }}>
+            © {new Date().getFullYear()} {c?.site_name || 'Le Ville Pet'}. Todos os direitos reservados.
+          </p>
+          <AdminAccessField />
         </div>
       </div>
     </footer>

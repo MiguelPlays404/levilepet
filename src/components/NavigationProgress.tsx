@@ -1,59 +1,62 @@
-import { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+/**
+ * NavigationProgress — barra de progresso no topo durante navegação
+ * Corrigido: timers cancelados no cleanup, sem estado orphan.
+ */
+import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export const NavigationProgress = () => {
   const location = useLocation();
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
   const timersRef = useRef<number[]>([]);
-  const firstRef = useRef(true);
+  const isFirstRef = useRef(true);
 
-  const clearTimers = () => {
-    timersRef.current.forEach((timer) => window.clearTimeout(timer));
+  const clearAllTimers = () => {
+    timersRef.current.forEach(clearTimeout);
     timersRef.current = [];
   };
 
   useEffect(() => {
-    if (firstRef.current) {
-      firstRef.current = false;
-      return;
-    }
+    // Primeira montagem: sem animação
+    if (isFirstRef.current) { isFirstRef.current = false; return; }
 
-    clearTimers();
+    clearAllTimers();
+
     setVisible(true);
-    setProgress(16);
+    setProgress(15);
 
-    const tick = (delay: number, value: number) => {
-      const id = window.setTimeout(() => setProgress(value), delay);
+    const t = (delay: number, fn: () => void) => {
+      const id = window.setTimeout(fn, delay);
       timersRef.current.push(id);
     };
 
-    tick(80, 42);
-    tick(180, 68);
-    tick(300, 88);
-    tick(430, 100);
-    const end = window.setTimeout(() => {
-      setVisible(false);
-      setProgress(0);
-    }, 620);
-    timersRef.current.push(end);
+    t(80,  () => setProgress(45));
+    t(200, () => setProgress(72));
+    t(320, () => setProgress(92));
+    t(420, () => setProgress(100));
+    t(620, () => { setVisible(false); setProgress(0); });
 
-    return clearTimers;
+    return clearAllTimers;
   }, [location.pathname]);
 
   if (!visible && progress === 0) return null;
 
   return (
     <div
-      aria-hidden="true"
-      className="fixed top-0 left-0 z-[10000] h-1 rounded-r-full"
       style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        height: '3px',
         width: `${progress}%`,
+        background: 'linear-gradient(90deg, #F5C000, #FFD700)',
+        zIndex: 99999,
+        transition: 'width 0.18s ease, opacity 0.25s ease',
         opacity: visible ? 1 : 0,
-        background: "linear-gradient(90deg, hsl(var(--primary)), #fff09d)",
-        boxShadow: "0 0 18px rgb(245 192 0 / 0.55)",
-        transition: "width 180ms ease, opacity 220ms ease",
-        pointerEvents: "none",
+        boxShadow: '0 0 10px rgba(245,192,0,0.6)',
+        borderRadius: '0 2px 2px 0',
+        pointerEvents: 'none',
       }}
     />
   );
