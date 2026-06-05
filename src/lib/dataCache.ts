@@ -157,11 +157,17 @@ export async function getHomeSections(): Promise<any[]> {
 /** Invalida uma key específica (chamar após salvar no admin) */
 export function invalidateCache(key: string) {
   store.delete(key);
+  try { localStorage.removeItem(LS_PREFIX + key); } catch {}
 }
 
 /** Invalida todo o cache (ex: após login admin) */
 export function invalidateAllCache() {
   store.clear();
+  try {
+    Object.keys(localStorage).forEach((k) => {
+      if (k.startsWith(LS_PREFIX)) localStorage.removeItem(k);
+    });
+  } catch {}
 }
 
 /**
