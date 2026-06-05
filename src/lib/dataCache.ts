@@ -12,6 +12,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 const TTL_MS = 2 * 60 * 1000; // 2 minutos
+const LS_PREFIX = "lvp_cache_v1:";
 
 interface CacheEntry<T> {
   data: T;
@@ -33,30 +34,61 @@ function isStale(entry: CacheEntry<any>): boolean {
   return Date.now() - entry.fetchedAt > TTL_MS;
 }
 
+// ─── Persistência em localStorage (sobrevive a refresh / nova aba) ──────────
+function loadFromLS<T>(key: string): CacheEntry<T> | null {
+  try {
+    const raw = localStorage.getItem(LS_PREFIX + key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as CacheEntry<T>;
+    if (!parsed || typeof parsed.fetchedAt !== "number") return null;
+    return parsed;
+  } catch { return null; }
+}
+
+function saveToLS<T>(key: string, data: T) {
+  try {
+    localStorage.setItem(LS_PREFIX + key, JSON.stringify({ data, fetchedAt: Date.now() }));
+  } catch { /* quota / SSR */ }
+}
+
 /**
- * Busca dados com deduplicação de requisições.
- * Se já há uma promise em voo para a mesma key, reutiliza ela (evita duplicatas em StrictMode).
+ * Busca dados com deduplicação + persistência em localStorage.
+ * Stale-while-revalidate: devolve dado salvo IMEDIATAMENTE (mesmo velho)
+ * e revalida em background — elimina o "flash" de conteúdo padrão antigo.
  */
 async function fetchCached<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
   const existing = store.get(key);
 
   if (existing) {
-    // Tem promise em voo → aguarda ela
     if ((existing as PendingEntry<T>).promise) {
       return (existing as PendingEntry<T>).promise!;
     }
-    // Tem dado cacheado e não expirou → retorna imediatamente
     if ((existing as CacheEntry<T>).data !== undefined && !isStale(existing as CacheEntry<T>)) {
       return (existing as CacheEntry<T>).data;
     }
   }
 
-  // Nenhum cache válido → busca e registra a promise para deduplicar
+  // Hidrata do localStorage se ainda não está em memória
+  if (!existing) {
+    const ls = loadFromLS<T>(key);
+    if (ls && ls.data !== undefined) {
+      store.set(key, { data: ls.data, fetchedAt: ls.fetchedAt, promise: null });
+      if (!isStale(ls)) return ls.data;
+      // Revalida em background, mas já devolve o dado antigo
+      fetcher().then((data) => {
+        store.set(key, { data, fetchedAt: Date.now(), promise: null });
+        saveToLS(key, data);
+      }).catch(() => {});
+      return ls.data;
+    }
+  }
+
   const promise = fetcher().then((data) => {
     store.set(key, { data, fetchedAt: Date.now(), promise: null });
+    saveToLS(key, data);
     return data;
   }).catch((err) => {
-    store.delete(key); // Remove entrada inválida se falhar
+    store.delete(key);
     throw err;
   });
 
