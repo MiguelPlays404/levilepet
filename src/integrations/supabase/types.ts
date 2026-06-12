@@ -1071,6 +1071,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      auto_publish_scheduled_media: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
