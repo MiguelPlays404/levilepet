@@ -169,9 +169,49 @@ export function HojeNoLeVilleSection() {
       }
     };
     fetchItems();
-    // Refetch a cada 60s para pegar novos itens agendados ou expirados
-    const interval = setInterval(fetchItems, 60000);
-    return () => { cancelled = true; clearInterval(interval); };
+
+    // Calcula o próximo evento (publicação ou expiração) e agenda um refetch exato
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    const scheduleNextEvent = async () => {
+      if (timeout) clearTimeout(timeout);
+      const nowIso = new Date().toISOString();
+      const { data: upcoming } = await supabase
+        .from("hoje_no_le_ville")
+        .select("published_at,expires_at")
+        .eq("is_active", true);
+      let nextMs = 30000; // fallback: 30s
+      if (upcoming) {
+        const now = Date.now();
+        const candidates: number[] = [];
+        for (const row of upcoming as any[]) {
+          const p = new Date(row.published_at).getTime();
+          if (p > now) candidates.push(p - now);
+          if (row.expires_at) {
+            const e = new Date(row.expires_at).getTime();
+            if (e > now) candidates.push(e - now);
+          }
+        }
+        if (candidates.length) nextMs = Math.max(1000, Math.min(30000, Math.min(...candidates) + 500));
+      }
+      timeout = setTimeout(async () => {
+        await fetchItems();
+        scheduleNextEvent();
+      }, nextMs);
+    };
+    scheduleNextEvent();
+
+    // Refetch ao voltar para a aba / focar a janela
+    const onVisible = () => { if (document.visibilityState === "visible") { fetchItems(); scheduleNextEvent(); } };
+    const onFocus = () => { fetchItems(); scheduleNextEvent(); };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      cancelled = true;
+      if (timeout) clearTimeout(timeout);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onFocus);
+    };
   }, []);
 
   const scroll = (dir: "left" | "right") => {
