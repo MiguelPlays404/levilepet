@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import { Lightbox } from "@/components/Lightbox";
 import { Search, Camera } from "lucide-react";
 import { getSiteConfig, getPhotos } from "@/lib/dataCache";
-import { useScheduledMediaRefresh } from "@/hooks/useScheduledMediaRefresh";
 
 const catKeys = ["all", "galeria", "hotelzinho", "conhecer"] as const;
 
@@ -24,17 +23,13 @@ const Fotos = () => {
   const [cfg, setCfg] = useState<any>(null);
   useScrollAnimation();
 
-  const loadPhotos = () => getPhotos().then((data) => {
-    setPhotos(data || []);
-    setLoading(false);
-  });
-
   useEffect(() => {
-    loadPhotos();
+    getPhotos().then((data) => {
+      setPhotos(data || []);
+      setLoading(false);
+    });
     getSiteConfig().then((data) => setCfg(data));
   }, []);
-
-  useScheduledMediaRefresh(loadPhotos);
 
   const filterLabels: Record<typeof catKeys[number], string> = {
     all: cfg?.fotos_filter_all || "Todas",
