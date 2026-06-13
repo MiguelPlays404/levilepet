@@ -18,6 +18,10 @@ const Hotelzinho = () => {
 
   const mediaLocations = (item: any) => Array.from(new Set([...(Array.isArray(item.locations) ? item.locations : []), item.category, item.is_featured ? "home" : null].filter(Boolean)));
 
+  const loadHotelPhotos = () => getPhotos().then((allPhotos) => {
+    setPhotos((allPhotos || []).filter((media: any) => mediaLocations(media).includes("hotelzinho")));
+  });
+
   useEffect(() => {
     let cancelled = false;
     Promise.all([
@@ -32,6 +36,8 @@ const Hotelzinho = () => {
     });
     return () => { cancelled = true; };
   }, []);
+
+  useScheduledMediaRefresh(loadHotelPhotos);
 
   const iconMap: Record<string, typeof Shield> = { '🛡️': Shield, '❤️': Heart, '🍽️': CheckCircle };
   const highlights = content ? [
