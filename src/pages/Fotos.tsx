@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { Lightbox } from "@/components/Lightbox";
 import { Search, Camera } from "lucide-react";
 import { getSiteConfig, getPhotos } from "@/lib/dataCache";
+import { useScheduledMediaRefresh } from "@/hooks/useScheduledMediaRefresh";
 
 const catKeys = ["all", "galeria", "hotelzinho", "conhecer"] as const;
 
