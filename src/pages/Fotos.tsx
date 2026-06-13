@@ -24,13 +24,17 @@ const Fotos = () => {
   const [cfg, setCfg] = useState<any>(null);
   useScrollAnimation();
 
+  const loadPhotos = () => getPhotos().then((data) => {
+    setPhotos(data || []);
+    setLoading(false);
+  });
+
   useEffect(() => {
-    getPhotos().then((data) => {
-      setPhotos(data || []);
-      setLoading(false);
-    });
+    loadPhotos();
     getSiteConfig().then((data) => setCfg(data));
   }, []);
+
+  useScheduledMediaRefresh(loadPhotos);
 
   const filterLabels: Record<typeof catKeys[number], string> = {
     all: cfg?.fotos_filter_all || "Todas",
