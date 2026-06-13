@@ -5,6 +5,7 @@ import { Heart, Play, Video, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSiteConfig } from "@/lib/dataCache";
+import { useScheduledMediaRefresh } from "@/hooks/useScheduledMediaRefresh";
 import { getYoutubeId } from "@/lib/youtube";
 
 function getUserId(): string {
