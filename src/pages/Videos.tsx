@@ -29,6 +29,8 @@ const Videos = () => {
     setLikedSet(new Set(localLikes));
   }, []);
 
+  useScheduledMediaRefresh(() => loadData());
+
   const loadData = async () => {
     const { data } = await supabase.from("videos").select("*").eq("is_active", true).order("published_at", { ascending: false });
     setVideos(data || []);
