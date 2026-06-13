@@ -4,6 +4,7 @@ import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { Shield, Heart, CheckCircle, MessageCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getSiteConfig, getHotelzinhoContent, getPhotos } from "@/lib/dataCache";
+import { useScheduledMediaRefresh } from "@/hooks/useScheduledMediaRefresh";
 import { Lightbox } from "@/components/Lightbox";
 import { DestaquesSection } from "@/components/DestaquesSection";
 
