@@ -219,3 +219,13 @@ export function prewarmCache() {
     getConhecerContent(),
   ]);
 }
+
+// ─── Sync getters por chave ─────────────────────────────────────────────────
+export const getSiteConfigSync = () => getCachedSync<any>("site_config");
+export const getNavItemsSync = () => getCachedSync<any[]>("nav_items") || [];
+export const getHomeSectionsSync = () => getCachedSync<any[]>("home_sections") || [];
+export const getPhotosSync = () => getCachedSync<any[]>("photos_active") || [];
+export const getVideosSync = () => getCachedSync<any[]>("videos_active") || [];
+export const getHotelzinhoContentSync = () => getCachedSync<any>("hotelzinho_content");
+export const getTransporteContentSync = () => getCachedSync<any>("transporte_content");
+export const getConhecerContentSync = () => getCachedSync<any>("conhecer_content");
