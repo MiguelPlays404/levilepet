@@ -112,41 +112,43 @@ const App = () => (
               eliminando race conditions de mount/unmount.
             */}
             <PageTransition>
-              <Routes>
-                {/* Rotas públicas */}
-                <Route path="/" element={<Index />} />
-                <Route path="/manutencao" element={<Manutencao />} />
-                <Route path="/fale-conosco" element={<FaleConosco />} />
-                <Route path="/hotelzinho" element={<Hotelzinho />} />
-                <Route path="/transporte" element={<Transporte />} />
-                <Route path="/venha-nos-conhecer" element={<VenhaNosConhecer />} />
-                <Route path="/localizacao" element={<Localizacao />} />
-                <Route path="/fotos" element={<Fotos />} />
-                <Route path="/videos" element={<Videos />} />
-                <Route path="/siga-nos" element={<SigaNos />} />
-                {/* Rotas admin */}
-                <Route path="/admin/login" element={<AdminLogin />} />
-                <Route element={<ProtectedRoute><AdminShell /></ProtectedRoute>}>
-                  <Route path="/admin" element={<AdminDashboard />} />
-                  <Route path="/admin/home" element={<AdminHome />} />
-                  <Route path="/admin/fotos" element={<AdminPhotos />} />
-                  <Route path="/admin/videos" element={<AdminVideos />} />
-                  <Route path="/admin/hotelzinho" element={<AdminHotelzinho />} />
-                  <Route path="/admin/conhecer" element={<AdminConhecer />} />
-                  <Route path="/admin/config" element={<AdminConfig />} />
-                  <Route path="/admin/social" element={<AdminSocial />} />
-                  <Route path="/admin/seguranca" element={<AdminSecurity />} />
-                  <Route path="/admin/navbar-footer" element={<AdminNavbarFooter />} />
-                  <Route path="/admin/branding" element={<AdminBranding />} />
-                  <Route path="/admin/textos-paginas" element={<AdminPageTexts />} />
-                  <Route path="/admin/guia" element={<AdminGuia />} />
-                  <Route path="/admin/destaques" element={<AdminDestaques />} />
-                  <Route path="/admin/transporte" element={<AdminTransporte />} />
-                  <Route path="/admin/agendamento" element={<AdminAgendamento />} />
-                  <Route path="/admin/hoje-le-ville" element={<AdminHojeNoLeVille />} />
-                </Route>
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <Suspense fallback={null}>
+                <Routes>
+                  {/* Rotas públicas */}
+                  <Route path="/" element={<Index />} />
+                  <Route path="/manutencao" element={<Manutencao />} />
+                  <Route path="/fale-conosco" element={<FaleConosco />} />
+                  <Route path="/hotelzinho" element={<Hotelzinho />} />
+                  <Route path="/transporte" element={<Transporte />} />
+                  <Route path="/venha-nos-conhecer" element={<VenhaNosConhecer />} />
+                  <Route path="/localizacao" element={<Localizacao />} />
+                  <Route path="/fotos" element={<Fotos />} />
+                  <Route path="/videos" element={<Videos />} />
+                  <Route path="/siga-nos" element={<SigaNos />} />
+                  {/* Rotas admin */}
+                  <Route path="/admin/login" element={<AdminLogin />} />
+                  <Route element={<ProtectedRoute><AdminShell /></ProtectedRoute>}>
+                    <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/admin/home" element={<AdminHome />} />
+                    <Route path="/admin/fotos" element={<AdminPhotos />} />
+                    <Route path="/admin/videos" element={<AdminVideos />} />
+                    <Route path="/admin/hotelzinho" element={<AdminHotelzinho />} />
+                    <Route path="/admin/conhecer" element={<AdminConhecer />} />
+                    <Route path="/admin/config" element={<AdminConfig />} />
+                    <Route path="/admin/social" element={<AdminSocial />} />
+                    <Route path="/admin/seguranca" element={<AdminSecurity />} />
+                    <Route path="/admin/navbar-footer" element={<AdminNavbarFooter />} />
+                    <Route path="/admin/branding" element={<AdminBranding />} />
+                    <Route path="/admin/textos-paginas" element={<AdminPageTexts />} />
+                    <Route path="/admin/guia" element={<AdminGuia />} />
+                    <Route path="/admin/destaques" element={<AdminDestaques />} />
+                    <Route path="/admin/transporte" element={<AdminTransporte />} />
+                    <Route path="/admin/agendamento" element={<AdminAgendamento />} />
+                    <Route path="/admin/hoje-le-ville" element={<AdminHojeNoLeVille />} />
+                  </Route>
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
             </PageTransition>
           </MaintenanceGuard>
         </RoutePersistence>
