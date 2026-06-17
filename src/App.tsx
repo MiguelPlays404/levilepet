@@ -39,6 +39,7 @@ import AdminTransporte from "./pages/admin/AdminTransporte";
 import AdminAgendamento from "./pages/admin/AdminAgendamento";
 import AdminHojeNoLeVille from "./pages/admin/AdminHojeNoLeVille";
 import AdminLogin from "./pages/admin/AdminLogin";
+import { AdminShell } from "./components/AdminLayout";
 import { useEffect } from "react";
 import { getSiteConfig, prewarmCache } from "./lib/dataCache";
 
