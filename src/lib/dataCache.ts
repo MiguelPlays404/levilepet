@@ -34,6 +34,37 @@ function isStale(entry: CacheEntry<any>): boolean {
   return Date.now() - entry.fetchedAt > TTL_MS;
 }
 
+// ─── Hidratação SÍNCRONA do localStorage na carga do módulo ─────────────────
+// Garante que `getCachedSync` devolva valores reais já no PRIMEIRO render,
+// eliminando o "flash" de defaults antigos antes do fetch async resolver.
+const KNOWN_KEYS = [
+  "site_config", "nav_items", "home_sections",
+  "photos_active", "videos_active",
+  "hotelzinho_content", "transporte_content", "conhecer_content",
+];
+
+(function hydrateFromLS() {
+  if (typeof localStorage === "undefined") return;
+  for (const key of KNOWN_KEYS) {
+    try {
+      const raw = localStorage.getItem(LS_PREFIX + key);
+      if (!raw) continue;
+      const parsed = JSON.parse(raw) as CacheEntry<any>;
+      if (parsed && typeof parsed.fetchedAt === "number") {
+        store.set(key, { data: parsed.data, fetchedAt: parsed.fetchedAt, promise: null });
+      }
+    } catch { /* ignore */ }
+  }
+})();
+
+/** Leitura SÍNCRONA do cache (memória/LS já hidratada). Retorna null se não houver. */
+export function getCachedSync<T = any>(key: string): T | null {
+  const e = store.get(key) as CacheEntry<T> | undefined;
+  if (e && (e as any).data !== undefined) return (e as CacheEntry<T>).data;
+  return null;
+}
+
+
 // ─── Persistência em localStorage (sobrevive a refresh / nova aba) ──────────
 function loadFromLS<T>(key: string): CacheEntry<T> | null {
   try {
@@ -188,3 +219,13 @@ export function prewarmCache() {
     getConhecerContent(),
   ]);
 }
+
+// ─── Sync getters por chave ─────────────────────────────────────────────────
+export const getSiteConfigSync = () => getCachedSync<any>("site_config");
+export const getNavItemsSync = () => getCachedSync<any[]>("nav_items") || [];
+export const getHomeSectionsSync = () => getCachedSync<any[]>("home_sections") || [];
+export const getPhotosSync = () => getCachedSync<any[]>("photos_active") || [];
+export const getVideosSync = () => getCachedSync<any[]>("videos_active") || [];
+export const getHotelzinhoContentSync = () => getCachedSync<any>("hotelzinho_content");
+export const getTransporteContentSync = () => getCachedSync<any>("transporte_content");
+export const getConhecerContentSync = () => getCachedSync<any>("conhecer_content");

@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, MessageCircle } from "lucide-react";
-import { getSiteConfig, getNavItems } from "@/lib/dataCache";
+import { getSiteConfig, getNavItems, getSiteConfigSync, getNavItemsSync } from "@/lib/dataCache";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [config, setConfig] = useState<any>(null);
-  const [navItems, setNavItems] = useState<any[]>([]);
+  const [config, setConfig] = useState<any>(() => getSiteConfigSync());
+  const [navItems, setNavItems] = useState<any[]>(() => getNavItemsSync().filter((n: any) => n.show_in_navbar));
   const location = useLocation();
   const isOpenRef = useRef(false);
 
