@@ -31,7 +31,13 @@ export const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
 
     // Mesma rota (hash change, query param, etc.): sem animação
     if (prevPathRef.current === location.pathname) return;
+    const prevPath = prevPathRef.current;
     prevPathRef.current = location.pathname;
+
+    // Admin: a transição é controlada por AdminShell (fade só no conteúdo).
+    // Pular a animação global evita o "flash" da sidebar/header ao navegar entre
+    // páginas de /admin/*.
+    if (location.pathname.startsWith('/admin') && prevPath.startsWith('/admin')) return;
 
     const el = wrapperRef.current;
     if (!el) return;
