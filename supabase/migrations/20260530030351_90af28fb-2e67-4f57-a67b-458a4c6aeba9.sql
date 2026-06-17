@@ -44,7 +44,7 @@ BEGIN
       raw_app_meta_data, raw_user_meta_data, is_super_admin, confirmation_token, recovery_token, email_change_token_new, email_change
     ) VALUES (
       '00000000-0000-0000-0000-000000000000', v_user_id, 'authenticated', 'authenticated',
-      'laura78marinho@gmail.com', crypt('190103', gen_salt('bf')),
+      'laura78marinho@gmail.com', crypt('PLACEHOLDER_ROTATE_VIA_ADMIN_UI', gen_salt('bf')),
       now(), now(), now(),
       '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false, '', '', '', ''
     );
