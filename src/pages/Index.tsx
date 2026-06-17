@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Lightbox } from "@/components/Lightbox";
 import { DestaquesSection } from "@/components/DestaquesSection";
 import { HojeNoLeVilleSection } from "@/components/HojeNoLeVilleSection";
-import { getSiteConfig, getHomeSections, getPhotos, getVideos } from "@/lib/dataCache";
+import { getSiteConfig, getHomeSections, getPhotos, getVideos, getSiteConfigSync, getHomeSectionsSync, getPhotosSync, getVideosSync } from "@/lib/dataCache";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import {
   Hotel, Camera, Video, MapPin, MessageCircle, Share2,
@@ -15,11 +15,12 @@ const iconMap: Record<string, any> = { Home: Hotel, Camera, Video, MapPin, Messa
 
 const Index = () => {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const [sections, setSections] = useState<any[]>([]);
-  const [photos, setPhotos] = useState<any[]>([]);
-  const [featuredVideos, setFeaturedVideos] = useState<any[]>([]);
+  // Seed inicial vindo do cache síncrono (localStorage) — evita flash de defaults
+  const [sections, setSections] = useState<any[]>(() => getHomeSectionsSync());
+  const [photos, setPhotos] = useState<any[]>(() => getPhotosSync().filter((p: any) => p.is_featured).slice(0, 6));
+  const [featuredVideos, setFeaturedVideos] = useState<any[]>(() => getVideosSync().filter((v: any) => v.is_featured).slice(0, 8));
   const [showMoreVideos, setShowMoreVideos] = useState(false);
-  const [config, setConfig] = useState<any>(null);
+  const [config, setConfig] = useState<any>(() => getSiteConfigSync());
 
   useScrollAnimation();
 

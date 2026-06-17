@@ -2,11 +2,11 @@ import { Link } from "react-router-dom";
 import { MapPin, Phone, Instagram } from "lucide-react";
 import { AdminAccessField } from "./AdminAccessField";
 import { useState, useEffect } from "react";
-import { getSiteConfig, getNavItems } from "@/lib/dataCache";
+import { getSiteConfig, getNavItems, getSiteConfigSync, getNavItemsSync } from "@/lib/dataCache";
 
 export function Footer() {
-  const [c, setC] = useState<any>(null);
-  const [footerLinks, setFooterLinks] = useState<any[]>([]);
+  const [c, setC] = useState<any>(() => getSiteConfigSync());
+  const [footerLinks, setFooterLinks] = useState<any[]>(() => getNavItemsSync().filter((n: any) => n.show_in_footer));
 
   useEffect(() => {
     let cancelled = false;

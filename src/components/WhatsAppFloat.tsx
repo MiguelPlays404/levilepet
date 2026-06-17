@@ -1,9 +1,9 @@
 import { MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getSiteConfig } from "@/lib/dataCache";
+import { getSiteConfig, getSiteConfigSync } from "@/lib/dataCache";
 
 export function WhatsAppFloat() {
-  const [config, setConfig] = useState<{ whatsapp_number?: string; whatsapp_message?: string } | null>(null);
+  const [config, setConfig] = useState<{ whatsapp_number?: string; whatsapp_message?: string } | null>(() => getSiteConfigSync());
 
   useEffect(() => {
     let cancelled = false;
