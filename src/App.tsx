@@ -122,23 +122,25 @@ const App = () => (
                 <Route path="/siga-nos" element={<SigaNos />} />
                 {/* Rotas admin */}
                 <Route path="/admin/login" element={<AdminLogin />} />
-                <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-                <Route path="/admin/home" element={<ProtectedRoute><AdminHome /></ProtectedRoute>} />
-                <Route path="/admin/fotos" element={<ProtectedRoute><AdminPhotos /></ProtectedRoute>} />
-                <Route path="/admin/videos" element={<ProtectedRoute><AdminVideos /></ProtectedRoute>} />
-                <Route path="/admin/hotelzinho" element={<ProtectedRoute><AdminHotelzinho /></ProtectedRoute>} />
-                <Route path="/admin/conhecer" element={<ProtectedRoute><AdminConhecer /></ProtectedRoute>} />
-                <Route path="/admin/config" element={<ProtectedRoute><AdminConfig /></ProtectedRoute>} />
-                <Route path="/admin/social" element={<ProtectedRoute><AdminSocial /></ProtectedRoute>} />
-                <Route path="/admin/seguranca" element={<ProtectedRoute><AdminSecurity /></ProtectedRoute>} />
-                <Route path="/admin/navbar-footer" element={<ProtectedRoute><AdminNavbarFooter /></ProtectedRoute>} />
-                <Route path="/admin/branding" element={<ProtectedRoute><AdminBranding /></ProtectedRoute>} />
-                <Route path="/admin/textos-paginas" element={<ProtectedRoute><AdminPageTexts /></ProtectedRoute>} />
-                <Route path="/admin/guia" element={<ProtectedRoute><AdminGuia /></ProtectedRoute>} />
-                <Route path="/admin/destaques" element={<ProtectedRoute><AdminDestaques /></ProtectedRoute>} />
-                <Route path="/admin/transporte" element={<ProtectedRoute><AdminTransporte /></ProtectedRoute>} />
-                <Route path="/admin/agendamento" element={<ProtectedRoute><AdminAgendamento /></ProtectedRoute>} />
-                <Route path="/admin/hoje-le-ville" element={<ProtectedRoute><AdminHojeNoLeVille /></ProtectedRoute>} />
+                <Route element={<ProtectedRoute><AdminShell /></ProtectedRoute>}>
+                  <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/admin/home" element={<AdminHome />} />
+                  <Route path="/admin/fotos" element={<AdminPhotos />} />
+                  <Route path="/admin/videos" element={<AdminVideos />} />
+                  <Route path="/admin/hotelzinho" element={<AdminHotelzinho />} />
+                  <Route path="/admin/conhecer" element={<AdminConhecer />} />
+                  <Route path="/admin/config" element={<AdminConfig />} />
+                  <Route path="/admin/social" element={<AdminSocial />} />
+                  <Route path="/admin/seguranca" element={<AdminSecurity />} />
+                  <Route path="/admin/navbar-footer" element={<AdminNavbarFooter />} />
+                  <Route path="/admin/branding" element={<AdminBranding />} />
+                  <Route path="/admin/textos-paginas" element={<AdminPageTexts />} />
+                  <Route path="/admin/guia" element={<AdminGuia />} />
+                  <Route path="/admin/destaques" element={<AdminDestaques />} />
+                  <Route path="/admin/transporte" element={<AdminTransporte />} />
+                  <Route path="/admin/agendamento" element={<AdminAgendamento />} />
+                  <Route path="/admin/hoje-le-ville" element={<AdminHojeNoLeVille />} />
+                </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </PageTransition>
