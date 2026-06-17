@@ -517,3 +517,10 @@
 a[href*="lovable.dev"][target="_blank"] {
   display: none !important;
 }
+
+/* Admin: fade-in suave somente no conteúdo (shell permanece estável) */
+@keyframes adminFade {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-admin-fade { animation: adminFade 0.22s cubic-bezier(0.4, 0, 0.2, 1) both; }
