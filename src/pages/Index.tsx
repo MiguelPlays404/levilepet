@@ -220,7 +220,7 @@ const Index = () => {
             <div className="w-16 h-16 mx-auto bg-primary rounded-[18px] flex items-center justify-center mb-6">
               <Phone className="w-7 h-7 text-black" />
             </div>
-            <h3 className="font-heading font-extrabold text-3xl lg:text-4xl text-black mb-3">A confirmar</h3>
+            <h3 className="font-heading font-extrabold text-3xl lg:text-4xl text-black mb-3">Consultar</h3>
             <p className="text-[#666] text-base mb-8" style={{ fontFamily: 'Inter' }}>
               Entre em contato pelo WhatsApp para receber valores atualizados e condições personalizadas.
             </p>
