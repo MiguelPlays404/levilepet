@@ -208,6 +208,35 @@ const Index = () => {
         </div>
       </section>
 
+      {/* ═══ PREÇOS — CLARO (#FAFAF8) ═══ */}
+      <section className="py-20 lg:py-24" style={{ background: '#FAFAF8' }}>
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-12">
+            <span data-animate="fade-up" className="inline-block text-primary text-sm font-body px-4 py-1.5 rounded-full mb-4" style={{ background: 'var(--yellow-badge)' }}>Preços</span>
+            <h2 data-animate="fade-up" data-delay="1" className="section-title text-black mb-3">Nossos Valores</h2>
+            <p data-animate="fade-up" data-delay="2" className="section-subtitle mx-auto">Consulte condições e pacotes especiais para o seu pet</p>
+          </div>
+          <div data-animate="fade-scale" data-delay="2" className="max-w-xl mx-auto bg-white rounded-[24px] p-10 lg:p-12 text-center border-[3px] border-primary" style={{ boxShadow: 'var(--shadow-xl)' }}>
+            <div className="w-16 h-16 mx-auto bg-primary rounded-[18px] flex items-center justify-center mb-6">
+              <Phone className="w-7 h-7 text-black" />
+            </div>
+            <h3 className="font-heading font-extrabold text-3xl lg:text-4xl text-black mb-3">A confirmar</h3>
+            <p className="text-[#666] text-base mb-8" style={{ fontFamily: 'Inter' }}>
+              Entre em contato pelo WhatsApp para receber valores atualizados e condições personalizadas.
+            </p>
+            <a
+              href={`https://wa.me/${waNum}?text=${encodeURIComponent('Olá, vim pelo site e gostaria de saber sobre os preços')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary inline-flex items-center gap-2 text-base py-4 px-8"
+            >
+              <MessageCircle className="w-5 h-5" />
+              Falar no WhatsApp
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* ═══ GALERIA — ESCURO (#0D0D0D) ═══ */}
       {photos.length > 0 && (
         <section className="py-20 lg:py-24" style={{ background: '#0D0D0D' }}>
