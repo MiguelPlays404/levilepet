@@ -3,10 +3,11 @@ import { PageHero } from "@/components/PageHero";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import {
   MessageCircle, Truck, Shield, Heart, Clock, MapPin, PawPrint,
-  Snowflake, Star, CheckCircle, Phone, Calendar, Home, ArrowRight,
+  Snowflake, Star, CheckCircle, Phone, Calendar, Home, ArrowRight, Play, X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getSiteConfig, getTransporteContent, getPhotos } from "@/lib/dataCache";
+import { getSiteConfig, getTransporteContent, getPhotos, getVideos } from "@/lib/dataCache";
+import { getYoutubeId } from "@/lib/youtube";
 import { Lightbox } from "@/components/Lightbox";
 
 const ICON_MAP: Record<string, any> = {
