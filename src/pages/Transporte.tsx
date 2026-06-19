@@ -21,6 +21,8 @@ const Transporte = () => {
   const [content, setContent] = useState<any>(null);
   const [waNum, setWaNum] = useState("5514997145610");
   const [extraPhotos, setExtraPhotos] = useState<any[]>([]);
+  const [videos, setVideos] = useState<any[]>([]);
+  const [playerVideo, setPlayerVideo] = useState<any>(null);
   const [lightbox, setLightbox] = useState<number | null>(null);
   useScrollAnimation();
 
@@ -30,14 +32,27 @@ const Transporte = () => {
       getTransporteContent(),
       getSiteConfig(),
       getPhotos(),
-    ]).then(([transporteData, siteConfig, allPhotos]) => {
+      getVideos(),
+    ]).then(([transporteData, siteConfig, allPhotos, allVideos]) => {
       if (cancelled) return;
       setContent(transporteData);
       if (siteConfig?.whatsapp_number) setWaNum(siteConfig.whatsapp_number);
       setExtraPhotos((allPhotos || []).filter(p => normalizeLocations(p).includes("transporte")));
+      setVideos((allVideos || []).filter(v => normalizeLocations(v).includes("transporte")));
     });
     return () => { cancelled = true; };
   }, []);
+
+  const getThumbnail = (video: any) => {
+    if (video.thumbnail_url) return video.thumbnail_url;
+    const ytId = getYoutubeId(video.video_url);
+    return ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : '/placeholder.svg';
+  };
+  const getEmbedUrl = (url: string) => {
+    const ytId = getYoutubeId(url);
+    return ytId ? `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1` : url;
+  };
+  const aspectClassFor = (v: any) => (({'16:9':'aspect-video','4:3':'aspect-[4/3]','1:1':'aspect-square','3:4':'aspect-[3/4]','9:16':'aspect-[9/16]'} as any)[v.aspect_ratio || (v.orientation === 'vertical' ? '9:16' : '16:9')] || 'aspect-video');
 
   const highlights = content ? [1, 2, 3, 4, 5, 6].map(n => ({
     icon: content[`highlight_${n}_icon`],
