@@ -187,6 +187,8 @@ const Index = () => {
               { icon: 'Home', title: 'Nosso Hotelzinho', description: 'Seu pet em boas mãos enquanto você viaja.', link_url: '/hotelzinho' },
               { icon: 'Camera', title: 'Galeria de Fotos', description: 'Confira nosso espaço e nossos pets.', link_url: '/fotos' },
               { icon: 'Video', title: 'Vídeos', description: 'Momentos especiais em vídeo.', link_url: '/videos' },
+              { icon: 'Truck', title: 'Transporte', description: 'Levamos e buscamos seu pet com segurança.', link_url: '/transporte' },
+              { icon: 'Sparkles', title: 'Venha Nos Conhecer', description: 'Agende uma visita ao Le Ville Pet.', link_url: '/venha-nos-conhecer' },
               { icon: 'MapPin', title: 'Localização', description: 'Villaggio Mall Center, Bauru-SP.', link_url: '/localizacao' },
               { icon: 'MessageCircle', title: 'Fale Conosco', description: 'Atendimento rápido pelo WhatsApp.', link_url: '/fale-conosco' },
               { icon: 'Heart', title: 'Redes Sociais', description: 'Siga a gente nas redes!', link_url: '/siga-nos' },
