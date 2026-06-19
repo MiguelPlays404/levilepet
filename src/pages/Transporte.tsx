@@ -394,5 +394,3 @@ const Transporte = () => {
 };
 
 export default Transporte;
-
-export default Transporte;
