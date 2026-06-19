@@ -13,6 +13,7 @@ const TABS = [
   { key: "geral", label: "Geral" },
   { key: "hotelzinho", label: "Hotelzinho" },
   { key: "conhecer", label: "Venha Nos Conhecer" },
+  { key: "transporte", label: "Transporte" },
 ];
 
 const LOCATIONS = [
@@ -20,6 +21,7 @@ const LOCATIONS = [
   { key: "home", label: "Destaque na Home" },
   { key: "hotelzinho", label: "Hotelzinho" },
   { key: "conhecer", label: "Venha Nos Conhecer" },
+  { key: "transporte", label: "Transporte" },
 ];
 
 const normalizeLocations = (video: any) => {

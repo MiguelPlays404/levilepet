@@ -3,10 +3,11 @@ import { PageHero } from "@/components/PageHero";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import {
   MessageCircle, Truck, Shield, Heart, Clock, MapPin, PawPrint,
-  Snowflake, Star, CheckCircle, Phone, Calendar, Home, ArrowRight,
+  Snowflake, Star, CheckCircle, Phone, Calendar, Home, ArrowRight, Play, X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getSiteConfig, getTransporteContent, getPhotos } from "@/lib/dataCache";
+import { getSiteConfig, getTransporteContent, getPhotos, getVideos } from "@/lib/dataCache";
+import { getYoutubeId } from "@/lib/youtube";
 import { Lightbox } from "@/components/Lightbox";
 
 const ICON_MAP: Record<string, any> = {
@@ -20,6 +21,8 @@ const Transporte = () => {
   const [content, setContent] = useState<any>(null);
   const [waNum, setWaNum] = useState("5514997145610");
   const [extraPhotos, setExtraPhotos] = useState<any[]>([]);
+  const [videos, setVideos] = useState<any[]>([]);
+  const [playerVideo, setPlayerVideo] = useState<any>(null);
   const [lightbox, setLightbox] = useState<number | null>(null);
   useScrollAnimation();
 
@@ -29,14 +32,27 @@ const Transporte = () => {
       getTransporteContent(),
       getSiteConfig(),
       getPhotos(),
-    ]).then(([transporteData, siteConfig, allPhotos]) => {
+      getVideos(),
+    ]).then(([transporteData, siteConfig, allPhotos, allVideos]) => {
       if (cancelled) return;
       setContent(transporteData);
       if (siteConfig?.whatsapp_number) setWaNum(siteConfig.whatsapp_number);
       setExtraPhotos((allPhotos || []).filter(p => normalizeLocations(p).includes("transporte")));
+      setVideos((allVideos || []).filter(v => normalizeLocations(v).includes("transporte")));
     });
     return () => { cancelled = true; };
   }, []);
+
+  const getThumbnail = (video: any) => {
+    if (video.thumbnail_url) return video.thumbnail_url;
+    const ytId = getYoutubeId(video.video_url);
+    return ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : '/placeholder.svg';
+  };
+  const getEmbedUrl = (url: string) => {
+    const ytId = getYoutubeId(url);
+    return ytId ? `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1` : url;
+  };
+  const aspectClassFor = (v: any) => (({'16:9':'aspect-video','4:3':'aspect-[4/3]','1:1':'aspect-square','3:4':'aspect-[3/4]','9:16':'aspect-[9/16]'} as any)[v.aspect_ratio || (v.orientation === 'vertical' ? '9:16' : '16:9')] || 'aspect-video');
 
   const highlights = content ? [1, 2, 3, 4, 5, 6].map(n => ({
     icon: content[`highlight_${n}_icon`],
@@ -237,6 +253,50 @@ const Transporte = () => {
         </section>
       )}
 
+      {/* Videos — White */}
+      {videos.length > 0 && (
+        <section className="py-20" style={{ background: "#FFFFFF" }}>
+          <div className="container mx-auto px-4">
+            <h2 data-animate="fade-up" className="section-title text-black text-center mb-10">
+              {content?.videos_section_title || "Vídeos do Transporte"}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
+              {videos.map((video, i) => (
+                <button
+                  key={video.id}
+                  data-animate="card"
+                  data-delay={String(Math.min(i, 5))}
+                  onClick={() => setPlayerVideo(video)}
+                  className="bg-white rounded-[14px] overflow-hidden border border-[#E5E5E5] shadow-sm group text-left"
+                >
+                  <div className={`relative ${aspectClassFor(video)} overflow-hidden bg-[#E5E5E5]`}>
+                    <img
+                      src={getThumbnail(video)}
+                      alt={video.title}
+                      loading="lazy"
+                      onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center group-hover:bg-black/20 transition-all">
+                      <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center group-hover:scale-110 transition-transform" style={{ background: 'rgba(245,192,0,0.92)' }}>
+                        <Play className="w-7 h-7 text-black ml-1" fill="currentColor" />
+                      </div>
+                    </div>
+                  </div>
+                  {video.title && (
+                    <div className="p-4">
+                      <h3 className="font-heading font-semibold text-black text-base line-clamp-2">{video.title}</h3>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+
+
       {/* Pricing — White */}
       {content?.pricing_text && (
         <section className="py-20" style={{ background: "#FFFFFF" }}>
@@ -306,6 +366,28 @@ const Transporte = () => {
           initialIndex={Math.min(lightbox, allLightboxImages.length - 1)}
           onClose={() => setLightbox(null)}
         />
+      )}
+
+      {playerVideo && (
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center"
+          style={{ background: 'rgba(0,0,0,0.96)', backdropFilter: 'blur(8px)' }}
+          onClick={() => setPlayerVideo(null)}
+        >
+          <div className="w-full max-w-[920px] mx-4 relative" onClick={(e) => e.stopPropagation()} style={{ animation: 'lightboxOpen 0.25s ease both' }}>
+            <button onClick={() => setPlayerVideo(null)} className="absolute -top-12 right-0 text-white/70 hover:text-white transition-colors">
+              <X className="w-9 h-9" />
+            </button>
+            <div className={`${aspectClassFor(playerVideo)} rounded-2xl overflow-hidden bg-black`}>
+              {playerVideo.video_type === 'upload' ? (
+                <video src={playerVideo.video_url} className="w-full h-full" controls autoPlay />
+              ) : (
+                <iframe src={getEmbedUrl(playerVideo.video_url)} className="w-full h-full" allowFullScreen allow="autoplay" />
+              )}
+            </div>
+            {playerVideo.title && <h3 className="text-white font-heading font-semibold text-lg mt-4">{playerVideo.title}</h3>}
+          </div>
+        </div>
       )}
     </PublicLayout>
   );
