@@ -253,6 +253,50 @@ const Transporte = () => {
         </section>
       )}
 
+      {/* Videos — White */}
+      {videos.length > 0 && (
+        <section className="py-20" style={{ background: "#FFFFFF" }}>
+          <div className="container mx-auto px-4">
+            <h2 data-animate="fade-up" className="section-title text-black text-center mb-10">
+              {content?.videos_section_title || "Vídeos do Transporte"}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
+              {videos.map((video, i) => (
+                <button
+                  key={video.id}
+                  data-animate="card"
+                  data-delay={String(Math.min(i, 5))}
+                  onClick={() => setPlayerVideo(video)}
+                  className="bg-white rounded-[14px] overflow-hidden border border-[#E5E5E5] shadow-sm group text-left"
+                >
+                  <div className={`relative ${aspectClassFor(video)} overflow-hidden bg-[#E5E5E5]`}>
+                    <img
+                      src={getThumbnail(video)}
+                      alt={video.title}
+                      loading="lazy"
+                      onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center group-hover:bg-black/20 transition-all">
+                      <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center group-hover:scale-110 transition-transform" style={{ background: 'rgba(245,192,0,0.92)' }}>
+                        <Play className="w-7 h-7 text-black ml-1" fill="currentColor" />
+                      </div>
+                    </div>
+                  </div>
+                  {video.title && (
+                    <div className="p-4">
+                      <h3 className="font-heading font-semibold text-black text-base line-clamp-2">{video.title}</h3>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+
+
       {/* Pricing — White */}
       {content?.pricing_text && (
         <section className="py-20" style={{ background: "#FFFFFF" }}>
