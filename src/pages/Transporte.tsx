@@ -367,8 +367,32 @@ const Transporte = () => {
           onClose={() => setLightbox(null)}
         />
       )}
+
+      {playerVideo && (
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center"
+          style={{ background: 'rgba(0,0,0,0.96)', backdropFilter: 'blur(8px)' }}
+          onClick={() => setPlayerVideo(null)}
+        >
+          <div className="w-full max-w-[920px] mx-4 relative" onClick={(e) => e.stopPropagation()} style={{ animation: 'lightboxOpen 0.25s ease both' }}>
+            <button onClick={() => setPlayerVideo(null)} className="absolute -top-12 right-0 text-white/70 hover:text-white transition-colors">
+              <X className="w-9 h-9" />
+            </button>
+            <div className={`${aspectClassFor(playerVideo)} rounded-2xl overflow-hidden bg-black`}>
+              {playerVideo.video_type === 'upload' ? (
+                <video src={playerVideo.video_url} className="w-full h-full" controls autoPlay />
+              ) : (
+                <iframe src={getEmbedUrl(playerVideo.video_url)} className="w-full h-full" allowFullScreen allow="autoplay" />
+              )}
+            </div>
+            {playerVideo.title && <h3 className="text-white font-heading font-semibold text-lg mt-4">{playerVideo.title}</h3>}
+          </div>
+        </div>
+      )}
     </PublicLayout>
   );
 };
+
+export default Transporte;
 
 export default Transporte;
