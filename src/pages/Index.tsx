@@ -8,10 +8,10 @@ import { getSiteConfig, getHomeSections, getPhotos, getVideos, getSiteConfigSync
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import {
   Hotel, Camera, Video, MapPin, MessageCircle, Share2,
-  Search, Heart, Phone
+  Search, Heart, Phone, Truck, Sparkles
 } from "lucide-react";
 
-const iconMap: Record<string, any> = { Home: Hotel, Camera, Video, MapPin, MessageCircle, Heart: Share2 };
+const iconMap: Record<string, any> = { Home: Hotel, Camera, Video, MapPin, MessageCircle, Heart: Share2, Truck, Sparkles };
 
 const Index = () => {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
