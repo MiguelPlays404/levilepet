@@ -16,12 +16,14 @@ const iconMap: Record<string, any> = { Home: Hotel, Camera, Video, MapPin, Messa
 
 const Index = () => {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [vagaImageOpen, setVagaImageOpen] = useState(false);
   // Seed inicial vindo do cache síncrono (localStorage) — evita flash de defaults
   const [sections, setSections] = useState<any[]>(() => getHomeSectionsSync());
   const [photos, setPhotos] = useState<any[]>(() => getPhotosSync().filter((p: any) => p.is_featured).slice(0, 6));
   const [featuredVideos, setFeaturedVideos] = useState<any[]>(() => getVideosSync().filter((v: any) => v.is_featured).slice(0, 8));
   const [showMoreVideos, setShowMoreVideos] = useState(false);
   const [config, setConfig] = useState<any>(() => getSiteConfigSync());
+  const [vagas, setVagas] = useState<any[]>([]);
 
   useScrollAnimation();
 
