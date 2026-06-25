@@ -1,7 +1,25 @@
-import { useState, useEffect, createContext, useContext } from "react";
+import { useState, useEffect, createContext, useContext, Suspense } from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import { LayoutDashboard, Image, Video, Hotel, Eye, Settings, Share2, Shield, LogOut, ExternalLink, Home, Type, Palette, Compass, BookOpen, Star, Truck, CalendarClock, Tv2, Briefcase } from "lucide-react";
 import { destroyAdminSession } from "@/lib/adminSession";
+
+/** Loader temático mostrado enquanto o chunk da próxima página admin carrega. */
+function AdminContentLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh] animate-admin-fade">
+      <div className="flex flex-col items-center gap-4">
+        <div className="relative w-12 h-12">
+          <div className="absolute inset-0 rounded-full border-2 border-primary/15" />
+          <div
+            className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary"
+            style={{ animation: 'spinSmooth 0.9s linear infinite' }}
+          />
+        </div>
+        <p className="text-[#71717A] text-xs font-heading tracking-[0.15em] uppercase">Carregando…</p>
+      </div>
+    </div>
+  );
+}
 
 const navItems = [
   { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
@@ -94,9 +112,13 @@ export function AdminShell() {
           <header className="h-16 flex items-center px-8" style={{ background: '#111113', borderBottom: '1px solid rgba(245,192,0,0.15)' }}>
             <h1 className="font-heading font-bold text-lg">{title}</h1>
           </header>
-          {/* key={pathname} força fade suave apenas no conteúdo, sem remontar a shell */}
+          {/* key={pathname} dispara fade suave apenas no conteúdo, sem remontar a shell.
+              Suspense local: enquanto o chunk da próxima página admin carrega,
+              mostramos um loader temático em vez do flash branco do Suspense global. */}
           <div key={location.pathname} className="p-8 animate-admin-fade">
-            <Outlet />
+            <Suspense fallback={<AdminContentLoader />}>
+              <Outlet />
+            </Suspense>
           </div>
         </main>
       </div>
