@@ -170,6 +170,91 @@ const Index = () => {
         </div>
       </section>
 
+      {/* ═══ VAGAS DISPONÍVEIS — AMARELO (#F5C000) ═══ */}
+      {c.vagas_section_active !== false && vagas.length > 0 && (
+        <section className="py-20 lg:py-24 relative overflow-hidden" style={{ background: '#F5C000' }}>
+          <div className="absolute inset-0 paw-pattern-bg opacity-[0.07] pointer-events-none" />
+          <div className="container mx-auto px-6 relative">
+            <div className="text-center mb-12">
+              <span data-animate="fade-up" className="inline-flex items-center gap-2 bg-black/10 text-black text-sm font-heading font-semibold px-4 py-1.5 rounded-full mb-4">
+                <Briefcase className="w-4 h-4" /> {c.vagas_section_badge || 'Trabalhe Conosco'}
+              </span>
+              <h2 data-animate="fade-up" data-delay="1" className="section-title text-black mb-3">{c.vagas_section_title || 'Vagas Disponíveis'}</h2>
+              <p data-animate="fade-up" data-delay="2" className="text-black/70 text-base lg:text-lg" style={{ fontFamily: 'Inter' }}>{c.vagas_section_subtitle || 'Faça parte da nossa equipe!'}</p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center max-w-6xl mx-auto">
+              <button
+                onClick={() => setVagaImageOpen(true)}
+                data-animate="fade-right"
+                className="group relative block w-full focus:outline-none"
+                aria-label="Ampliar imagem"
+              >
+                <div className="absolute -inset-3 bg-black/15 rounded-3xl rotate-[-2deg] transition-transform group-hover:rotate-[-3deg] max-w-sm mx-auto" />
+                <div className="relative aspect-[9/16] max-w-sm mx-auto rounded-3xl overflow-hidden border-[4px] border-black shadow-2xl bg-black/10">
+                  <img
+                    src={c.vagas_section_image_url || '/__l5e/assets-v1/54501d92-7544-4502-8c7b-207bccc137ff/vaga-banhista.jpg'}
+                    alt="Vaga em destaque"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    loading="lazy"
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                    <Search className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </div>
+              </button>
+
+              <div className="space-y-6">
+                {vagas.map((vaga, i) => {
+                  const msg = encodeURIComponent(vaga.whatsapp_message || `Olá! Vim pelo site do Le Ville Pet e tenho interesse na vaga: ${vaga.title}`);
+                  return (
+                    <div key={vaga.id} data-animate="fade-up" data-delay={String(i)} className="bg-black text-white rounded-[24px] p-7 lg:p-8 shadow-2xl border-2 border-black/80">
+                      <h3 className="font-heading font-extrabold text-2xl lg:text-3xl text-primary mb-5 leading-tight">{vaga.title}</h3>
+                      {vaga.schedule && (
+                        <div className="flex items-start gap-3 mb-4">
+                          <Clock className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                          <div>
+                            <p className="font-heading font-semibold text-sm text-primary/90 mb-0.5">Disponibilidade necessária</p>
+                            <p className="text-white/80 text-sm" style={{ fontFamily: 'Inter' }}>{vaga.schedule}</p>
+                          </div>
+                        </div>
+                      )}
+                      {vaga.requirements && (
+                        <div className="flex items-start gap-3 mb-6">
+                          <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                          <div>
+                            <p className="font-heading font-semibold text-sm text-primary/90 mb-0.5">Requisitos mínimos</p>
+                            <p className="text-white/80 text-sm" style={{ fontFamily: 'Inter' }}>{vaga.requirements}</p>
+                          </div>
+                        </div>
+                      )}
+                      <a
+                        href={`https://wa.me/${waNum}?text=${msg}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebe57] text-white font-heading font-bold px-6 py-3 rounded-xl transition-colors min-h-[44px]"
+                      >
+                        <MessageCircle className="w-5 h-5" />
+                        Falar no WhatsApp
+                      </a>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {vagaImageOpen && (
+            <Lightbox
+              images={[{ url: c.vagas_section_image_url || '/__l5e/assets-v1/54501d92-7544-4502-8c7b-207bccc137ff/vaga-banhista.jpg', title: vagas[0]?.title }]}
+              initialIndex={0}
+              onClose={() => setVagaImageOpen(false)}
+            />
+          )}
+        </section>
+      )}
+
       {/* ═══ HOJE NO LE VILLE — AGENDADO AUTOMÁTICO ═══ */}
       <HojeNoLeVilleSection />
 
