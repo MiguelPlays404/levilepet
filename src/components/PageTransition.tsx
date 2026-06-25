@@ -54,7 +54,7 @@ export const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
     // Força reinício da animation CSS (reflow trick)
     el.style.animation = 'none';
     void el.offsetHeight; // flush reflow
-    el.style.animation = 'pageEnter 0.32s cubic-bezier(0.4, 0, 0.2, 1) both';
+    el.style.animation = 'pageEnter 0.42s cubic-bezier(0.22, 1, 0.36, 1) both';
 
     // Libera cliques ao fim da animação
     timerRef.current = window.setTimeout(() => {
@@ -63,7 +63,7 @@ export const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
         wrapperRef.current.style.pointerEvents = '';
       }
       timerRef.current = null;
-    }, 350); // ~10ms de margem além dos 320ms da animation
+    }, 450); // ~10ms de margem além dos 420ms da animation
 
     // Cleanup: cancela timer se o componente desmontar (admin redirect, etc.)
     return () => {
