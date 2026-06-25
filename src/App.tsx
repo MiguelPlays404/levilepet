@@ -12,15 +12,28 @@ import { SecurityHeaders } from "@/components/SecurityHeaders";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import Index from "./pages/Index";
 import { lazy, Suspense, useEffect } from "react";
-// Páginas públicas secundárias — carregadas sob demanda
-const FaleConosco = lazy(() => import("./pages/FaleConosco"));
-const Hotelzinho = lazy(() => import("./pages/Hotelzinho"));
-const Transporte = lazy(() => import("./pages/Transporte"));
-const VenhaNosConhecer = lazy(() => import("./pages/VenhaNosConhecer"));
-const Localizacao = lazy(() => import("./pages/Localizacao"));
-const Fotos = lazy(() => import("./pages/Fotos"));
-const Videos = lazy(() => import("./pages/Videos"));
-const SigaNos = lazy(() => import("./pages/SigaNos"));
+
+/**
+ * Lazy com prefetch: além de criar o componente lazy, expõe `.preload()`
+ * para que possamos disparar o carregamento do chunk em idle — assim, quando
+ * o usuário clica num link, o chunk já está em cache e não há Suspense → sem
+ * flash de tela branca, transição instantânea e suave.
+ */
+function lazyWithPreload<T extends { default: React.ComponentType<any> }>(factory: () => Promise<T>) {
+  const Component = lazy(factory) as React.LazyExoticComponent<T["default"]> & { preload: () => Promise<T> };
+  Component.preload = factory;
+  return Component;
+}
+
+// Páginas públicas secundárias — carregadas sob demanda (com prefetch em idle)
+const FaleConosco = lazyWithPreload(() => import("./pages/FaleConosco"));
+const Hotelzinho = lazyWithPreload(() => import("./pages/Hotelzinho"));
+const Transporte = lazyWithPreload(() => import("./pages/Transporte"));
+const VenhaNosConhecer = lazyWithPreload(() => import("./pages/VenhaNosConhecer"));
+const Localizacao = lazyWithPreload(() => import("./pages/Localizacao"));
+const Fotos = lazyWithPreload(() => import("./pages/Fotos"));
+const Videos = lazyWithPreload(() => import("./pages/Videos"));
+const SigaNos = lazyWithPreload(() => import("./pages/SigaNos"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Manutencao = lazy(() => import("./pages/Manutencao"));
 // Admin — nunca carregado pelo público
@@ -46,6 +59,52 @@ const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const AdminShell = lazy(() =>
   import("./components/AdminLayout").then((m) => ({ default: m.AdminShell }))
 );
+
+/** Dispara o download de todos os chunks públicos em idle. */
+function prefetchPublicChunks() {
+  const run = () => {
+    FaleConosco.preload();
+    Hotelzinho.preload();
+    Transporte.preload();
+    VenhaNosConhecer.preload();
+    Localizacao.preload();
+    Fotos.preload();
+    Videos.preload();
+    SigaNos.preload();
+  };
+  const ric = (window as any).requestIdleCallback;
+  if (typeof ric === "function") ric(run, { timeout: 2500 });
+  else setTimeout(run, 1200);
+}
+
+/**
+ * Recovery automático para "Failed to fetch dynamically imported module"
+ * (acontece quando o usuário tem uma aba aberta após um redeploy e os
+ * hashes dos chunks mudaram). Recarrega a página UMA vez para pegar o
+ * novo bundle — sem loop infinito.
+ */
+function installChunkErrorRecovery() {
+  const RELOAD_FLAG = "__lvp_chunk_reload_at";
+  const isChunkErr = (msg: string) =>
+    /Failed to fetch dynamically imported module/i.test(msg) ||
+    /Importing a module script failed/i.test(msg) ||
+    /ChunkLoadError/i.test(msg);
+
+  const tryReload = (msg: string) => {
+    if (!isChunkErr(msg)) return;
+    const last = Number(sessionStorage.getItem(RELOAD_FLAG) || 0);
+    // Evita loop: só recarrega se já passaram >10s desde o último auto-reload.
+    if (Date.now() - last < 10_000) return;
+    sessionStorage.setItem(RELOAD_FLAG, String(Date.now()));
+    window.location.reload();
+  };
+
+  window.addEventListener("error", (e) => tryReload(String(e?.message || "")));
+  window.addEventListener("unhandledrejection", (e) =>
+    tryReload(String((e as any)?.reason?.message || (e as any)?.reason || ""))
+  );
+}
+
 import { getSiteConfig, prewarmCache } from "./lib/dataCache";
 
 function BrandingApplier() {
