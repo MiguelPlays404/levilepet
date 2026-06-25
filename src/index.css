@@ -431,7 +431,7 @@
 
 @keyframes heartBeat { 0%{transform:scale(1)} 15%{transform:scale(1.45)} 30%{transform:scale(1)} 45%{transform:scale(1.32)} 100%{transform:scale(1)} }
 
-@keyframes pageEnter { 0%{opacity:0;transform:translateY(10px)} 100%{opacity:1;transform:translateY(0)} }
+@keyframes pageEnter { 0%{opacity:0;transform:translateY(12px);filter:blur(3px)} 60%{opacity:1;filter:blur(0)} 100%{opacity:1;transform:translateY(0);filter:blur(0)} }
 @keyframes pageExit { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-8px)} }
 
 @keyframes btnShine { 0%{left:-120%} 100%{left:220%} }
