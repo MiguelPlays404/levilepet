@@ -6,9 +6,10 @@ import { DestaquesSection } from "@/components/DestaquesSection";
 import { HojeNoLeVilleSection } from "@/components/HojeNoLeVilleSection";
 import { getSiteConfig, getHomeSections, getPhotos, getVideos, getSiteConfigSync, getHomeSectionsSync, getPhotosSync, getVideosSync } from "@/lib/dataCache";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Hotel, Camera, Video, MapPin, MessageCircle, Share2,
-  Search, Heart, Phone, Truck, Sparkles
+  Search, Heart, Phone, Truck, Sparkles, Briefcase, Clock, CheckCircle2
 } from "lucide-react";
 
 const iconMap: Record<string, any> = { Home: Hotel, Camera, Video, MapPin, MessageCircle, Heart: Share2, Truck, Sparkles };
