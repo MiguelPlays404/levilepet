@@ -1,6 +1,6 @@
 import { useState, useEffect, createContext, useContext } from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
-import { LayoutDashboard, Image, Video, Hotel, Eye, Settings, Share2, Shield, LogOut, ExternalLink, Home, Type, Palette, Compass, BookOpen, Star, Truck, CalendarClock, Tv2 } from "lucide-react";
+import { LayoutDashboard, Image, Video, Hotel, Eye, Settings, Share2, Shield, LogOut, ExternalLink, Home, Type, Palette, Compass, BookOpen, Star, Truck, CalendarClock, Tv2, Briefcase } from "lucide-react";
 import { destroyAdminSession } from "@/lib/adminSession";
 
 const navItems = [
@@ -15,6 +15,7 @@ const navItems = [
   { label: "Hotelzinho", path: "/admin/hotelzinho", icon: Hotel },
   { label: "Transporte", path: "/admin/transporte", icon: Truck },
   { label: "Venha Nos Conhecer", path: "/admin/conhecer", icon: Eye },
+  { label: "Vagas / Trabalhe Conosco", path: "/admin/vagas", icon: Briefcase },
   { label: "Textos das Páginas", path: "/admin/textos-paginas", icon: Type },
   { type: "separator", label: "APARÊNCIA" },
   { label: "Branding", path: "/admin/branding", icon: Palette },
