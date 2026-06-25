@@ -170,52 +170,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ═══ HOJE NO LE VILLE — AGENDADO AUTOMÁTICO ═══ */}
-      <HojeNoLeVilleSection />
-
-      {/* ═══ DESTAQUES DA SEMANA — HOME ═══ */}
-      <DestaquesSection
-        locationKey="destaques_home"
-        title={c.destaques_home_title || "Destaques da Semana"}
-        subtitle={c.destaques_home_subtitle || "Os momentos mais especiais"}
-        background="#FAFAF8"
-      />
-
-      {/* ═══ CARDS — CLARO (#F8F8F6) ═══ */}
-      <section className="py-20 lg:py-24" style={{ background: '#F8F8F6' }}>
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-14">
-            <h2 data-animate="fade-up" className="section-title text-black mb-3">{c.home_explore_title || 'Explore o Le Ville Pet'}</h2>
-            <p data-animate="fade-up" data-delay="1" className="section-subtitle mx-auto">{c.home_explore_subtitle || 'Descubra tudo que preparamos para você e seu pet'}</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {(sections.length > 0 ? sections : [
-              { icon: 'Home', title: 'Nosso Hotelzinho', description: 'Seu pet em boas mãos enquanto você viaja.', link_url: '/hotelzinho' },
-              { icon: 'Camera', title: 'Galeria de Fotos', description: 'Confira nosso espaço e nossos pets.', link_url: '/fotos' },
-              { icon: 'Video', title: 'Vídeos', description: 'Momentos especiais em vídeo.', link_url: '/videos' },
-              { icon: 'Truck', title: 'Transporte', description: 'Levamos e buscamos seu pet com segurança.', link_url: '/transporte' },
-              { icon: 'Sparkles', title: 'Venha Nos Conhecer', description: 'Agende uma visita ao Le Ville Pet.', link_url: '/venha-nos-conhecer' },
-              { icon: 'MapPin', title: 'Localização', description: 'Villaggio Mall Center, Bauru-SP.', link_url: '/localizacao' },
-              { icon: 'MessageCircle', title: 'Fale Conosco', description: 'Atendimento rápido pelo WhatsApp.', link_url: '/fale-conosco' },
-              { icon: 'Heart', title: 'Redes Sociais', description: 'Siga a gente nas redes!', link_url: '/siga-nos' },
-            ]).map((card: any, i: number) => {
-              const Icon = iconMap[card.icon] || Hotel;
-              return (
-                <Link key={card.link_url || i} to={card.link_url} data-animate="card" data-delay={String(i)}
-                  className="card-light group block p-8 hover:cursor-pointer">
-                  <div className="w-16 h-16 bg-primary rounded-[18px] flex items-center justify-center mb-5 group-hover:animate-[rotatePaw_0.5s_ease]">
-                    <Icon className="w-7 h-7 text-black" />
-                  </div>
-                  <h3 className="font-heading font-bold text-[19px] text-black mb-2">{card.title}</h3>
-                  <p className="text-[#666] text-[15px] mb-3" style={{ fontFamily: 'Inter' }}>{card.description}</p>
-                  <span className="text-primary text-sm font-heading font-semibold opacity-0 group-hover:opacity-100 transition-opacity">{c.home_card_cta_text || 'Saiba mais →'}</span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
       {/* ═══ VAGAS DISPONÍVEIS — AMARELO (#F5C000) ═══ */}
       {c.vagas_section_active !== false && vagas.length > 0 && (
         <section className="py-20 lg:py-24 relative overflow-hidden" style={{ background: '#F5C000' }}>
@@ -236,8 +190,8 @@ const Index = () => {
                 className="group relative block w-full focus:outline-none"
                 aria-label="Ampliar imagem"
               >
-                <div className="absolute -inset-3 bg-black/15 rounded-3xl rotate-[-2deg] transition-transform group-hover:rotate-[-3deg]" />
-                <div className="relative aspect-[4/5] rounded-3xl overflow-hidden border-[4px] border-black shadow-2xl bg-black/10">
+                <div className="absolute -inset-3 bg-black/15 rounded-3xl rotate-[-2deg] transition-transform group-hover:rotate-[-3deg] max-w-sm mx-auto" />
+                <div className="relative aspect-[9/16] max-w-sm mx-auto rounded-3xl overflow-hidden border-[4px] border-black shadow-2xl bg-black/10">
                   <img
                     src={c.vagas_section_image_url || '/__l5e/assets-v1/54501d92-7544-4502-8c7b-207bccc137ff/vaga-banhista.jpg'}
                     alt="Vaga em destaque"
@@ -300,6 +254,52 @@ const Index = () => {
           )}
         </section>
       )}
+
+      {/* ═══ HOJE NO LE VILLE — AGENDADO AUTOMÁTICO ═══ */}
+      <HojeNoLeVilleSection />
+
+      {/* ═══ DESTAQUES DA SEMANA — HOME ═══ */}
+      <DestaquesSection
+        locationKey="destaques_home"
+        title={c.destaques_home_title || "Destaques da Semana"}
+        subtitle={c.destaques_home_subtitle || "Os momentos mais especiais"}
+        background="#FAFAF8"
+      />
+
+      {/* ═══ CARDS — CLARO (#F8F8F6) ═══ */}
+      <section className="py-20 lg:py-24" style={{ background: '#F8F8F6' }}>
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-14">
+            <h2 data-animate="fade-up" className="section-title text-black mb-3">{c.home_explore_title || 'Explore o Le Ville Pet'}</h2>
+            <p data-animate="fade-up" data-delay="1" className="section-subtitle mx-auto">{c.home_explore_subtitle || 'Descubra tudo que preparamos para você e seu pet'}</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {(sections.length > 0 ? sections : [
+              { icon: 'Home', title: 'Nosso Hotelzinho', description: 'Seu pet em boas mãos enquanto você viaja.', link_url: '/hotelzinho' },
+              { icon: 'Camera', title: 'Galeria de Fotos', description: 'Confira nosso espaço e nossos pets.', link_url: '/fotos' },
+              { icon: 'Video', title: 'Vídeos', description: 'Momentos especiais em vídeo.', link_url: '/videos' },
+              { icon: 'Truck', title: 'Transporte', description: 'Levamos e buscamos seu pet com segurança.', link_url: '/transporte' },
+              { icon: 'Sparkles', title: 'Venha Nos Conhecer', description: 'Agende uma visita ao Le Ville Pet.', link_url: '/venha-nos-conhecer' },
+              { icon: 'MapPin', title: 'Localização', description: 'Villaggio Mall Center, Bauru-SP.', link_url: '/localizacao' },
+              { icon: 'MessageCircle', title: 'Fale Conosco', description: 'Atendimento rápido pelo WhatsApp.', link_url: '/fale-conosco' },
+              { icon: 'Heart', title: 'Redes Sociais', description: 'Siga a gente nas redes!', link_url: '/siga-nos' },
+            ]).map((card: any, i: number) => {
+              const Icon = iconMap[card.icon] || Hotel;
+              return (
+                <Link key={card.link_url || i} to={card.link_url} data-animate="card" data-delay={String(i)}
+                  className="card-light group block p-8 hover:cursor-pointer">
+                  <div className="w-16 h-16 bg-primary rounded-[18px] flex items-center justify-center mb-5 group-hover:animate-[rotatePaw_0.5s_ease]">
+                    <Icon className="w-7 h-7 text-black" />
+                  </div>
+                  <h3 className="font-heading font-bold text-[19px] text-black mb-2">{card.title}</h3>
+                  <p className="text-[#666] text-[15px] mb-3" style={{ fontFamily: 'Inter' }}>{card.description}</p>
+                  <span className="text-primary text-sm font-heading font-semibold opacity-0 group-hover:opacity-100 transition-opacity">{c.home_card_cta_text || 'Saiba mais →'}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
       {/* ═══ PREÇOS — CLARO (#FAFAF8) ═══ */}
       <section className="py-20 lg:py-24" style={{ background: '#FAFAF8' }}>
