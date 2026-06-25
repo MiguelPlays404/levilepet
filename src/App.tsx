@@ -111,6 +111,10 @@ function BrandingApplier() {
   useEffect(() => {
     // Pré-aquece o cache em background assim que o app monta
     prewarmCache();
+    // Pré-carrega chunks públicos em idle → navegação sem Suspense/flash branco
+    prefetchPublicChunks();
+    // Recovery automático para chunks ausentes após redeploy
+    installChunkErrorRecovery();
 
     getSiteConfig().then((data) => {
         if (!data) return;
@@ -143,6 +147,20 @@ function BrandingApplier() {
   return null;
 }
 
+/** Fallback global do Suspense — só aparece se um chunk demorar a carregar.
+ *  Cobre a viewport com um fundo neutro e um spinner discreto da marca,
+ *  evitando o flash de tela branca quando o prefetch ainda não terminou. */
+function GlobalSuspenseFallback() {
+  return (
+    <div className="fixed inset-0 z-[9998] flex items-center justify-center pointer-events-none" style={{ background: '#09090B' }}>
+      <div
+        className="w-10 h-10 rounded-full border-2 border-primary/20"
+        style={{ borderTopColor: '#F5C000', animation: 'spinSmooth 0.9s linear infinite' }}
+      />
+    </div>
+  );
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -172,7 +190,7 @@ const App = () => (
               eliminando race conditions de mount/unmount.
             */}
             <PageTransition>
-              <Suspense fallback={null}>
+              <Suspense fallback={<GlobalSuspenseFallback />}>
                 <Routes>
                   {/* Rotas públicas */}
                   <Route path="/" element={<Index />} />
