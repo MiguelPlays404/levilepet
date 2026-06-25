@@ -439,6 +439,11 @@ export type Database = {
           tiktok_handle: string | null
           tiktok_url: string | null
           updated_at: string | null
+          vagas_section_active: boolean | null
+          vagas_section_badge: string | null
+          vagas_section_image_url: string | null
+          vagas_section_subtitle: string | null
+          vagas_section_title: string | null
           video_section_subtitle: string | null
           video_section_title: string | null
           videos_empty_text: string | null
@@ -585,6 +590,11 @@ export type Database = {
           tiktok_handle?: string | null
           tiktok_url?: string | null
           updated_at?: string | null
+          vagas_section_active?: boolean | null
+          vagas_section_badge?: string | null
+          vagas_section_image_url?: string | null
+          vagas_section_subtitle?: string | null
+          vagas_section_title?: string | null
           video_section_subtitle?: string | null
           video_section_title?: string | null
           videos_empty_text?: string | null
@@ -731,6 +741,11 @@ export type Database = {
           tiktok_handle?: string | null
           tiktok_url?: string | null
           updated_at?: string | null
+          vagas_section_active?: boolean | null
+          vagas_section_badge?: string | null
+          vagas_section_image_url?: string | null
+          vagas_section_subtitle?: string | null
+          vagas_section_title?: string | null
           video_section_subtitle?: string | null
           video_section_title?: string | null
           videos_empty_text?: string | null
@@ -971,6 +986,42 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      vagas: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          requirements: string | null
+          schedule: string | null
+          title: string
+          updated_at: string
+          whatsapp_message: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          requirements?: string | null
+          schedule?: string | null
+          title: string
+          updated_at?: string
+          whatsapp_message?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          requirements?: string | null
+          schedule?: string | null
+          title?: string
+          updated_at?: string
+          whatsapp_message?: string | null
         }
         Relationships: []
       }
