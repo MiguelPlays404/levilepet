@@ -41,6 +41,9 @@ const Index = () => {
       setPhotos((allPhotos || []).filter((p: any) => p.is_featured).slice(0, 6));
       setFeaturedVideos((allVideos || []).filter((v: any) => v.is_featured).slice(0, 8));
     });
+    supabase.from("vagas").select("*").eq("is_active", true).order("display_order").then(({ data }) => {
+      if (!cancelled) setVagas(data || []);
+    });
     return () => { cancelled = true; };
   }, []);
 
