@@ -303,6 +303,17 @@ export default function AdminVideos() {
       <div className="bg-[#18181B] rounded-2xl border border-white/[0.07] overflow-hidden overflow-x-auto">
         <table className="w-full text-sm min-w-[800px]">
           <thead><tr className="border-b border-[#27272A]">
+            <th className="p-4 w-10">
+              <input
+                type="checkbox"
+                checked={filtered.length > 0 && filtered.every(v => selected.has(v.id))}
+                onChange={(e) => {
+                  if (e.target.checked) setSelected(new Set(filtered.map(v => v.id)));
+                  else setSelected(new Set());
+                }}
+                className="w-4 h-4 accent-primary cursor-pointer"
+              />
+            </th>
             <th className="text-left p-4 text-[#71717A]">Vídeo</th>
             <th className="text-left p-4 text-[#71717A]">Proporção</th>
             <th className="text-left p-4 text-[#71717A]">Tipo</th>
@@ -312,15 +323,20 @@ export default function AdminVideos() {
           </tr></thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} className="p-8 text-center text-[#71717A]">Carregando...</td></tr>
+              <tr><td colSpan={7} className="p-8 text-center text-[#71717A]">Carregando...</td></tr>
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={6} className="p-8 text-center text-[#71717A]">Nenhum vídeo nesta categoria.</td></tr>
-            ) : filtered.map(v => (
-              <tr key={v.id} className="border-b border-[#27272A] last:border-0">
+              <tr><td colSpan={7} className="p-8 text-center text-[#71717A]">Nenhum vídeo nesta categoria.</td></tr>
+            ) : filtered.map(v => {
+              const isSel = selected.has(v.id);
+              return (
+              <tr key={v.id} className={`border-b border-[#27272A] last:border-0 ${isSel ? "bg-primary/5" : ""}`}>
+                <td className="p-4">
+                  <input type="checkbox" checked={isSel} onChange={() => toggleSelect(v.id)} className="w-4 h-4 accent-primary cursor-pointer" />
+                </td>
                 <td className="p-4">
                   <div className="flex items-center gap-3">
                     {v.thumbnail_url && <img src={v.thumbnail_url} alt="" className="w-16 h-10 rounded object-cover bg-[#27272A]" />}
-                    <span className="text-[#ccc]">{v.title} {v.is_featured && <span className="text-primary">⭐</span>}</span>
+                    <span className="text-[#ccc]">{v.title || <span className="text-[#71717A] italic">(sem título)</span>} {v.is_featured && <span className="text-primary">⭐</span>}</span>
                   </div>
                 </td>
                 <td className="p-4">
@@ -348,23 +364,47 @@ export default function AdminVideos() {
                 </td>
                 <td className="p-4 text-center text-primary font-bold">{v.likes_count}</td>
                 <td className="p-4 text-right">
-                  <div className="flex gap-1 justify-end">
+                  <div className="flex gap-1 justify-end items-center">
                     <button onClick={() => handleToggleFeatured(v)} title="Destaque na Home" className="p-2 rounded hover:bg-white/5">
                       <Star className={`w-4 h-4 ${normalizeLocations(v).includes("home") ? "text-primary fill-primary" : "text-[#71717A]"}`} />
                     </button>
                     <button onClick={() => handleToggleActive(v.id, v.is_active)} className="p-2 rounded hover:bg-white/5">
                       {v.is_active ? <Eye className="w-4 h-4 text-green-400" /> : <EyeOff className="w-4 h-4 text-red-400" />}
                     </button>
-                    <button onClick={() => setDeleteVideo(v)} className="p-2 rounded hover:bg-white/5">
-                      <Trash2 className="w-4 h-4 text-red-400" />
+                    <button onClick={() => setDeleteVideo(v)} title="Excluir" className="px-3 py-2 rounded bg-red-500 hover:bg-red-600 text-white font-semibold text-xs flex items-center gap-1">
+                      <Trash2 className="w-3.5 h-3.5" /> Excluir
                     </button>
                   </div>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
+
+      <BulkActionsBar
+        count={selected.size}
+        totalVisible={filtered.length}
+        onClear={() => setSelected(new Set())}
+        onSelectAll={() => setSelected(new Set(filtered.map(v => v.id)))}
+        onDelete={() => setConfirmBulk(true)}
+        deleting={bulkDeleting}
+      />
+
+      {confirmBulk && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80" onClick={() => setConfirmBulk(false)}>
+          <div className="bg-[#18181B] rounded-2xl p-6 max-w-sm w-full mx-4 border border-red-500/40 text-center" onClick={e => e.stopPropagation()}>
+            <Trash2 className="w-10 h-10 text-red-400 mx-auto mb-3" />
+            <p className="text-white mb-2 font-heading font-semibold">Excluir {selected.size} vídeo(s)?</p>
+            <p className="text-[#A1A1AA] text-xs mb-4">Esta ação não pode ser desfeita.</p>
+            <div className="flex gap-3 justify-center">
+              <button onClick={() => setConfirmBulk(false)} className="px-4 py-2 text-sm text-[#A1A1AA] hover:text-white">Cancelar</button>
+              <button onClick={bulkDelete} disabled={bulkDeleting} className="px-4 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50">{bulkDeleting ? "Excluindo..." : `Excluir ${selected.size}`}</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {deleteVideo && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80" onClick={() => setDeleteVideo(null)}>
