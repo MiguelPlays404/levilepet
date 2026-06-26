@@ -375,18 +375,30 @@ function AdminBackupInner() {
         </Card>
       </div>
 
-      {(progress || lastResult) && (
-        <Card className="p-4 bg-[#111113] border-[#27272A]">
+      {(progress || lastResult || percent > 0) && (
+        <Card className="p-4 bg-[#111113] border-[#27272A] space-y-3">
           {progress && (
             <div className="flex items-center gap-2 text-sm text-[#A1A1AA]">
               <Loader2 className="w-4 h-4 animate-spin text-primary" />
-              {progress}
+              <span className="truncate">{progress}</span>
+            </div>
+          )}
+          {(busy || percent > 0) && (
+            <div>
+              <div className="flex items-center justify-between text-[11px] text-[#A1A1AA] mb-1 font-heading">
+                <span>{exporting ? "Gerando backup" : importing ? "Restaurando backup" : "Concluído"}</span>
+                <span className="text-primary font-bold">{percent}%</span>
+              </div>
+              <div className="h-2 w-full bg-[#27272A] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-primary to-yellow-300 transition-all duration-300 ease-out"
+                  style={{ width: `${percent}%` }}
+                />
+              </div>
             </div>
           )}
           {lastResult && !progress && (
-            <div
-              className={`flex items-center gap-2 text-sm ${lastResult.ok ? "text-emerald-400" : "text-red-400"}`}
-            >
+            <div className={`flex items-center gap-2 text-sm ${lastResult.ok ? "text-emerald-400" : "text-red-400"}`}>
               {lastResult.ok ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
               {lastResult.msg}
             </div>
