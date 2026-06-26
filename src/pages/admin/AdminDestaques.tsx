@@ -19,7 +19,37 @@ export default function AdminDestaques() {
   const [photos, setPhotos] = useState<any[]>([]);
   const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [confirmBulk, setConfirmBulk] = useState(false);
   const { toast } = useToast();
+
+  const toggleSelect = (id: string) => setSelected(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
+
+  const bulkDelete = async () => {
+    setBulkDeleting(true);
+    const ids = Array.from(selected);
+    const toRemove = photos.filter(p => ids.includes(p.id));
+    try {
+      const paths = toRemove
+        .map(p => p.image_url?.includes("/levillepet-media/") ? p.image_url.split("/levillepet-media/")[1] : null)
+        .filter(Boolean) as string[];
+      if (paths.length) await supabase.storage.from("levillepet-media").remove(paths);
+      const { error } = await supabase.from("photos").delete().in("id", ids);
+      if (error) throw error;
+      toast({ title: `✅ ${ids.length} item(s) removido(s)` });
+      setSelected(new Set());
+      load();
+    } catch (e: any) {
+      toast({ title: "Erro ao excluir", description: e.message, variant: "destructive" });
+    }
+    setBulkDeleting(false);
+    setConfirmBulk(false);
+  };
 
   const load = async () => {
     setLoading(true);
