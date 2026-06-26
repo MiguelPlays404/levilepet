@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ChevronLeft, ChevronRight, Play, X, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, X, Clock, Images } from "lucide-react";
 
 import { aspectStyle } from "@/components/AspectRatioPicker";
+import { AlbumModal, type AlbumItem } from "@/components/AlbumModal";
+
 
 interface HojeItem {
   id: string;
@@ -146,6 +148,9 @@ function HojeLightbox({ items, index, onClose, onNav }: LightboxProps) {
 
 export function HojeNoLeVilleSection() {
   const [items, setItems] = useState<HojeItem[]>([]);
+  const [albums, setAlbums] = useState<any[]>([]);
+  const [openAlbumId, setOpenAlbumId] = useState<string | null>(null);
+  const [openAlbumItems, setOpenAlbumItems] = useState<AlbumItem[]>([]);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
