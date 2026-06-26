@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { getSiteConfig, getHotelzinhoContent, getPhotos } from "@/lib/dataCache";
 import { Lightbox } from "@/components/Lightbox";
 import { DestaquesSection } from "@/components/DestaquesSection";
+import { AlbumsRail } from "@/components/AlbumsRail";
 
 const Hotelzinho = () => {
   const [content, setContent] = useState<any>(null);
@@ -96,6 +97,14 @@ const Hotelzinho = () => {
         subtitle={cfg?.destaques_hotel_subtitle || "Pets que passaram por aqui"}
         background="#FAFAF8"
       />
+
+      <AlbumsRail
+        location="hotelzinho"
+        title="Álbuns do Hotelzinho"
+        subtitle="Coleções dos nossos hóspedes"
+        background="#FFFFFF"
+      />
+
 
       {/* Gallery — DARK */}
       {photos.length > 0 && (
