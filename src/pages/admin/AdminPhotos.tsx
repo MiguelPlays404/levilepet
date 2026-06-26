@@ -44,7 +44,37 @@ export default function AdminPhotos() {
   const [uploadLocations, setUploadLocations] = useState<string[]>(["galeria"]);
   const [editPhoto, setEditPhoto] = useState<any>(null);
   const [deletePhoto, setDeletePhoto] = useState<any>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [confirmBulk, setConfirmBulk] = useState(false);
   const { toast } = useToast();
+
+  const toggleSelect = (id: string) => setSelected(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
+
+  const bulkDelete = async () => {
+    setBulkDeleting(true);
+    const ids = Array.from(selected);
+    const toRemove = photos.filter(p => ids.includes(p.id));
+    try {
+      const paths = toRemove
+        .map(p => p.image_url?.includes("/levillepet-media/") ? p.image_url.split("/levillepet-media/")[1] : null)
+        .filter(Boolean) as string[];
+      if (paths.length) await supabase.storage.from("levillepet-media").remove(paths);
+      const { error } = await supabase.from("photos").delete().in("id", ids);
+      if (error) throw error;
+      toast({ title: `✅ ${ids.length} foto(s) removida(s)` });
+      setPhotos(prev => prev.filter(p => !ids.includes(p.id)));
+      setSelected(new Set());
+    } catch (e: any) {
+      toast({ title: "Erro ao excluir em lote", description: e.message, variant: "destructive" });
+    }
+    setBulkDeleting(false);
+    setConfirmBulk(false);
+  };
 
   useEffect(() => { fetchPhotos(); }, []);
 
