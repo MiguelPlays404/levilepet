@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
 import { MediaUploader } from "@/components/MediaUploader";
 import { AspectRatioPicker, aspectToOrientation, aspectClass, ASPECT_OPTIONS } from "@/components/AspectRatioPicker";
+import { BulkActionsBar } from "@/components/BulkActionsBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getYoutubeThumbnail } from "@/lib/youtube";
-import { Link2, Trash2, Eye, EyeOff, Star, Upload } from "lucide-react";
+import { Link2, Trash2, Eye, EyeOff, Star, Upload, Check } from "lucide-react";
 
 const TABS = [
   { key: "all", label: "Todos" },
