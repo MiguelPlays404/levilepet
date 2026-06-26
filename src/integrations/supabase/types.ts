@@ -14,6 +14,107 @@ export type Database = {
   }
   public: {
     Tables: {
+      album_items: {
+        Row: {
+          album_id: string
+          aspect_ratio: string | null
+          caption: string | null
+          created_at: string
+          id: string
+          media_type: string
+          media_url: string
+          position: number
+          source_type: string
+          thumb_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          album_id: string
+          aspect_ratio?: string | null
+          caption?: string | null
+          created_at?: string
+          id?: string
+          media_type?: string
+          media_url: string
+          position?: number
+          source_type?: string
+          thumb_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          album_id?: string
+          aspect_ratio?: string | null
+          caption?: string | null
+          created_at?: string
+          id?: string
+          media_type?: string
+          media_url?: string
+          position?: number
+          source_type?: string
+          thumb_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "album_items_album_id_fkey"
+            columns: ["album_id"]
+            isOneToOne: false
+            referencedRelation: "albums"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      albums: {
+        Row: {
+          aspect_ratio: string | null
+          cover_type: string | null
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          expire_at: string | null
+          id: string
+          is_active: boolean
+          locations: string[]
+          position: number
+          publish_at: string | null
+          show_in_hoje: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          aspect_ratio?: string | null
+          cover_type?: string | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          expire_at?: string | null
+          id?: string
+          is_active?: boolean
+          locations?: string[]
+          position?: number
+          publish_at?: string | null
+          show_in_hoje?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          aspect_ratio?: string | null
+          cover_type?: string | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          expire_at?: string | null
+          id?: string
+          is_active?: boolean
+          locations?: string[]
+          position?: number
+          publish_at?: string | null
+          show_in_hoje?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       conhecer_content: {
         Row: {
           about_text: string | null
