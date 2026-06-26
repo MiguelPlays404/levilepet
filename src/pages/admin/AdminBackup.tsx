@@ -135,15 +135,14 @@ function AdminBackupInner() {
       let storageBytes = 0;
       if (includeStorage) {
         setProgress("Listando arquivos do storage…");
+        setPercent(32);
         const paths = await listAllStorageFiles(STORAGE_BUCKET);
         for (let i = 0; i < paths.length; i++) {
           const p = paths[i];
           setProgress(`Baixando arquivo ${i + 1}/${paths.length}: ${p}`);
+          setPercent(35 + Math.round(((i + 1) / Math.max(paths.length, 1)) * 60));
           const { data: blob, error } = await supabase.storage.from(STORAGE_BUCKET).download(p);
-          if (error || !blob) {
-            console.warn(`Falha ao baixar ${p}: ${error?.message}`);
-            continue;
-          }
+          if (error || !blob) { console.warn(`Falha ao baixar ${p}: ${error?.message}`); continue; }
           const buf = await blob.arrayBuffer();
           zip.file(`storage/${STORAGE_BUCKET}/${p}`, buf);
           storageFiles++;
