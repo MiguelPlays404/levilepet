@@ -518,10 +518,12 @@ a[href*="lovable.dev"][target="_blank"] {
   display: none !important;
 }
 
-/* Admin: fade-in suave somente no conteúdo (shell permanece estável) */
+/* Admin: fade-in suave somente no conteúdo (shell permanece estável)
+   IMPORTANT: não usar transform/filter aqui — eles criam um containing block
+   que quebra `position: fixed` dos modais de confirmação. */
 @keyframes adminFade {
-  0%   { opacity: 0; transform: translateY(8px); filter: blur(2px); }
-  60%  { opacity: 1; filter: blur(0); }
-  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
 }
-.animate-admin-fade { animation: adminFade 0.34s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-admin-fade { animation: adminFade 0.28s ease-out both; }
+
