@@ -270,7 +270,33 @@ export default function AdminDestaques() {
         onSelectAll={() => setSelected(new Set(filtered.map(p => p.id)))}
         onDelete={() => setConfirmBulk(true)}
         deleting={bulkDeleting}
+        extraActions={
+          <>
+            <button
+              onClick={bulkRemoveFromTab}
+              className="px-3 py-1.5 rounded-lg text-xs bg-yellow-500/15 hover:bg-yellow-500/30 text-yellow-300 font-semibold flex items-center gap-1"
+              title={`Tirar do destaque ${tab.label}`}
+            >
+              <StarOff className="w-3.5 h-3.5" /> Tirar do destaque
+            </button>
+            <button
+              onClick={() => setMoveOpen(true)}
+              className="px-3 py-1.5 rounded-lg text-xs bg-primary/20 hover:bg-primary/30 text-primary font-semibold flex items-center gap-1"
+              title="Mover/copiar para outras páginas"
+            >
+              <Move className="w-3.5 h-3.5" /> Mover para…
+            </button>
+          </>
+        }
       />
+
+      {moveOpen && (
+        <MoveDialog
+          count={selected.size}
+          onClose={() => setMoveOpen(false)}
+          onApply={bulkApplyLocations}
+        />
+      )}
 
       {confirmBulk && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80" onClick={() => setConfirmBulk(false)}>
