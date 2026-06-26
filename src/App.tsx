@@ -34,6 +34,7 @@ const Localizacao = lazyWithPreload(() => import("./pages/Localizacao"));
 const Fotos = lazyWithPreload(() => import("./pages/Fotos"));
 const Videos = lazyWithPreload(() => import("./pages/Videos"));
 const SigaNos = lazyWithPreload(() => import("./pages/SigaNos"));
+const Albuns = lazyWithPreload(() => import("./pages/Albuns"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Manutencao = lazy(() => import("./pages/Manutencao"));
 // Admin — nunca carregado pelo público
@@ -56,6 +57,7 @@ const AdminAgendamento = lazy(() => import("./pages/admin/AdminAgendamento"));
 const AdminHojeNoLeVille = lazy(() => import("./pages/admin/AdminHojeNoLeVille"));
 const AdminVagas = lazy(() => import("./pages/admin/AdminVagas"));
 const AdminBackup = lazy(() => import("./pages/admin/AdminBackup"));
+const AdminAlbuns = lazy(() => import("./pages/admin/AdminAlbuns"));
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const AdminShell = lazy(() =>
   import("./components/AdminLayout").then((m) => ({ default: m.AdminShell }))
@@ -72,6 +74,7 @@ function prefetchPublicChunks() {
     Fotos.preload();
     Videos.preload();
     SigaNos.preload();
+    Albuns.preload();
   };
   const ric = (window as any).requestIdleCallback;
   if (typeof ric === "function") ric(run, { timeout: 2500 });
@@ -204,6 +207,7 @@ const App = () => (
                   <Route path="/fotos" element={<Fotos />} />
                   <Route path="/videos" element={<Videos />} />
                   <Route path="/siga-nos" element={<SigaNos />} />
+                  <Route path="/albuns" element={<Albuns />} />
                   {/* Rotas admin */}
                   <Route path="/admin/login" element={<AdminLogin />} />
                   <Route element={<ProtectedRoute><AdminShell /></ProtectedRoute>}>
@@ -226,6 +230,7 @@ const App = () => (
                     <Route path="/admin/hoje-le-ville" element={<AdminHojeNoLeVille />} />
                     <Route path="/admin/vagas" element={<AdminVagas />} />
                     <Route path="/admin/backup" element={<AdminBackup />} />
+                    <Route path="/admin/albuns" element={<AdminAlbuns />} />
                   </Route>
                   <Route path="*" element={<NotFound />} />
                 </Routes>
