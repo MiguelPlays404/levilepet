@@ -45,6 +45,38 @@ export default function AdminVideos() {
   const [tab, setTab] = useState("all");
   const [addLocations, setAddLocations] = useState<string[]>(["geral"]);
   const [deleteVideo, setDeleteVideo] = useState<any>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [confirmBulk, setConfirmBulk] = useState(false);
+
+  const toggleSelect = (id: string) => setSelected(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
+
+  const bulkDelete = async () => {
+    setBulkDeleting(true);
+    const ids = Array.from(selected);
+    const toRemove = videos.filter(v => ids.includes(v.id));
+    try {
+      const paths = toRemove
+        .filter(v => v.video_type === "upload" && v.video_url?.includes("/levillepet-media/"))
+        .map(v => v.video_url.split("/levillepet-media/")[1])
+        .filter(Boolean) as string[];
+      if (paths.length) await supabase.storage.from("levillepet-media").remove(paths);
+      await supabase.from("video_likes").delete().in("video_id", ids);
+      const { error } = await supabase.from("videos").delete().in("id", ids);
+      if (error) throw error;
+      toast({ title: `✅ ${ids.length} vídeo(s) removido(s)` });
+      setVideos(prev => prev.filter(v => !ids.includes(v.id)));
+      setSelected(new Set());
+    } catch (e: any) {
+      toast({ title: "Erro ao excluir em lote", description: e.message, variant: "destructive" });
+    }
+    setBulkDeleting(false);
+    setConfirmBulk(false);
+  };
 
   // Proporção — obrigatório para uploads (16:9, 4:3, 1:1, 3:4, 9:16)
   const [uploadAspect, setUploadAspect] = useState<string>("");
