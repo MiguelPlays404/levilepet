@@ -374,9 +374,63 @@ export function HojeNoLeVilleSection() {
                 </button>
               );
             })}
+
+            {/* Álbuns marcados para aparecer aqui */}
+            {albums.map((album) => {
+              const ar = album.aspect_ratio || "4:3";
+              const isVertical = ar === "9:16" || ar === "3:4";
+              return (
+                <button
+                  key={`album-${album.id}`}
+                  data-hoje-card
+                  onClick={() => openAlbum(album)}
+                  className={`snap-start shrink-0 group relative rounded-2xl overflow-hidden bg-black shadow-md hover:shadow-[0_10px_30px_-8px_rgba(245,192,0,0.45)] transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 ${
+                    isVertical
+                      ? "w-[52vw] sm:w-[32vw] md:w-[22vw] lg:w-[16vw]"
+                      : "w-[78vw] sm:w-[46vw] md:w-[36vw] lg:w-[28vw]"
+                  }`}
+                  style={aspectStyle(ar)}
+                  aria-label={`Abrir álbum ${album.title}`}
+                >
+                  {album.cover_url ? (
+                    <img
+                      src={album.cover_url}
+                      alt={album.title}
+                      loading="lazy"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
+                      onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#2a2a2a] to-[#0f0f0f]">
+                      <Images className="w-10 h-10 text-primary/50" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
+                  <div className="absolute top-3 left-3">
+                    <span className="inline-block bg-primary text-black text-[10px] font-heading font-extrabold uppercase tracking-[0.12em] px-2 py-0.5 rounded-full">Álbum</span>
+                  </div>
+                  <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-black/70 px-2 py-0.5 rounded-full">
+                    <Images className="w-3 h-3 text-primary" />
+                    <span className="text-white text-[10px] font-heading font-semibold">{album.item_count ?? 0}</span>
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-3">
+                    <p className="text-white text-sm font-heading font-semibold truncate text-left">{album.title}</p>
+                    {album.description && (
+                      <p className="text-white/60 text-xs truncate text-left mt-0.5">{album.description}</p>
+                    )}
+                  </div>
+                  <div className="absolute inset-0 rounded-2xl ring-2 ring-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>
+
+      {currentAlbum && (
+        <AlbumModal title={currentAlbum.title || "Álbum"} items={openAlbumItems} onClose={() => setOpenAlbumId(null)} />
+      )}
+
 
       {lightboxIndex !== null && (
         <HojeLightbox
