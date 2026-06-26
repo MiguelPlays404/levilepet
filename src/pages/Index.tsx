@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Lightbox } from "@/components/Lightbox";
 import { DestaquesSection } from "@/components/DestaquesSection";
 import { HojeNoLeVilleSection } from "@/components/HojeNoLeVilleSection";
+import { AlbumsRail } from "@/components/AlbumsRail";
 import { getSiteConfig, getHomeSections, getPhotos, getVideos, getSiteConfigSync, getHomeSectionsSync, getPhotosSync, getVideosSync } from "@/lib/dataCache";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { supabase } from "@/integrations/supabase/client";
@@ -264,6 +265,14 @@ const Index = () => {
         title={c.destaques_home_title || "Destaques da Semana"}
         subtitle={c.destaques_home_subtitle || "Os momentos mais especiais"}
         background="#FAFAF8"
+      />
+
+      {/* ═══ ÁLBUNS — HOME ═══ */}
+      <AlbumsRail
+        location="home"
+        title={c.albuns_home_title || "Nossos Álbuns"}
+        subtitle={c.albuns_home_subtitle || "Coleções de momentos especiais"}
+        background="#FFFFFF"
       />
 
       {/* ═══ CARDS — CLARO (#F8F8F6) ═══ */}
