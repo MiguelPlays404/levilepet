@@ -1,4 +1,5 @@
-import { Images, Play } from "lucide-react";
+import { Images, Play, Info } from "lucide-react";
+import { useState } from "react";
 import { aspectStyle } from "@/components/AspectRatioPicker";
 
 interface Props {
