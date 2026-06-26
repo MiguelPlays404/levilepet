@@ -87,7 +87,7 @@ export function AlbumCard({ album, itemCount, videoCount = 0, onClick, className
           {album.title || "Álbum sem título"}
         </h3>
         {album.description && (
-          <p className="text-white/70 text-xs mt-1 line-clamp-1">{album.description}</p>
+          <p className="text-white/90 text-xs mt-1.5 line-clamp-3 leading-snug drop-shadow">{album.description}</p>
         )}
       </div>
 
