@@ -21,6 +21,7 @@ interface Props {
 export function AlbumCard({ album, itemCount, videoCount = 0, onClick, className = "", size = "md" }: Props) {
   const ar = album.aspect_ratio || "4:3";
   const isVideoCover = album.cover_type === "video" || /\.(mp4|webm|mov|m4v)(\?|$)/i.test(album.cover_url || "");
+  const [showInfo, setShowInfo] = useState(false);
 
   return (
     <button
