@@ -102,6 +102,7 @@ function AdminBackupInner() {
   async function handleExport() {
     setExporting(true);
     setLastResult(null);
+    setPercent(0);
     try {
       const zip = new JSZip();
       const counts: Record<string, number> = {};
