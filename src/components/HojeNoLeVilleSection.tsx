@@ -152,6 +152,8 @@ export function HojeNoLeVilleSection() {
 
   useEffect(() => {
     let cancelled = false;
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+
     const fetchItems = async () => {
       const now = new Date().toISOString();
       const { data } = await supabase
@@ -163,54 +165,39 @@ export function HojeNoLeVilleSection() {
         .order("display_order", { ascending: true })
         .order("published_at", { ascending: false });
 
-      if (!cancelled) {
-        setItems(((data as any) || []) as HojeItem[]);
-        setLoading(false);
+      if (cancelled) return;
+      const rows = ((data as any) || []) as HojeItem[];
+      setItems(rows);
+      setLoading(false);
+
+      // Próximo evento (publicação/expiração) — calcula a partir dos dados já em mãos.
+      // Antes fazíamos uma SEGUNDA query separada só pra isso; agora 0 queries extras.
+      if (timeout) clearTimeout(timeout);
+      let nextMs = 5 * 60_000; // fallback: 5 min
+      const tnow = Date.now();
+      const candidates: number[] = [];
+      for (const r of rows) {
+        if (r.expires_at) {
+          const e = new Date(r.expires_at).getTime();
+          if (e > tnow) candidates.push(e - tnow);
+        }
       }
+      if (candidates.length) {
+        nextMs = Math.max(15_000, Math.min(5 * 60_000, Math.min(...candidates) + 500));
+      }
+      timeout = setTimeout(() => { fetchItems(); }, nextMs);
     };
+
     fetchItems();
 
-    // Calcula o próximo evento (publicação ou expiração) e agenda um refetch exato
-    let timeout: ReturnType<typeof setTimeout> | null = null;
-    const scheduleNextEvent = async () => {
-      if (timeout) clearTimeout(timeout);
-      const nowIso = new Date().toISOString();
-      const { data: upcoming } = await supabase
-        .from("hoje_no_le_ville")
-        .select("published_at,expires_at")
-        .eq("is_active", true);
-      let nextMs = 30000; // fallback: 30s
-      if (upcoming) {
-        const now = Date.now();
-        const candidates: number[] = [];
-        for (const row of upcoming as any[]) {
-          const p = new Date(row.published_at).getTime();
-          if (p > now) candidates.push(p - now);
-          if (row.expires_at) {
-            const e = new Date(row.expires_at).getTime();
-            if (e > now) candidates.push(e - now);
-          }
-        }
-        if (candidates.length) nextMs = Math.max(1000, Math.min(30000, Math.min(...candidates) + 500));
-      }
-      timeout = setTimeout(async () => {
-        await fetchItems();
-        scheduleNextEvent();
-      }, nextMs);
-    };
-    scheduleNextEvent();
-
-    // Refetch ao voltar para a aba / focar a janela
-    const onVisible = () => { if (document.visibilityState === "visible") { fetchItems(); scheduleNextEvent(); } };
-    const onFocus = () => { fetchItems(); scheduleNextEvent(); };
+    // Refetch ao voltar para a aba
+    const onVisible = () => { if (document.visibilityState === "visible") fetchItems(); };
     document.addEventListener("visibilitychange", onVisible);
-    window.addEventListener("focus", onFocus);
 
     return () => {
       cancelled = true;
       if (timeout) clearTimeout(timeout);
       document.removeEventListener("visibilitychange", onVisible);
-      window.removeEventListener("focus", onFocus);
     };
   }, []);
 

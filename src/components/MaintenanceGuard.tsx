@@ -1,11 +1,14 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { getSiteConfig } from "@/lib/dataCache";
 
-// Cache de módulo — persiste durante a sessão do browser
-let maintenanceChecked = false;
-let maintenanceActive = false;
-
+/**
+ * MaintenanceGuard
+ * Antes fazia uma query separada a `site_config.maintenance_mode` em CADA visita
+ * de usuário (464 chamadas no pg_stat_statements). Agora reutiliza o cache global
+ * `getSiteConfig()` — que já é buscado uma única vez e persistido em localStorage.
+ * Resultado: 0 queries extras, mesmo comportamento.
+ */
 export function MaintenanceGuard({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -25,35 +28,19 @@ export function MaintenanceGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Já verificou nesta sessão — usar resultado em cache
-    if (maintenanceChecked) {
-      if (maintenanceActive) navigate("/manutencao", { replace: true });
-      return;
-    }
-
-    // Evitar double-run em React StrictMode dev
     if (ranRef.current) return;
     ranRef.current = true;
 
-    // Verificar silenciosamente — SEM loading, SEM return null, SEM bloqueio
-    supabase
-      .from("site_config")
-      .select("maintenance_mode")
-      .maybeSingle()
-      .then(({ data }) => {
-        maintenanceChecked = true;
-        maintenanceActive = data?.maintenance_mode ?? false;
-        if (maintenanceActive) {
+    // Reaproveita o cache compartilhado — não dispara request novo se já houve.
+    getSiteConfig()
+      .then((data) => {
+        if (data?.maintenance_mode) {
           navigate("/manutencao", { replace: true });
         }
-      }, () => {
-        // Em caso de falha de rede, não bloqueia o usuário
-        maintenanceChecked = true;
-        maintenanceActive = false;
-      });
+      })
+      .catch(() => { /* offline → não bloqueia */ });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [location.pathname]);
 
-  // NUNCA bloqueia o render — renderiza os filhos imediatamente sempre
   return <>{children}</>;
 }
