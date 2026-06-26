@@ -193,15 +193,20 @@ export default function AdminPhotos() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.length === 0 && <p className="text-[#71717A] col-span-full text-center py-10">Nenhuma foto nesta categoria.</p>}
-          {filtered.map(photo => (
-            <div key={photo.id} className={`bg-[#18181B] rounded-xl overflow-hidden border ${photo.is_active ? "border-[#27272A]" : "border-red-500/40 opacity-60"}`}>
-              <div className="relative aspect-video bg-black">
+          {filtered.map(photo => {
+            const isSelected = selected.has(photo.id);
+            return (
+            <div key={photo.id} className={`bg-[#18181B] rounded-xl overflow-hidden border transition-all ${isSelected ? "border-primary ring-2 ring-primary/40" : photo.is_active ? "border-[#27272A]" : "border-red-500/40 opacity-60"}`}>
+              <div className="relative aspect-video bg-black cursor-pointer" onClick={() => toggleSelect(photo.id)}>
                 <img src={photo.image_url} alt={photo.title} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
-                {photo.is_featured && <span className="absolute top-2 left-2 bg-primary text-black text-[10px] font-bold px-2 py-0.5 rounded">⭐ DESTAQUE HOME</span>}
-                {!photo.is_active && <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">OCULTA</span>}
+                <div className={`absolute top-2 right-2 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${isSelected ? "bg-primary border-primary" : "bg-black/60 border-white/60"}`}>
+                  {isSelected && <Check className="w-4 h-4 text-black" strokeWidth={3} />}
+                </div>
+                {photo.is_featured && <span className="absolute top-2 left-2 bg-primary text-black text-[10px] font-bold px-2 py-0.5 rounded">⭐ DESTAQUE</span>}
+                {!photo.is_active && <span className="absolute bottom-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">OCULTA</span>}
               </div>
               <div className="p-3 space-y-2">
-                <p className="text-sm text-white font-medium truncate">{photo.title}</p>
+                <p className="text-sm text-white font-medium truncate">{photo.title || <span className="text-[#71717A] italic">(sem título)</span>}</p>
                 <div className="flex flex-wrap gap-1">
                   {LOCATIONS.map(loc => {
                     const active = normalizeLocations(photo).includes(loc.key);
@@ -212,11 +217,12 @@ export default function AdminPhotos() {
                   <button onClick={() => setEditPhoto({...photo})} title="Editar" className="flex-1 py-2 rounded bg-[#27272A] hover:bg-primary hover:text-black text-white text-xs flex items-center justify-center gap-1"><Pencil className="w-3 h-3" /> Editar</button>
                   <button onClick={() => handleToggleFeatured(photo.id, photo.is_featured)} title="Destaque Home" className={`px-3 py-2 rounded ${photo.is_featured ? "bg-primary text-black" : "bg-[#27272A] text-white hover:bg-primary/30"}`}><Star className="w-3 h-3" /></button>
                   <button onClick={() => handleToggleActive(photo.id, photo.is_active)} title={photo.is_active ? "Ocultar" : "Mostrar"} className="px-3 py-2 rounded bg-[#27272A] hover:bg-white/10 text-white">{photo.is_active ? <Eye className="w-3 h-3 text-green-400" /> : <EyeOff className="w-3 h-3 text-red-400" />}</button>
-                  <button onClick={() => setDeletePhoto(photo)} title="Excluir" className="px-3 py-2 rounded bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white"><Trash2 className="w-3 h-3" /></button>
+                  <button onClick={() => setDeletePhoto(photo)} title="Excluir" className="px-3 py-2 rounded bg-red-500 hover:bg-red-600 text-white font-semibold text-xs flex items-center gap-1"><Trash2 className="w-3.5 h-3.5" /> Excluir</button>
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
