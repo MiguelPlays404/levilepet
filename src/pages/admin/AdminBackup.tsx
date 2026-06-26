@@ -35,6 +35,8 @@ const RESTORE_ORDER_HINT = [
   "photos",
   "videos",
   "video_likes",
+  "albums",
+  "album_items",
 ];
 
 // Tabelas que NUNCA devem ser exportadas/restauradas (segurança / managed by auth)
