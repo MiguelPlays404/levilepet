@@ -4,7 +4,17 @@ import { MediaUploader } from "@/components/MediaUploader";
 import { BulkActionsBar } from "@/components/BulkActionsBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Eye, EyeOff, ArrowUp, ArrowDown, Star, AlertCircle, Check } from "lucide-react";
+import { Trash2, Eye, EyeOff, ArrowUp, ArrowDown, Star, AlertCircle, Check, StarOff, Move } from "lucide-react";
+
+const ALL_LOCATIONS = [
+  { key: "galeria", label: "Galeria Geral" },
+  { key: "home", label: "Momentos da Home" },
+  { key: "hotelzinho", label: "Hotelzinho" },
+  { key: "conhecer", label: "Venha Nos Conhecer" },
+  { key: "transporte", label: "Transporte" },
+  { key: "destaques_home", label: "⭐ Destaques Home" },
+  { key: "destaques_hotel", label: "⭐ Destaques Hotelzinho" },
+];
 
 const TABS = [
   { key: "destaques_home", label: "Home", titleField: "destaques_home_title", subField: "destaques_home_subtitle" },
