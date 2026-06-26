@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
 import { MediaUploader } from "@/components/MediaUploader";
+import { BulkActionsBar } from "@/components/BulkActionsBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Eye, EyeOff, ArrowUp, ArrowDown, Star, AlertCircle } from "lucide-react";
+import { Trash2, Eye, EyeOff, ArrowUp, ArrowDown, Star, AlertCircle, Check } from "lucide-react";
 
 const TABS = [
   { key: "destaques_home", label: "Home", titleField: "destaques_home_title", subField: "destaques_home_subtitle" },
