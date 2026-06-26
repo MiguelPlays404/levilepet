@@ -85,13 +85,46 @@ export function AlbumCard({ album, itemCount, videoCount = 0, onClick, className
 
       {/* Title */}
       <div className="absolute bottom-0 left-0 right-0 p-4">
-        <h3 className={`text-white font-heading font-bold ${size === "lg" ? "text-lg" : "text-base"} leading-tight line-clamp-2`}>
-          {album.title || "Álbum sem título"}
-        </h3>
+        <div className="flex items-start gap-2">
+          <h3 className={`flex-1 text-white font-heading font-bold ${size === "lg" ? "text-lg" : "text-base"} leading-tight line-clamp-2`}>
+            {album.title || "Álbum sem título"}
+          </h3>
+          {album.description && (
+            <span
+              role="button"
+              tabIndex={0}
+              aria-label="Ver descrição completa"
+              onClick={(e) => { e.stopPropagation(); setShowInfo((v) => !v); }}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); e.preventDefault(); setShowInfo((v) => !v); } }}
+              className="shrink-0 w-7 h-7 rounded-full bg-primary text-black flex items-center justify-center hover:scale-110 transition-transform shadow-md cursor-pointer"
+            >
+              <Info className="w-3.5 h-3.5" />
+            </span>
+          )}
+        </div>
         {album.description && (
           <p className="text-white/90 text-xs mt-1.5 line-clamp-3 leading-snug drop-shadow">{album.description}</p>
         )}
       </div>
+
+      {/* Description popover (full text) */}
+      {showInfo && album.description && (
+        <div
+          onClick={(e) => { e.stopPropagation(); setShowInfo(false); }}
+          className="absolute inset-0 z-20 bg-black/90 backdrop-blur-sm p-5 flex flex-col cursor-zoom-out animate-fade-in"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <span className="inline-block bg-primary text-black text-[10px] font-heading font-extrabold uppercase tracking-[0.12em] px-2 py-0.5 rounded-full">
+              Descrição
+            </span>
+            <span className="text-white/60 text-[10px] uppercase tracking-wider">Toque para fechar</span>
+          </div>
+          <h4 className="text-white font-heading font-bold text-base mb-2">{album.title}</h4>
+          <p className="text-white/90 text-sm leading-relaxed overflow-y-auto whitespace-pre-wrap" style={{ fontFamily: "Inter" }}>
+            {album.description}
+          </p>
+        </div>
+      )}
 
       {/* Hover ring */}
       <div className="absolute inset-0 rounded-2xl ring-2 ring-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
