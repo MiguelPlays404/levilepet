@@ -210,8 +210,10 @@ function AdminBackupInner() {
 
     setImporting(true);
     setLastResult(null);
+    setPercent(0);
     try {
       setProgress("Lendo arquivo ZIP…");
+      setPercent(3);
       const zip = await JSZip.loadAsync(file);
       const manifestFile = zip.file("manifest.json");
       if (!manifestFile) throw new Error("Arquivo inválido: manifest.json não encontrado.");
