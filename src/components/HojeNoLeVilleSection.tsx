@@ -193,7 +193,35 @@ export function HojeNoLeVilleSection() {
       timeout = setTimeout(() => { fetchItems(); }, nextMs);
     };
 
+    const fetchAlbums = async () => {
+      const { data: alb } = await supabase
+        .from("albums")
+        .select("*")
+        .eq("is_active", true)
+        .eq("show_in_hoje", true)
+        .order("position", { ascending: true });
+      const list = (alb as any[]) || [];
+      if (list.length) {
+        const ids = list.map((a) => a.id);
+        const { data: counts } = await supabase
+          .from("album_items")
+          .select("album_id, media_type")
+          .in("album_id", ids);
+        const map = new Map<string, { total: number; videos: number }>();
+        (counts || []).forEach((it: any) => {
+          const c = map.get(it.album_id) || { total: 0, videos: 0 };
+          c.total++;
+          if (it.media_type === "video") c.videos++;
+          map.set(it.album_id, c);
+        });
+        if (!cancelled) setAlbums(list.map((a) => ({ ...a, item_count: map.get(a.id)?.total ?? 0, video_count: map.get(a.id)?.videos ?? 0 })));
+      } else if (!cancelled) {
+        setAlbums([]);
+      }
+    };
+
     fetchItems();
+    fetchAlbums();
 
     // Refetch ao voltar para a aba
     const onVisible = () => { if (document.visibilityState === "visible") fetchItems(); };
@@ -214,7 +242,18 @@ export function HojeNoLeVilleSection() {
     el.scrollBy({ left: dir === "left" ? -step : step, behavior: "smooth" });
   };
 
-  if (loading || items.length === 0) return null;
+  if (loading || (items.length === 0 && albums.length === 0)) return null;
+
+  const openAlbum = async (album: any) => {
+    const { data } = await supabase
+      .from("album_items")
+      .select("*")
+      .eq("album_id", album.id)
+      .order("position", { ascending: true });
+    setOpenAlbumItems((data || []) as AlbumItem[]);
+    setOpenAlbumId(album.id);
+  };
+  const currentAlbum = openAlbumId ? albums.find((a) => a.id === openAlbumId) : null;
 
   return (
     <>
