@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
 import { MediaUploader } from "@/components/MediaUploader";
+import { BulkActionsBar } from "@/components/BulkActionsBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Star, Eye, EyeOff, Pencil, X, Search } from "lucide-react";
+import { Trash2, Star, Eye, EyeOff, Pencil, X, Search, Check } from "lucide-react";
 
 const categories = [
   { value: "galeria", label: "Galeria Geral" },
@@ -43,7 +44,37 @@ export default function AdminPhotos() {
   const [uploadLocations, setUploadLocations] = useState<string[]>(["galeria"]);
   const [editPhoto, setEditPhoto] = useState<any>(null);
   const [deletePhoto, setDeletePhoto] = useState<any>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [confirmBulk, setConfirmBulk] = useState(false);
   const { toast } = useToast();
+
+  const toggleSelect = (id: string) => setSelected(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
+
+  const bulkDelete = async () => {
+    setBulkDeleting(true);
+    const ids = Array.from(selected);
+    const toRemove = photos.filter(p => ids.includes(p.id));
+    try {
+      const paths = toRemove
+        .map(p => p.image_url?.includes("/levillepet-media/") ? p.image_url.split("/levillepet-media/")[1] : null)
+        .filter(Boolean) as string[];
+      if (paths.length) await supabase.storage.from("levillepet-media").remove(paths);
+      const { error } = await supabase.from("photos").delete().in("id", ids);
+      if (error) throw error;
+      toast({ title: `✅ ${ids.length} foto(s) removida(s)` });
+      setPhotos(prev => prev.filter(p => !ids.includes(p.id)));
+      setSelected(new Set());
+    } catch (e: any) {
+      toast({ title: "Erro ao excluir em lote", description: e.message, variant: "destructive" });
+    }
+    setBulkDeleting(false);
+    setConfirmBulk(false);
+  };
 
   useEffect(() => { fetchPhotos(); }, []);
 
@@ -162,15 +193,20 @@ export default function AdminPhotos() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.length === 0 && <p className="text-[#71717A] col-span-full text-center py-10">Nenhuma foto nesta categoria.</p>}
-          {filtered.map(photo => (
-            <div key={photo.id} className={`bg-[#18181B] rounded-xl overflow-hidden border ${photo.is_active ? "border-[#27272A]" : "border-red-500/40 opacity-60"}`}>
-              <div className="relative aspect-video bg-black">
+          {filtered.map(photo => {
+            const isSelected = selected.has(photo.id);
+            return (
+            <div key={photo.id} className={`bg-[#18181B] rounded-xl overflow-hidden border transition-all ${isSelected ? "border-primary ring-2 ring-primary/40" : photo.is_active ? "border-[#27272A]" : "border-red-500/40 opacity-60"}`}>
+              <div className="relative aspect-video bg-black cursor-pointer" onClick={() => toggleSelect(photo.id)}>
                 <img src={photo.image_url} alt={photo.title} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
-                {photo.is_featured && <span className="absolute top-2 left-2 bg-primary text-black text-[10px] font-bold px-2 py-0.5 rounded">⭐ DESTAQUE HOME</span>}
-                {!photo.is_active && <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">OCULTA</span>}
+                <div className={`absolute top-2 right-2 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${isSelected ? "bg-primary border-primary" : "bg-black/60 border-white/60"}`}>
+                  {isSelected && <Check className="w-4 h-4 text-black" strokeWidth={3} />}
+                </div>
+                {photo.is_featured && <span className="absolute top-2 left-2 bg-primary text-black text-[10px] font-bold px-2 py-0.5 rounded">⭐ DESTAQUE</span>}
+                {!photo.is_active && <span className="absolute bottom-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">OCULTA</span>}
               </div>
               <div className="p-3 space-y-2">
-                <p className="text-sm text-white font-medium truncate">{photo.title}</p>
+                <p className="text-sm text-white font-medium truncate">{photo.title || <span className="text-[#71717A] italic">(sem título)</span>}</p>
                 <div className="flex flex-wrap gap-1">
                   {LOCATIONS.map(loc => {
                     const active = normalizeLocations(photo).includes(loc.key);
@@ -181,11 +217,12 @@ export default function AdminPhotos() {
                   <button onClick={() => setEditPhoto({...photo})} title="Editar" className="flex-1 py-2 rounded bg-[#27272A] hover:bg-primary hover:text-black text-white text-xs flex items-center justify-center gap-1"><Pencil className="w-3 h-3" /> Editar</button>
                   <button onClick={() => handleToggleFeatured(photo.id, photo.is_featured)} title="Destaque Home" className={`px-3 py-2 rounded ${photo.is_featured ? "bg-primary text-black" : "bg-[#27272A] text-white hover:bg-primary/30"}`}><Star className="w-3 h-3" /></button>
                   <button onClick={() => handleToggleActive(photo.id, photo.is_active)} title={photo.is_active ? "Ocultar" : "Mostrar"} className="px-3 py-2 rounded bg-[#27272A] hover:bg-white/10 text-white">{photo.is_active ? <Eye className="w-3 h-3 text-green-400" /> : <EyeOff className="w-3 h-3 text-red-400" />}</button>
-                  <button onClick={() => setDeletePhoto(photo)} title="Excluir" className="px-3 py-2 rounded bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white"><Trash2 className="w-3 h-3" /></button>
+                  <button onClick={() => setDeletePhoto(photo)} title="Excluir" className="px-3 py-2 rounded bg-red-500 hover:bg-red-600 text-white font-semibold text-xs flex items-center gap-1"><Trash2 className="w-3.5 h-3.5" /> Excluir</button>
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -212,6 +249,29 @@ export default function AdminPhotos() {
             <div className="flex gap-3 justify-center">
               <button onClick={() => setDeletePhoto(null)} className="px-4 py-2 text-sm text-[#A1A1AA] hover:text-white">Cancelar</button>
               <button onClick={handleDelete} className="px-4 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600">Excluir</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <BulkActionsBar
+        count={selected.size}
+        totalVisible={filtered.length}
+        onClear={() => setSelected(new Set())}
+        onSelectAll={() => setSelected(new Set(filtered.map(p => p.id)))}
+        onDelete={() => setConfirmBulk(true)}
+        deleting={bulkDeleting}
+      />
+
+      {confirmBulk && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80" onClick={() => setConfirmBulk(false)}>
+          <div className="bg-[#18181B] rounded-2xl p-6 max-w-sm w-full mx-4 border border-red-500/40 text-center" onClick={e => e.stopPropagation()}>
+            <Trash2 className="w-10 h-10 text-red-400 mx-auto mb-3" />
+            <p className="text-white mb-2 font-heading font-semibold">Excluir {selected.size} foto(s)?</p>
+            <p className="text-[#A1A1AA] text-xs mb-4">Esta ação não pode ser desfeita.</p>
+            <div className="flex gap-3 justify-center">
+              <button onClick={() => setConfirmBulk(false)} className="px-4 py-2 text-sm text-[#A1A1AA] hover:text-white">Cancelar</button>
+              <button onClick={bulkDelete} disabled={bulkDeleting} className="px-4 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50">{bulkDeleting ? "Excluindo..." : `Excluir ${selected.size}`}</button>
             </div>
           </div>
         </div>
