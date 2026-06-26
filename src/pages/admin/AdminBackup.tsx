@@ -32,17 +32,13 @@ interface BackupManifest {
   counts: Record<string, number>;
 }
 
-export default function AdminBackup() {
-  const { setTitle } = useContext(AdminTitleContext);
+function AdminBackupInner() {
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
   const [progress, setProgress] = useState<string>("");
   const [lastResult, setLastResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    setTitle("Backup & Restauração");
-  }, [setTitle]);
 
   async function handleExport() {
     setExporting(true);
