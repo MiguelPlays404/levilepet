@@ -19,10 +19,27 @@ const PUBLIC_PATHS = [
   "/fale-conosco",
 ];
 
-// Hook que apenas rastreia a rota atual — sem redirect, sem return null, sem estado
+import { useNavigate } from "react-router-dom";
+
+// Hook que rastreia a rota atual e, na 1ª montagem em "/", reabre a última página
 export function useRoutePersistence() {
   const location = useLocation();
+  const navigate = useNavigate();
 
+  // Restauração: roda UMA vez no boot. Se o usuário recarregou e caiu em "/",
+  // mas a última página pública visitada foi outra, volta para lá.
+  useEffect(() => {
+    if (location.pathname !== "/") return;
+    try {
+      const last = localStorage.getItem(LAST_PATH_KEY);
+      if (last && last !== "/" && PUBLIC_PATHS.includes(last)) {
+        navigate(last, { replace: true });
+      }
+    } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Tracking contínuo da rota atual
   useEffect(() => {
     if (PUBLIC_PATHS.includes(location.pathname)) {
       localStorage.setItem(LAST_PATH_KEY, location.pathname);
