@@ -243,3 +243,12 @@ function AdminBackupInner() {
     </div>
   );
 }
+
+export default function AdminBackup() {
+  return (
+    <AdminLayout title="Backup & Restauração">
+      <AdminBackupInner />
+    </AdminLayout>
+  );
+}
+
