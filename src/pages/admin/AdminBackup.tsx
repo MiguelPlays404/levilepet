@@ -1,11 +1,11 @@
-import { useState, useContext, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import JSZip from "jszip";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Download, Upload, Database, Loader2, AlertTriangle, CheckCircle2, FileArchive } from "lucide-react";
 import { toast } from "sonner";
-import { AdminTitleContext } from "@/components/AdminLayout";
+import { AdminLayout } from "@/components/AdminLayout";
 
 // Tabelas incluídas no backup. A ordem importa para o restore (singletons primeiro).
 const TABLES = [
