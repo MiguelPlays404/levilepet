@@ -1122,6 +1122,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_tables: {
+        Args: never
+        Returns: {
+          table_name: string
+        }[]
+      }
       auto_publish_scheduled_media: { Args: never; Returns: undefined }
       has_role: {
         Args: {
