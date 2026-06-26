@@ -225,6 +225,7 @@ const App = () => (
                     <Route path="/admin/agendamento" element={<AdminAgendamento />} />
                     <Route path="/admin/hoje-le-ville" element={<AdminHojeNoLeVille />} />
                     <Route path="/admin/vagas" element={<AdminVagas />} />
+                    <Route path="/admin/backup" element={<AdminBackup />} />
                   </Route>
                   <Route path="*" element={<NotFound />} />
                 </Routes>
