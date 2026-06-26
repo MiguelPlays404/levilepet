@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.auto_publish_scheduled_media() FROM PUBLIC, anon, authenticated;
