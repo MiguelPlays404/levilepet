@@ -224,18 +224,17 @@ function AdminBackupInner() {
       const order = sortForRestore(manifest.tables);
       let totalRestored = 0;
 
-      for (const table of order) {
+      for (let ti = 0; ti < order.length; ti++) {
+        const table = order[ti];
         if (SKIP_TABLES.has(table)) continue;
         const f = zip.file(`data/${table}.json`);
         if (!f) continue;
         setProgress(`Restaurando tabela ${table}…`);
+        setPercent(5 + Math.round(((ti + 1) / order.length) * 35));
         const rows: any[] = JSON.parse(await f.async("string"));
 
         const { error: delErr } = await supabase.from(table as any).delete().not("id", "is", null);
-        if (delErr) {
-          console.warn(`Limpar ${table}: ${delErr.message}`);
-          continue;
-        }
+        if (delErr) { console.warn(`Limpar ${table}: ${delErr.message}`); continue; }
 
         for (let i = 0; i < rows.length; i += 500) {
           const chunk = rows.slice(i, i + 500);
