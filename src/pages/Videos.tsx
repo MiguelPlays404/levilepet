@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSiteConfig } from "@/lib/dataCache";
 import { getYoutubeId } from "@/lib/youtube";
+import { AlbumsRail } from "@/components/AlbumsRail";
 
 function getUserId(): string {
   let id = localStorage.getItem("lvp_user_id");
@@ -80,6 +81,8 @@ const Videos = () => {
   return (
     <PublicLayout>
       <PageHero badge="🎥 Vídeos" title={cfg?.videos_page_title || "Nossos Vídeos"} subtitle={cfg?.videos_page_subtitle || "Curta, compartilhe, sorria!"} bgImage={cfg?.videos_hero_image_url || undefined} />
+
+      <AlbumsRail location="videos" title="Álbuns de vídeo" subtitle="Coleções e séries especiais" background="#FAFAF8" />
 
       <section className="py-16" style={{ background: '#FFFFFF' }}>
         <div className="container mx-auto px-4">
