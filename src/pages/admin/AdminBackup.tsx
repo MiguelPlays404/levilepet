@@ -165,11 +165,12 @@ function AdminBackupInner() {
       );
 
       setProgress("Compactando ZIP…");
+      setPercent(96);
       const blob = await zip.generateAsync({
         type: "blob",
         compression: "DEFLATE",
         compressionOptions: { level: 6 },
-      });
+      }, (meta) => setPercent(96 + Math.round(meta.percent * 0.04)));
 
       const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
       const url = URL.createObjectURL(blob);
