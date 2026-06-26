@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
 import { MediaUploader } from "@/components/MediaUploader";
+import { BulkActionsBar } from "@/components/BulkActionsBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Star, Eye, EyeOff, Pencil, X, Search } from "lucide-react";
+import { Trash2, Star, Eye, EyeOff, Pencil, X, Search, Check } from "lucide-react";
 
 const categories = [
   { value: "galeria", label: "Galeria Geral" },
