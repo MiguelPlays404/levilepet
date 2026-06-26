@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { Trash2, X, CheckSquare } from "lucide-react";
 
 interface Props {
@@ -7,21 +8,23 @@ interface Props {
   onDelete: () => void;
   totalVisible: number;
   deleting?: boolean;
+  extraActions?: ReactNode;
 }
 
-export function BulkActionsBar({ count, onClear, onSelectAll, onDelete, totalVisible, deleting }: Props) {
+export function BulkActionsBar({ count, onClear, onSelectAll, onDelete, totalVisible, deleting, extraActions }: Props) {
   if (count === 0) return null;
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#18181B] border border-primary/40 shadow-2xl rounded-2xl px-4 py-3 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#18181B] border border-primary/40 shadow-2xl rounded-2xl px-4 py-3 flex flex-wrap items-center gap-2 animate-in fade-in slide-in-from-bottom-4 max-w-[95vw]">
       <span className="text-sm text-white font-heading">
         <span className="text-primary font-bold">{count}</span> selecionado{count > 1 ? "s" : ""}
       </span>
       <button onClick={onSelectAll} className="px-3 py-1.5 rounded-lg text-xs bg-[#27272A] hover:bg-[#3F3F46] text-white flex items-center gap-1">
-        <CheckSquare className="w-3.5 h-3.5" /> Selecionar todos ({totalVisible})
+        <CheckSquare className="w-3.5 h-3.5" /> Todos ({totalVisible})
       </button>
       <button onClick={onClear} className="px-3 py-1.5 rounded-lg text-xs bg-[#27272A] hover:bg-[#3F3F46] text-white flex items-center gap-1">
         <X className="w-3.5 h-3.5" /> Limpar
       </button>
+      {extraActions}
       <button
         onClick={onDelete}
         disabled={deleting}

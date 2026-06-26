@@ -94,6 +94,7 @@ function AdminBackupInner() {
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
   const [progress, setProgress] = useState<string>("");
+  const [percent, setPercent] = useState<number>(0);
   const [lastResult, setLastResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [includeStorage, setIncludeStorage] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -101,26 +102,29 @@ function AdminBackupInner() {
   async function handleExport() {
     setExporting(true);
     setLastResult(null);
+    setPercent(0);
     try {
       const zip = new JSZip();
       const counts: Record<string, number> = {};
 
       // 1) Descobre todas as tabelas dinamicamente
       setProgress("Descobrindo tabelas…");
+      setPercent(2);
       const { data: tableRows, error: tablesErr } = await supabase.rpc("admin_list_tables");
       if (tablesErr) throw new Error(`Listar tabelas: ${tablesErr.message}`);
       const allTables = (tableRows || [])
         .map((r: any) => r.table_name as string)
         .filter((n: string) => !SKIP_TABLES.has(n));
 
+      // Reservamos: 5% início, 25% tabelas, 65% storage, 5% compactação
+      const tablesShare = includeStorage ? 25 : 90;
       // 2) Dump de cada tabela
-      for (const table of allTables) {
+      for (let ti = 0; ti < allTables.length; ti++) {
+        const table = allTables[ti];
         setProgress(`Exportando tabela ${table}…`);
+        setPercent(5 + Math.round(((ti + 1) / allTables.length) * tablesShare));
         const { data, error } = await supabase.from(table as any).select("*");
-        if (error) {
-          console.warn(`Pulando ${table}: ${error.message}`);
-          continue;
-        }
+        if (error) { console.warn(`Pulando ${table}: ${error.message}`); continue; }
         const rows = data || [];
         counts[table] = rows.length;
         zip.file(`data/${table}.json`, JSON.stringify(rows, null, 2));
@@ -131,15 +135,14 @@ function AdminBackupInner() {
       let storageBytes = 0;
       if (includeStorage) {
         setProgress("Listando arquivos do storage…");
+        setPercent(32);
         const paths = await listAllStorageFiles(STORAGE_BUCKET);
         for (let i = 0; i < paths.length; i++) {
           const p = paths[i];
           setProgress(`Baixando arquivo ${i + 1}/${paths.length}: ${p}`);
+          setPercent(35 + Math.round(((i + 1) / Math.max(paths.length, 1)) * 60));
           const { data: blob, error } = await supabase.storage.from(STORAGE_BUCKET).download(p);
-          if (error || !blob) {
-            console.warn(`Falha ao baixar ${p}: ${error?.message}`);
-            continue;
-          }
+          if (error || !blob) { console.warn(`Falha ao baixar ${p}: ${error?.message}`); continue; }
           const buf = await blob.arrayBuffer();
           zip.file(`storage/${STORAGE_BUCKET}/${p}`, buf);
           storageFiles++;
@@ -162,11 +165,12 @@ function AdminBackupInner() {
       );
 
       setProgress("Compactando ZIP…");
+      setPercent(96);
       const blob = await zip.generateAsync({
         type: "blob",
         compression: "DEFLATE",
         compressionOptions: { level: 6 },
-      });
+      }, (meta) => setPercent(96 + Math.round(meta.percent * 0.04)));
 
       const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
       const url = URL.createObjectURL(blob);
@@ -184,12 +188,14 @@ function AdminBackupInner() {
         msg: `Backup completo: ${allTables.length} tabelas, ${totalRows} registros, ${storageFiles} arquivos.`,
       });
       toast.success("Backup baixado com sucesso!");
+      setPercent(100);
     } catch (e: any) {
       setLastResult({ ok: false, msg: e.message || "Falha ao gerar backup" });
       toast.error("Erro ao gerar backup: " + (e.message || ""));
     } finally {
       setExporting(false);
       setProgress("");
+      setTimeout(() => setPercent(0), 800);
     }
   }
 
@@ -204,8 +210,10 @@ function AdminBackupInner() {
 
     setImporting(true);
     setLastResult(null);
+    setPercent(0);
     try {
       setProgress("Lendo arquivo ZIP…");
+      setPercent(3);
       const zip = await JSZip.loadAsync(file);
       const manifestFile = zip.file("manifest.json");
       if (!manifestFile) throw new Error("Arquivo inválido: manifest.json não encontrado.");
@@ -216,18 +224,17 @@ function AdminBackupInner() {
       const order = sortForRestore(manifest.tables);
       let totalRestored = 0;
 
-      for (const table of order) {
+      for (let ti = 0; ti < order.length; ti++) {
+        const table = order[ti];
         if (SKIP_TABLES.has(table)) continue;
         const f = zip.file(`data/${table}.json`);
         if (!f) continue;
         setProgress(`Restaurando tabela ${table}…`);
+        setPercent(5 + Math.round(((ti + 1) / order.length) * 35));
         const rows: any[] = JSON.parse(await f.async("string"));
 
         const { error: delErr } = await supabase.from(table as any).delete().not("id", "is", null);
-        if (delErr) {
-          console.warn(`Limpar ${table}: ${delErr.message}`);
-          continue;
-        }
+        if (delErr) { console.warn(`Limpar ${table}: ${delErr.message}`); continue; }
 
         for (let i = 0; i < rows.length; i += 500) {
           const chunk = rows.slice(i, i + 500);
@@ -253,14 +260,12 @@ function AdminBackupInner() {
         for (let i = 0; i < files.length; i++) {
           const { path, entry } = files[i];
           setProgress(`Restaurando mídia ${i + 1}/${files.length}: ${path}`);
+          setPercent(42 + Math.round(((i + 1) / Math.max(files.length, 1)) * 56));
           const blob = await entry.async("blob");
           const { error: upErr } = await supabase.storage
             .from(STORAGE_BUCKET)
             .upload(path, blob, { upsert: true });
-          if (upErr) {
-            console.warn(`Upload ${path}: ${upErr.message}`);
-            continue;
-          }
+          if (upErr) { console.warn(`Upload ${path}: ${upErr.message}`); continue; }
           storageRestored++;
         }
       }
@@ -269,6 +274,7 @@ function AdminBackupInner() {
         ok: true,
         msg: `Restauração concluída: ${totalRestored} registros, ${storageRestored} arquivos.`,
       });
+      setPercent(100);
       toast.success("Backup restaurado! Recarregando…");
       setTimeout(() => window.location.reload(), 1500);
     } catch (e: any) {
@@ -277,6 +283,7 @@ function AdminBackupInner() {
     } finally {
       setImporting(false);
       setProgress("");
+      setTimeout(() => setPercent(0), 800);
       if (fileRef.current) fileRef.current.value = "";
     }
   }
@@ -368,18 +375,30 @@ function AdminBackupInner() {
         </Card>
       </div>
 
-      {(progress || lastResult) && (
-        <Card className="p-4 bg-[#111113] border-[#27272A]">
+      {(progress || lastResult || percent > 0) && (
+        <Card className="p-4 bg-[#111113] border-[#27272A] space-y-3">
           {progress && (
             <div className="flex items-center gap-2 text-sm text-[#A1A1AA]">
               <Loader2 className="w-4 h-4 animate-spin text-primary" />
-              {progress}
+              <span className="truncate">{progress}</span>
+            </div>
+          )}
+          {(busy || percent > 0) && (
+            <div>
+              <div className="flex items-center justify-between text-[11px] text-[#A1A1AA] mb-1 font-heading">
+                <span>{exporting ? "Gerando backup" : importing ? "Restaurando backup" : "Concluído"}</span>
+                <span className="text-primary font-bold">{percent}%</span>
+              </div>
+              <div className="h-2 w-full bg-[#27272A] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-primary to-yellow-300 transition-all duration-300 ease-out"
+                  style={{ width: `${percent}%` }}
+                />
+              </div>
             </div>
           )}
           {lastResult && !progress && (
-            <div
-              className={`flex items-center gap-2 text-sm ${lastResult.ok ? "text-emerald-400" : "text-red-400"}`}
-            >
+            <div className={`flex items-center gap-2 text-sm ${lastResult.ok ? "text-emerald-400" : "text-red-400"}`}>
               {lastResult.ok ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
               {lastResult.msg}
             </div>

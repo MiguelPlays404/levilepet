@@ -4,7 +4,17 @@ import { MediaUploader } from "@/components/MediaUploader";
 import { BulkActionsBar } from "@/components/BulkActionsBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Eye, EyeOff, ArrowUp, ArrowDown, Star, AlertCircle, Check } from "lucide-react";
+import { Trash2, Eye, EyeOff, ArrowUp, ArrowDown, Star, AlertCircle, Check, StarOff, Move } from "lucide-react";
+
+const ALL_LOCATIONS = [
+  { key: "galeria", label: "Galeria Geral" },
+  { key: "home", label: "Momentos da Home" },
+  { key: "hotelzinho", label: "Hotelzinho" },
+  { key: "conhecer", label: "Venha Nos Conhecer" },
+  { key: "transporte", label: "Transporte" },
+  { key: "destaques_home", label: "⭐ Destaques Home" },
+  { key: "destaques_hotel", label: "⭐ Destaques Hotelzinho" },
+];
 
 const TABS = [
   { key: "destaques_home", label: "Home", titleField: "destaques_home_title", subField: "destaques_home_subtitle" },
@@ -22,7 +32,44 @@ export default function AdminDestaques() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [confirmBulk, setConfirmBulk] = useState(false);
+  const [moveOpen, setMoveOpen] = useState(false);
   const { toast } = useToast();
+
+  const bulkRemoveFromTab = async () => {
+    const ids = Array.from(selected);
+    const items = photos.filter(p => ids.includes(p.id));
+    try {
+      await Promise.all(items.map(p => {
+        const next = normalizeLocations(p).filter(l => l !== tab.key);
+        return supabase.from("photos").update({ locations: next.length ? next : ["galeria"] } as any).eq("id", p.id);
+      }));
+      toast({ title: `✅ ${ids.length} retirada(s) deste destaque` });
+      setSelected(new Set());
+      load();
+    } catch (e: any) {
+      toast({ title: "Erro", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const bulkApplyLocations = async (targetKeys: string[], mode: "add" | "replace") => {
+    const ids = Array.from(selected);
+    const items = photos.filter(p => ids.includes(p.id));
+    try {
+      await Promise.all(items.map(p => {
+        const current = normalizeLocations(p);
+        const next = mode === "replace"
+          ? Array.from(new Set(targetKeys.length ? targetKeys : ["galeria"]))
+          : Array.from(new Set([...current, ...targetKeys]));
+        return supabase.from("photos").update({ locations: next.length ? next : ["galeria"] } as any).eq("id", p.id);
+      }));
+      toast({ title: `✅ ${ids.length} foto(s) atualizadas` });
+      setSelected(new Set());
+      setMoveOpen(false);
+      load();
+    } catch (e: any) {
+      toast({ title: "Erro", description: e.message, variant: "destructive" });
+    }
+  };
 
   const toggleSelect = (id: string) => setSelected(prev => {
     const next = new Set(prev);
@@ -223,7 +270,33 @@ export default function AdminDestaques() {
         onSelectAll={() => setSelected(new Set(filtered.map(p => p.id)))}
         onDelete={() => setConfirmBulk(true)}
         deleting={bulkDeleting}
+        extraActions={
+          <>
+            <button
+              onClick={bulkRemoveFromTab}
+              className="px-3 py-1.5 rounded-lg text-xs bg-yellow-500/15 hover:bg-yellow-500/30 text-yellow-300 font-semibold flex items-center gap-1"
+              title={`Tirar do destaque ${tab.label}`}
+            >
+              <StarOff className="w-3.5 h-3.5" /> Tirar do destaque
+            </button>
+            <button
+              onClick={() => setMoveOpen(true)}
+              className="px-3 py-1.5 rounded-lg text-xs bg-primary/20 hover:bg-primary/30 text-primary font-semibold flex items-center gap-1"
+              title="Mover/copiar para outras páginas"
+            >
+              <Move className="w-3.5 h-3.5" /> Mover para…
+            </button>
+          </>
+        }
       />
+
+      {moveOpen && (
+        <MoveDialog
+          count={selected.size}
+          onClose={() => setMoveOpen(false)}
+          onApply={bulkApplyLocations}
+        />
+      )}
 
       {confirmBulk && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80" onClick={() => setConfirmBulk(false)}>
@@ -239,5 +312,46 @@ export default function AdminDestaques() {
         </div>
       )}
     </AdminLayout>
+  );
+}
+
+function MoveDialog({ count, onClose, onApply }: { count: number; onClose: () => void; onApply: (keys: string[], mode: "add" | "replace") => void }) {
+  const [picked, setPicked] = useState<string[]>([]);
+  const toggle = (k: string) => setPicked(prev => prev.includes(k) ? prev.filter(x => x !== k) : [...prev, k]);
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={onClose}>
+      <div className="bg-[#18181B] rounded-2xl p-6 max-w-md w-full border border-primary/40" onClick={e => e.stopPropagation()}>
+        <h3 className="text-white font-heading font-semibold mb-1">Mover {count} foto(s) para…</h3>
+        <p className="text-[#A1A1AA] text-xs mb-4">Selecione as páginas/seções onde devem aparecer:</p>
+        <div className="grid grid-cols-2 gap-2 mb-5">
+          {ALL_LOCATIONS.map(loc => {
+            const active = picked.includes(loc.key);
+            return (
+              <button key={loc.key} onClick={() => toggle(loc.key)}
+                className={`px-3 py-2 rounded-lg text-xs text-left transition-colors ${active ? "bg-primary text-black font-semibold" : "bg-[#27272A] text-[#A1A1AA] hover:text-white"}`}>
+                {active ? "✓ " : "+ "}{loc.label}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex flex-col gap-2">
+          <button
+            disabled={picked.length === 0}
+            onClick={() => onApply(picked, "add")}
+            className="w-full py-2 rounded-lg text-sm bg-primary text-black font-semibold hover:bg-primary/90 disabled:opacity-40"
+          >
+            Adicionar às páginas selecionadas
+          </button>
+          <button
+            disabled={picked.length === 0}
+            onClick={() => { if (confirm("Substituir TODOS os locais atuais pelos selecionados?")) onApply(picked, "replace"); }}
+            className="w-full py-2 rounded-lg text-sm bg-[#27272A] text-white hover:bg-[#3F3F46] disabled:opacity-40"
+          >
+            Substituir locais (mover apenas para estes)
+          </button>
+          <button onClick={onClose} className="w-full py-2 text-xs text-[#A1A1AA] hover:text-white">Cancelar</button>
+        </div>
+      </div>
+    </div>
   );
 }
