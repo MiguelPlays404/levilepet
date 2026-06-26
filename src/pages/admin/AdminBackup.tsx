@@ -188,12 +188,14 @@ function AdminBackupInner() {
         msg: `Backup completo: ${allTables.length} tabelas, ${totalRows} registros, ${storageFiles} arquivos.`,
       });
       toast.success("Backup baixado com sucesso!");
+      setPercent(100);
     } catch (e: any) {
       setLastResult({ ok: false, msg: e.message || "Falha ao gerar backup" });
       toast.error("Erro ao gerar backup: " + (e.message || ""));
     } finally {
       setExporting(false);
       setProgress("");
+      setTimeout(() => setPercent(0), 800);
     }
   }
 
