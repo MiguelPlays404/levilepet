@@ -314,3 +314,44 @@ export default function AdminDestaques() {
     </AdminLayout>
   );
 }
+
+function MoveDialog({ count, onClose, onApply }: { count: number; onClose: () => void; onApply: (keys: string[], mode: "add" | "replace") => void }) {
+  const [picked, setPicked] = useState<string[]>([]);
+  const toggle = (k: string) => setPicked(prev => prev.includes(k) ? prev.filter(x => x !== k) : [...prev, k]);
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={onClose}>
+      <div className="bg-[#18181B] rounded-2xl p-6 max-w-md w-full border border-primary/40" onClick={e => e.stopPropagation()}>
+        <h3 className="text-white font-heading font-semibold mb-1">Mover {count} foto(s) para…</h3>
+        <p className="text-[#A1A1AA] text-xs mb-4">Selecione as páginas/seções onde devem aparecer:</p>
+        <div className="grid grid-cols-2 gap-2 mb-5">
+          {ALL_LOCATIONS.map(loc => {
+            const active = picked.includes(loc.key);
+            return (
+              <button key={loc.key} onClick={() => toggle(loc.key)}
+                className={`px-3 py-2 rounded-lg text-xs text-left transition-colors ${active ? "bg-primary text-black font-semibold" : "bg-[#27272A] text-[#A1A1AA] hover:text-white"}`}>
+                {active ? "✓ " : "+ "}{loc.label}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex flex-col gap-2">
+          <button
+            disabled={picked.length === 0}
+            onClick={() => onApply(picked, "add")}
+            className="w-full py-2 rounded-lg text-sm bg-primary text-black font-semibold hover:bg-primary/90 disabled:opacity-40"
+          >
+            Adicionar às páginas selecionadas
+          </button>
+          <button
+            disabled={picked.length === 0}
+            onClick={() => { if (confirm("Substituir TODOS os locais atuais pelos selecionados?")) onApply(picked, "replace"); }}
+            className="w-full py-2 rounded-lg text-sm bg-[#27272A] text-white hover:bg-[#3F3F46] disabled:opacity-40"
+          >
+            Substituir locais (mover apenas para estes)
+          </button>
+          <button onClick={onClose} className="w-full py-2 text-xs text-[#A1A1AA] hover:text-white">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  );
+}
