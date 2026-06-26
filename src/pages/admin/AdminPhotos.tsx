@@ -252,6 +252,8 @@ export default function AdminPhotos() {
             </div>
           </div>
         </div>
+      )}
+
       <BulkActionsBar
         count={selected.size}
         totalVisible={filtered.length}
