@@ -238,13 +238,13 @@ export function invalidateAllCache() {
  * Garante que a 1ª troca de página já tenha os dados prontos.
  */
 export function prewarmCache() {
-  // Busca em paralelo todos os dados que as páginas usam
   Promise.allSettled([
     getSiteConfig(),
     getNavItems(),
     getHomeSections(),
     getPhotos(),
     getVideos(),
+    getAlbums(),
     getHotelzinhoContent(),
     getTransporteContent(),
     getConhecerContent(),
