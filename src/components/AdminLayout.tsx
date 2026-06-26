@@ -1,6 +1,6 @@
 import { useState, useEffect, createContext, useContext, Suspense } from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
-import { LayoutDashboard, Image, Video, Hotel, Eye, Settings, Share2, Shield, LogOut, ExternalLink, Home, Type, Palette, Compass, BookOpen, Star, Truck, CalendarClock, Tv2, Briefcase } from "lucide-react";
+import { LayoutDashboard, Image, Video, Hotel, Eye, Settings, Share2, Shield, LogOut, ExternalLink, Home, Type, Palette, Compass, BookOpen, Star, Truck, CalendarClock, Tv2, Briefcase, Archive } from "lucide-react";
 import { destroyAdminSession } from "@/lib/adminSession";
 
 /** Loader temático mostrado enquanto o chunk da próxima página admin carrega. */
