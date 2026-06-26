@@ -260,14 +260,12 @@ function AdminBackupInner() {
         for (let i = 0; i < files.length; i++) {
           const { path, entry } = files[i];
           setProgress(`Restaurando mídia ${i + 1}/${files.length}: ${path}`);
+          setPercent(42 + Math.round(((i + 1) / Math.max(files.length, 1)) * 56));
           const blob = await entry.async("blob");
           const { error: upErr } = await supabase.storage
             .from(STORAGE_BUCKET)
             .upload(path, blob, { upsert: true });
-          if (upErr) {
-            console.warn(`Upload ${path}: ${upErr.message}`);
-            continue;
-          }
+          if (upErr) { console.warn(`Upload ${path}: ${upErr.message}`); continue; }
           storageRestored++;
         }
       }
@@ -276,6 +274,7 @@ function AdminBackupInner() {
         ok: true,
         msg: `Restauração concluída: ${totalRestored} registros, ${storageRestored} arquivos.`,
       });
+      setPercent(100);
       toast.success("Backup restaurado! Recarregando…");
       setTimeout(() => window.location.reload(), 1500);
     } catch (e: any) {
@@ -284,6 +283,7 @@ function AdminBackupInner() {
     } finally {
       setImporting(false);
       setProgress("");
+      setTimeout(() => setPercent(0), 800);
       if (fileRef.current) fileRef.current.value = "";
     }
   }
