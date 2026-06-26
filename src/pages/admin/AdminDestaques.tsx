@@ -32,7 +32,44 @@ export default function AdminDestaques() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [confirmBulk, setConfirmBulk] = useState(false);
+  const [moveOpen, setMoveOpen] = useState(false);
   const { toast } = useToast();
+
+  const bulkRemoveFromTab = async () => {
+    const ids = Array.from(selected);
+    const items = photos.filter(p => ids.includes(p.id));
+    try {
+      await Promise.all(items.map(p => {
+        const next = normalizeLocations(p).filter(l => l !== tab.key);
+        return supabase.from("photos").update({ locations: next.length ? next : ["galeria"] } as any).eq("id", p.id);
+      }));
+      toast({ title: `✅ ${ids.length} retirada(s) deste destaque` });
+      setSelected(new Set());
+      load();
+    } catch (e: any) {
+      toast({ title: "Erro", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const bulkApplyLocations = async (targetKeys: string[], mode: "add" | "replace") => {
+    const ids = Array.from(selected);
+    const items = photos.filter(p => ids.includes(p.id));
+    try {
+      await Promise.all(items.map(p => {
+        const current = normalizeLocations(p);
+        const next = mode === "replace"
+          ? Array.from(new Set(targetKeys.length ? targetKeys : ["galeria"]))
+          : Array.from(new Set([...current, ...targetKeys]));
+        return supabase.from("photos").update({ locations: next.length ? next : ["galeria"] } as any).eq("id", p.id);
+      }));
+      toast({ title: `✅ ${ids.length} foto(s) atualizadas` });
+      setSelected(new Set());
+      setMoveOpen(false);
+      load();
+    } catch (e: any) {
+      toast({ title: "Erro", description: e.message, variant: "destructive" });
+    }
+  };
 
   const toggleSelect = (id: string) => setSelected(prev => {
     const next = new Set(prev);
