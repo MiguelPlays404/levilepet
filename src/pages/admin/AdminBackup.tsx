@@ -109,20 +109,22 @@ function AdminBackupInner() {
 
       // 1) Descobre todas as tabelas dinamicamente
       setProgress("Descobrindo tabelas…");
+      setPercent(2);
       const { data: tableRows, error: tablesErr } = await supabase.rpc("admin_list_tables");
       if (tablesErr) throw new Error(`Listar tabelas: ${tablesErr.message}`);
       const allTables = (tableRows || [])
         .map((r: any) => r.table_name as string)
         .filter((n: string) => !SKIP_TABLES.has(n));
 
+      // Reservamos: 5% início, 25% tabelas, 65% storage, 5% compactação
+      const tablesShare = includeStorage ? 25 : 90;
       // 2) Dump de cada tabela
-      for (const table of allTables) {
+      for (let ti = 0; ti < allTables.length; ti++) {
+        const table = allTables[ti];
         setProgress(`Exportando tabela ${table}…`);
+        setPercent(5 + Math.round(((ti + 1) / allTables.length) * tablesShare));
         const { data, error } = await supabase.from(table as any).select("*");
-        if (error) {
-          console.warn(`Pulando ${table}: ${error.message}`);
-          continue;
-        }
+        if (error) { console.warn(`Pulando ${table}: ${error.message}`); continue; }
         const rows = data || [];
         counts[table] = rows.length;
         zip.file(`data/${table}.json`, JSON.stringify(rows, null, 2));
