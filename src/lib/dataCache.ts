@@ -39,7 +39,7 @@ function isStale(entry: CacheEntry<any>): boolean {
 // eliminando o "flash" de defaults antigos antes do fetch async resolver.
 const KNOWN_KEYS = [
   "site_config", "nav_items", "home_sections",
-  "photos_active", "videos_active",
+  "photos_active", "videos_active", "albums_active",
   "hotelzinho_content", "transporte_content", "conhecer_content",
 ];
 
@@ -185,6 +185,37 @@ export async function getHomeSections(): Promise<any[]> {
   });
 }
 
+/** Álbuns ativos + contagem de itens (1 query extra agrupada). */
+export async function getAlbums(): Promise<any[]> {
+  return fetchCached("albums_active", async () => {
+    const { data: albums } = await supabase
+      .from("albums")
+      .select("*")
+      .eq("is_active", true)
+      .order("position", { ascending: true })
+      .order("created_at", { ascending: false });
+    const list = albums || [];
+    if (list.length === 0) return [];
+    const ids = list.map((a: any) => a.id);
+    const { data: items } = await supabase
+      .from("album_items")
+      .select("album_id, media_type")
+      .in("album_id", ids);
+    const counts = new Map<string, { total: number; videos: number }>();
+    (items || []).forEach((it: any) => {
+      const c = counts.get(it.album_id) || { total: 0, videos: 0 };
+      c.total++;
+      if (it.media_type === "video") c.videos++;
+      counts.set(it.album_id, c);
+    });
+    return list.map((a: any) => ({
+      ...a,
+      item_count: counts.get(a.id)?.total ?? 0,
+      video_count: counts.get(a.id)?.videos ?? 0,
+    }));
+  });
+}
+
 /** Invalida uma key específica (chamar após salvar no admin) */
 export function invalidateCache(key: string) {
   store.delete(key);
@@ -207,13 +238,13 @@ export function invalidateAllCache() {
  * Garante que a 1ª troca de página já tenha os dados prontos.
  */
 export function prewarmCache() {
-  // Busca em paralelo todos os dados que as páginas usam
   Promise.allSettled([
     getSiteConfig(),
     getNavItems(),
     getHomeSections(),
     getPhotos(),
     getVideos(),
+    getAlbums(),
     getHotelzinhoContent(),
     getTransporteContent(),
     getConhecerContent(),
@@ -226,6 +257,7 @@ export const getNavItemsSync = () => getCachedSync<any[]>("nav_items") || [];
 export const getHomeSectionsSync = () => getCachedSync<any[]>("home_sections") || [];
 export const getPhotosSync = () => getCachedSync<any[]>("photos_active") || [];
 export const getVideosSync = () => getCachedSync<any[]>("videos_active") || [];
+export const getAlbumsSync = () => getCachedSync<any[]>("albums_active") || [];
 export const getHotelzinhoContentSync = () => getCachedSync<any>("hotelzinho_content");
 export const getTransporteContentSync = () => getCachedSync<any>("transporte_content");
 export const getConhecerContentSync = () => getCachedSync<any>("conhecer_content");

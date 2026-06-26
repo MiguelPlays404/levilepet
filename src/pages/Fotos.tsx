@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { Lightbox } from "@/components/Lightbox";
 import { Search, Camera } from "lucide-react";
 import { getSiteConfig, getPhotos } from "@/lib/dataCache";
+import { AlbumsRail } from "@/components/AlbumsRail";
 
 const catKeys = ["all", "galeria", "hotelzinho", "conhecer"] as const;
 
@@ -44,6 +45,8 @@ const Fotos = () => {
   return (
     <PublicLayout>
       <PageHero badge="📸 Fotos" title={cfg?.fotos_page_title || "Galeria de Momentos"} subtitle={cfg?.fotos_page_subtitle || "Os pets mais lindos de Bauru"} bgImage={cfg?.fotos_hero_image_url || undefined} />
+
+      <AlbumsRail location="fotos" title="Álbuns da galeria" subtitle="Coleções organizadas por momento" background="#FAFAF8" />
 
       <section className="py-16" style={{ background: '#FFFFFF' }}>
         <div className="container mx-auto px-4">
