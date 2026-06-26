@@ -252,6 +252,27 @@ export default function AdminPhotos() {
             </div>
           </div>
         </div>
+      <BulkActionsBar
+        count={selected.size}
+        totalVisible={filtered.length}
+        onClear={() => setSelected(new Set())}
+        onSelectAll={() => setSelected(new Set(filtered.map(p => p.id)))}
+        onDelete={() => setConfirmBulk(true)}
+        deleting={bulkDeleting}
+      />
+
+      {confirmBulk && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80" onClick={() => setConfirmBulk(false)}>
+          <div className="bg-[#18181B] rounded-2xl p-6 max-w-sm w-full mx-4 border border-red-500/40 text-center" onClick={e => e.stopPropagation()}>
+            <Trash2 className="w-10 h-10 text-red-400 mx-auto mb-3" />
+            <p className="text-white mb-2 font-heading font-semibold">Excluir {selected.size} foto(s)?</p>
+            <p className="text-[#A1A1AA] text-xs mb-4">Esta ação não pode ser desfeita.</p>
+            <div className="flex gap-3 justify-center">
+              <button onClick={() => setConfirmBulk(false)} className="px-4 py-2 text-sm text-[#A1A1AA] hover:text-white">Cancelar</button>
+              <button onClick={bulkDelete} disabled={bulkDeleting} className="px-4 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50">{bulkDeleting ? "Excluindo..." : `Excluir ${selected.size}`}</button>
+            </div>
+          </div>
+        </div>
       )}
     </AdminLayout>
   );
