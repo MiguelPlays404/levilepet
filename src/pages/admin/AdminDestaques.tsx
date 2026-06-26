@@ -177,18 +177,23 @@ export default function AdminDestaques() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {filtered.map((p, idx) => (
-            <div key={p.id} className={`bg-[#18181B] rounded-xl overflow-hidden border ${p.is_active ? "border-[#27272A]" : "border-red-500/40 opacity-60"}`}>
-              <div className="relative aspect-[4/5] bg-black">
+          {filtered.map((p, idx) => {
+            const isSel = selected.has(p.id);
+            return (
+            <div key={p.id} className={`bg-[#18181B] rounded-xl overflow-hidden border transition-all ${isSel ? "border-primary ring-2 ring-primary/40" : p.is_active ? "border-[#27272A]" : "border-red-500/40 opacity-60"}`}>
+              <div className="relative aspect-[4/5] bg-black cursor-pointer" onClick={() => toggleSelect(p.id)}>
                 <img src={p.image_url} alt={p.title} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
                 <span className="absolute top-2 left-2 bg-primary text-black text-[10px] font-bold px-2 py-0.5 rounded">#{idx + 1}</span>
-                {!p.is_active && <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">OCULTA</span>}
+                <div className={`absolute top-2 right-2 w-6 h-6 rounded-md border-2 flex items-center justify-center ${isSel ? "bg-primary border-primary" : "bg-black/60 border-white/60"}`}>
+                  {isSel && <Check className="w-4 h-4 text-black" strokeWidth={3} />}
+                </div>
+                {!p.is_active && <span className="absolute bottom-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">OCULTA</span>}
                 {idx >= 8 && p.is_active && <span className="absolute bottom-2 left-2 bg-yellow-500/90 text-black text-[10px] font-bold px-2 py-0.5 rounded">FORA DO LIMITE</span>}
               </div>
               <div className="p-3 space-y-2">
                 <input
                   value={p.title}
-                  onChange={async (e) => {
+                  onChange={(e) => {
                     const v = e.target.value;
                     setPhotos(prev => prev.map(x => x.id === p.id ? { ...x, title: v } : x));
                   }}
@@ -202,11 +207,35 @@ export default function AdminDestaques() {
                 </div>
                 <div className="flex items-center gap-1">
                   <button onClick={() => removeFromDestaque(p)} title="Tirar daqui" className="flex-1 py-1.5 rounded text-[10px] bg-[#27272A] hover:bg-yellow-500/20 text-[#A1A1AA] hover:text-yellow-300">Tirar do destaque</button>
-                  <button onClick={() => remove(p)} title="Excluir" className="px-3 py-1.5 rounded bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white"><Trash2 className="w-3 h-3" /></button>
+                  <button onClick={() => remove(p)} title="Excluir" className="px-3 py-1.5 rounded bg-red-500 hover:bg-red-600 text-white font-semibold text-xs flex items-center gap-1"><Trash2 className="w-3 h-3" /> Excluir</button>
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
+        </div>
+      )}
+
+      <BulkActionsBar
+        count={selected.size}
+        totalVisible={filtered.length}
+        onClear={() => setSelected(new Set())}
+        onSelectAll={() => setSelected(new Set(filtered.map(p => p.id)))}
+        onDelete={() => setConfirmBulk(true)}
+        deleting={bulkDeleting}
+      />
+
+      {confirmBulk && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80" onClick={() => setConfirmBulk(false)}>
+          <div className="bg-[#18181B] rounded-2xl p-6 max-w-sm w-full mx-4 border border-red-500/40 text-center" onClick={e => e.stopPropagation()}>
+            <Trash2 className="w-10 h-10 text-red-400 mx-auto mb-3" />
+            <p className="text-white mb-2 font-heading font-semibold">Excluir {selected.size} item(s)?</p>
+            <p className="text-[#A1A1AA] text-xs mb-4">Esta ação não pode ser desfeita.</p>
+            <div className="flex gap-3 justify-center">
+              <button onClick={() => setConfirmBulk(false)} className="px-4 py-2 text-sm text-[#A1A1AA] hover:text-white">Cancelar</button>
+              <button onClick={bulkDelete} disabled={bulkDeleting} className="px-4 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50">{bulkDeleting ? "Excluindo..." : `Excluir ${selected.size}`}</button>
+            </div>
+          </div>
         </div>
       )}
     </AdminLayout>
