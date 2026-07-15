@@ -200,6 +200,7 @@ const App = () => (
                   {/* Rotas públicas */}
                   <Route path="/" element={<Index />} />
                   <Route path="/manutencao" element={<Manutencao />} />
+                  <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
                   <Route path="/fale-conosco" element={<FaleConosco />} />
                   <Route path="/hotelzinho" element={<Hotelzinho />} />
                   <Route path="/transporte" element={<Transporte />} />
