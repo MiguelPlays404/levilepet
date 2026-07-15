@@ -1,10 +1,19 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Lock } from "lucide-react";
 
+/** Aceita apenas caminhos relativos same-origin (previne open redirect). */
+function safeNext(raw: string | null): string {
+  if (!raw) return "/admin";
+  if (!raw.startsWith("/") || raw.startsWith("//")) return "/admin";
+  return raw;
+}
+
 export default function AdminLogin() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const nextPath = safeNext(params.get("next"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -13,10 +22,16 @@ export default function AdminLogin() {
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
+      // Se veio de um consent OAuth, deixa entrar mesmo sem role admin.
+      const isOAuthConsent = nextPath.startsWith("/.lovable/oauth/consent");
+      if (isOAuthConsent) {
+        window.location.href = nextPath;
+        return;
+      }
       const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle();
-      if (data) navigate("/admin", { replace: true });
+      if (data) navigate(nextPath, { replace: true });
     });
-  }, [navigate]);
+  }, [navigate, nextPath]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +43,11 @@ export default function AdminLogin() {
       setLoading(false);
       return;
     }
+    // Se o retorno for a tela de consentimento OAuth, qualquer usuário autenticado pode continuar.
+    if (nextPath.startsWith("/.lovable/oauth/consent")) {
+      window.location.href = nextPath;
+      return;
+    }
     const { data: roleRow } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id).eq("role", "admin").maybeSingle();
     if (!roleRow) {
       await supabase.auth.signOut();
@@ -35,7 +55,7 @@ export default function AdminLogin() {
       setLoading(false);
       return;
     }
-    navigate("/admin", { replace: true });
+    navigate(nextPath, { replace: true });
   };
 
   return (

@@ -37,6 +37,7 @@ const SigaNos = lazyWithPreload(() => import("./pages/SigaNos"));
 const Albuns = lazyWithPreload(() => import("./pages/Albuns"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Manutencao = lazy(() => import("./pages/Manutencao"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 // Admin — nunca carregado pelo público
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminPhotos = lazy(() => import("./pages/admin/AdminPhotos"));
@@ -199,6 +200,7 @@ const App = () => (
                   {/* Rotas públicas */}
                   <Route path="/" element={<Index />} />
                   <Route path="/manutencao" element={<Manutencao />} />
+                  <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
                   <Route path="/fale-conosco" element={<FaleConosco />} />
                   <Route path="/hotelzinho" element={<Hotelzinho />} />
                   <Route path="/transporte" element={<Transporte />} />

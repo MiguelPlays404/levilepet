@@ -15,10 +15,11 @@ export function MaintenanceGuard({ children }: { children: React.ReactNode }) {
   const ranRef = useRef(false);
 
   useEffect(() => {
-    // Nunca verificar em rotas admin ou na própria página de manutenção
+    // Nunca verificar em rotas admin, consent OAuth ou na própria página de manutenção
     if (
       location.pathname === "/manutencao" ||
-      location.pathname.startsWith("/admin")
+      location.pathname.startsWith("/admin") ||
+      location.pathname.startsWith("/.lovable/oauth")
     ) {
       return;
     }
