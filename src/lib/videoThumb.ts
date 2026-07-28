@@ -4,6 +4,7 @@ import cover11 from "@/assets/video-cover-1-1.jpg";
 import cover34 from "@/assets/video-cover-3-4.jpg";
 import cover916 from "@/assets/video-cover-9-16.jpg";
 import { getYoutubeId } from "@/lib/youtube";
+import { withVersion } from "@/lib/mediaVersion";
 
 /** Capas padrão oficiais do Le Ville Pet, uma para cada proporção suportada. */
 export const DEFAULT_VIDEO_COVERS: Record<string, string> = {
@@ -35,7 +36,7 @@ export function defaultVideoCover(aspectOrVideo: any): string {
  * 3. capa padrão do Le Ville Pet na proporção correta
  */
 export function getVideoThumbnail(video: any): string {
-  if (video?.thumbnail_url) return video.thumbnail_url;
+  if (video?.thumbnail_url) return withVersion(video.thumbnail_url, video?.updated_at);
   const ytId = video?.video_url ? getYoutubeId(video.video_url) : null;
   if (ytId) return `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
   return defaultVideoCover(video);
