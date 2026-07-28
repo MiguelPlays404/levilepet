@@ -128,7 +128,9 @@ const Index = () => {
                   </>
                 );
               })()}
+              <span className="sr-only"> Le Ville Pet — Petshop e Hotelzinho em Bauru-SP</span>
             </h1>
+
 
             <p data-animate="fade-up" data-delay="2" className="text-[#BBBBBB] text-lg leading-relaxed mb-11 max-w-[520px]" style={{ fontFamily: 'Inter' }}>
               {c.hero_subtitle || 'No Le Ville Pet, cuidamos do seu companheiro com todo o carinho, amor e profissionalismo que ele merece.'}{' '}
