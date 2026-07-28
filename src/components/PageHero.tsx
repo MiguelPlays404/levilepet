@@ -28,7 +28,7 @@ export function PageHero({ badge, title, subtitle, bgImage, tall }: PageHeroProp
           {isVideo ? (
             <video src={bgImage} className="absolute inset-0 w-full h-full object-cover" autoPlay muted loop playsInline />
           ) : (
-            <img src={bgImage} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
+            <img src={bgImage} alt="" className="absolute inset-0 w-full h-full object-cover" loading="eager" decoding="sync" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
           )}
           <div className="absolute inset-0 bg-gradient-to-b from-black/65 to-black/45" />
         </>
