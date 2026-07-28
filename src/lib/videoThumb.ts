@@ -1,17 +1,17 @@
-import cover169 from "@/assets/video-cover-16-9.jpg.asset.json";
-import cover43 from "@/assets/video-cover-4-3.jpg.asset.json";
-import cover11 from "@/assets/video-cover-1-1.jpg.asset.json";
-import cover34 from "@/assets/video-cover-3-4.jpg.asset.json";
-import cover916 from "@/assets/video-cover-9-16.jpg.asset.json";
+import cover169 from "@/assets/video-cover-16-9.jpg";
+import cover43 from "@/assets/video-cover-4-3.jpg";
+import cover11 from "@/assets/video-cover-1-1.jpg";
+import cover34 from "@/assets/video-cover-3-4.jpg";
+import cover916 from "@/assets/video-cover-9-16.jpg";
 import { getYoutubeId } from "@/lib/youtube";
 
 /** Capas padrão oficiais do Le Ville Pet, uma para cada proporção suportada. */
 export const DEFAULT_VIDEO_COVERS: Record<string, string> = {
-  "16:9": cover169.url,
-  "4:3": cover43.url,
-  "1:1": cover11.url,
-  "3:4": cover34.url,
-  "9:16": cover916.url,
+  "16:9": cover169,
+  "4:3": cover43,
+  "1:1": cover11,
+  "3:4": cover34,
+  "9:16": cover916,
 };
 
 /** Resolve a proporção efetiva de um vídeo (com fallback para orientação antiga). */
