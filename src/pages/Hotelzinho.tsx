@@ -72,8 +72,8 @@ const Hotelzinho = () => {
                   <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <h.icon className="w-8 h-8 text-black" />
                   </div>
-                  <h3 className="font-heading font-bold text-lg text-black mb-2">{h.title}</h3>
-                  <p className="text-[#666] text-sm leading-relaxed" style={{ fontFamily: 'Inter' }}>{h.text}</p>
+                  <h2 className="font-heading font-bold text-lg text-black mb-2">{h.title}</h2>
+                  <p className="text-[#525252] text-sm leading-relaxed" style={{ fontFamily: 'Inter' }}>{h.text}</p>
                 </div>
               ))}
             </div>

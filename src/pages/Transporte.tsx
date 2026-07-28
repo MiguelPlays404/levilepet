@@ -108,8 +108,8 @@ const Transporte = () => {
                     <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
                       <Icon className="w-8 h-8 text-black" strokeWidth={2} />
                     </div>
-                    <h3 className="font-heading font-bold text-lg text-black mb-2">{h.title}</h3>
-                    <p className="text-[#666] text-sm leading-relaxed" style={{ fontFamily: "Inter" }}>{h.text}</p>
+                    <h2 className="font-heading font-bold text-lg text-black mb-2">{h.title}</h2>
+                    <p className="text-[#525252] text-sm leading-relaxed" style={{ fontFamily: "Inter" }}>{h.text}</p>
                   </div>
                 );
               })}
@@ -135,14 +135,14 @@ const Transporte = () => {
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 data-animate="fade-up" className="section-title text-black mb-3">{content?.how_it_works_title}</h2>
-              {content?.how_it_works_subtitle && <p data-animate="fade-up" data-delay="1" className="text-[#666] max-w-xl mx-auto" style={{ fontFamily: "Inter" }}>{content.how_it_works_subtitle}</p>}
+              {content?.how_it_works_subtitle && <p data-animate="fade-up" data-delay="1" className="text-[#525252] max-w-xl mx-auto" style={{ fontFamily: "Inter" }}>{content.how_it_works_subtitle}</p>}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
               {steps.map((s, i) => (
                 <div key={i} data-animate="card" data-delay={String(i)} className="relative bg-white rounded-2xl p-6 border border-[#E8E8E8] shadow-sm">
                   <div className="absolute -top-4 left-6 w-10 h-10 bg-primary text-black font-heading font-extrabold text-lg rounded-full flex items-center justify-center shadow-md">{i + 1}</div>
                   <h3 className="font-heading font-bold text-base text-black mt-4 mb-2">{s.title}</h3>
-                  <p className="text-[#666] text-sm leading-relaxed" style={{ fontFamily: "Inter" }}>{s.text}</p>
+                  <p className="text-[#525252] text-sm leading-relaxed" style={{ fontFamily: "Inter" }}>{s.text}</p>
                 </div>
               ))}
             </div>
