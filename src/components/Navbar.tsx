@@ -50,16 +50,23 @@ export function Navbar() {
 
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-[9999] transition-all duration-300 bg-[#0D0D0D] shadow-lg border-b border-[rgba(245,192,0,0.15)]"
+      className="fixed top-0 left-0 right-0 z-[9999] glass-dark border-b border-[rgba(245,192,0,0.15)] shadow-lg"
       style={{ position: 'fixed', transform: 'translateZ(0)', isolation: 'isolate' }}
     >
       <div className="container mx-auto flex items-center justify-between h-16 lg:h-[72px] px-4">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 hover:scale-[1.04] transition-transform">
+        <Link
+          to="/"
+          className="flex items-center gap-2 interactive rounded-lg"
+          aria-label={config?.site_name || 'Le Ville Pet'}
+        >
           <img
             src={config?.logo_url || "/images/logo-levillepet.png"}
             alt={config?.site_name || 'Le Ville Pet'}
             className="h-10 lg:h-[46px] rounded-lg"
+            width={46}
+            height={46}
+            decoding="async"
           />
         </Link>
 
@@ -103,28 +110,34 @@ export function Navbar() {
         {/* Botão hamburguer mobile */}
         <button
           onClick={() => setIsOpen(true)}
-          className="lg:hidden text-white p-2"
+          className="lg:hidden text-white p-2 -mr-2 min-h-11 min-w-11 flex items-center justify-center rounded-lg press"
           aria-label="Abrir menu"
+          aria-expanded={isOpen}
         >
           <Menu className="w-6 h-6" />
         </button>
       </div>
 
-      {/* Overlay escuro mobile */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/70 z-[9998] lg:hidden"
-          onClick={closeMenu}
-          aria-hidden="true"
-        />
-      )}
+      {/* Overlay escuro mobile — fade próprio em vez de mount seco */}
+      <div
+        className={`fixed inset-0 bg-black/70 z-[9998] lg:hidden transition-opacity duration-300 ${
+          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={closeMenu}
+        aria-hidden="true"
+      />
 
       {/* Drawer mobile */}
       <div
-        className={`fixed top-0 right-0 h-dvh w-[280px] z-[10000] transform transition-transform duration-300 lg:hidden shadow-2xl ${
+        className={`fixed top-0 right-0 h-dvh w-[280px] z-[10000] lg:hidden shadow-2xl glass-dark ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
-        style={{ background: '#0D0D0D', isolation: 'isolate' }}
+        style={{
+          isolation: 'isolate',
+          transform: isOpen ? 'translate3d(0,0,0)' : 'translate3d(100%,0,0)',
+          transition: 'transform var(--dur-base) var(--ease-out)',
+        }}
+        aria-hidden={!isOpen}
       >
         <div
           className="flex items-center justify-between p-4 border-b"
