@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getPhotos } from "@/lib/dataCache";
+import { useDragScroll } from "@/hooks/useDragScroll";
 import { Lightbox } from "@/components/Lightbox";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 
@@ -18,6 +19,7 @@ export function DestaquesSection({ locationKey, title, subtitle, background = "#
   const [photos, setPhotos] = useState<any[]>([]);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
+  useDragScroll(scrollerRef, [photos.length]);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,7 +77,7 @@ export function DestaquesSection({ locationKey, title, subtitle, background = "#
 
           <div
             ref={scrollerRef}
-            className={`flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 -mx-6 px-6 scrollbar-hide ${photos.length <= 4 ? "lg:justify-center" : ""} ${photos.length === 1 ? "justify-center" : ""}`}
+            className={`flex gap-4 overflow-x-auto drag-rail snap-x snap-mandatory pb-4 -mx-6 px-6 scrollbar-hide ${photos.length <= 4 ? "lg:justify-center" : ""} ${photos.length === 1 ? "justify-center" : ""}`}
             style={{ scrollbarWidth: "none" }}
           >
             {photos.map((photo, i) => (

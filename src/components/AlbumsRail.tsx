@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useDragScroll } from "@/hooks/useDragScroll";
 import { AlbumCard } from "@/components/AlbumCard";
 import { AlbumModal, type AlbumItem } from "@/components/AlbumModal";
 import { getAlbums, getAlbumsSync } from "@/lib/dataCache";
@@ -47,6 +48,8 @@ export function AlbumsRail({
     setOpenItems((data || []) as AlbumItem[]);
     setOpenId(album.id);
   };
+
+  useDragScroll(scrollerRef, [albums.length]);
 
   const scroll = (dir: "left" | "right") => {
     const el = scrollerRef.current;
@@ -98,7 +101,7 @@ export function AlbumsRail({
 
         <div
           ref={scrollerRef}
-          className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-3 -mx-6 px-6"
+          className="flex gap-4 overflow-x-auto drag-rail snap-x snap-mandatory pb-3 -mx-6 px-6"
           style={{ scrollbarWidth: "none" }}
         >
           {albums.map((album) => (

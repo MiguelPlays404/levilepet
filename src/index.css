@@ -604,9 +604,11 @@ a[href*="lovable.dev"][target="_blank"] {
   --ease-snap:   cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* ═══ SCROLL ═══ */
+/* ═══ SCROLL ═══
+   `scroll-behavior: smooth` no html prendia toda rolagem programática numa
+   animação longa — sensação de site lento. Agora é nativo/instantâneo. */
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
   /* Compensa a navbar fixa ao pular para âncoras */
   scroll-padding-top: 88px;
   -webkit-text-size-adjust: 100%;
@@ -615,6 +617,51 @@ body {
   /* Evita que o overscroll do body propague e cause "borracha" na página */
   overscroll-behavior-y: none;
 }
+
+/* ═══ CARROSSÉIS ARRASTÁVEIS ═══
+   Dedo: momentum nativo do sistema. Mouse: arrasto via useDragScroll. */
+.drag-rail {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  touch-action: pan-x pan-y;
+}
+.drag-rail::-webkit-scrollbar { display: none; }
+@media (pointer: fine) {
+  .drag-rail { cursor: grab; }
+  .drag-rail.is-dragging,
+  .drag-rail.is-dragging * {
+    cursor: grabbing !important;
+    user-select: none;
+    scroll-behavior: auto;
+  }
+  .drag-rail.is-dragging img,
+  .drag-rail.is-dragging a { pointer-events: none; }
+}
+
+/* ═══ REATIVIDADE UNIVERSAL DE BOTÕES E LINKS ═══
+   Qualquer elemento clicável responde ao mouse e ao toque, mesmo os que não
+   usam as classes utilitárias. `:where()` = especificidade zero, então
+   estilos próprios do componente continuam vencendo. */
+:where(button, [role="button"], a, summary, label[for], .clickable):not(:disabled):not([aria-disabled="true"]) {
+  transition: transform var(--dur-fast) var(--ease-spring),
+              opacity var(--dur-fast) var(--ease-out),
+              background-color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+:where(button, [role="button"], summary, .clickable):not(:disabled):not([aria-disabled="true"]):active {
+  transform: scale(0.965);
+}
+:where(a):not(:disabled):active { transform: scale(0.985); }
+/* Feedback imediato ao toque no celular (não há hover) */
+@media (hover: none) {
+  :where(button, [role="button"], a, summary):active { opacity: 0.82; }
+}
+
 
 /* ═══ FOCUS VISÍVEL E CONSISTENTE ═══ */
 :where(a, button, [role="button"], input, textarea, select, [tabindex]):focus-visible {
