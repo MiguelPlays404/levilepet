@@ -1,3 +1,4 @@
+import { Seo, breadcrumbLd } from "@/components/Seo";
 import { PublicLayout } from "@/components/PublicLayout";
 import { PageHero } from "@/components/PageHero";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
@@ -80,6 +81,7 @@ const Videos = () => {
 
   return (
     <PublicLayout>
+      <Seo title="Vídeos do Le Ville Pet" description="Assista aos vídeos do Le Ville Pet: bastidores do hotelzinho, transporte de pets e momentos especiais em Bauru-SP." path="/videos" jsonLd={breadcrumbLd("Vídeos do Le Ville Pet", "/videos")} />
       <PageHero badge="🎥 Vídeos" title={cfg?.videos_page_title || "Nossos Vídeos"} subtitle={cfg?.videos_page_subtitle || "Curta, compartilhe, sorria!"} bgImage={cfg?.videos_hero_image_url || undefined} />
 
       <AlbumsRail location="videos" title="Álbuns de vídeo" subtitle="Coleções e séries especiais" background="#FAFAF8" />

@@ -1,3 +1,4 @@
+import { Seo, breadcrumbLd } from "@/components/Seo";
 import { PublicLayout } from "@/components/PublicLayout";
 import { PageHero } from "@/components/PageHero";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
@@ -81,6 +82,7 @@ const Transporte = () => {
 
   return (
     <PublicLayout>
+      <Seo title="Transporte de Pets em Bauru" description="Leva e traz de cães e gatos em Bauru-SP com segurança e motoristas treinados. Veja cobertura, valores e agende pelo WhatsApp." path="/transporte" jsonLd={breadcrumbLd("Transporte de Pets em Bauru", "/transporte")} />
       <PageHero
         badge="🚐 Transporte"
         title={content?.page_title || "Transporte Pet"}

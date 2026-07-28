@@ -1,3 +1,4 @@
+import { Seo } from "@/components/Seo";
 import { Link } from "react-router-dom";
 import { PublicLayout } from "@/components/PublicLayout";
 import { useState, useEffect } from "react";
@@ -63,6 +64,7 @@ const Index = () => {
 
   return (
     <PublicLayout>
+      <Seo title="Le Ville Pet — Petshop e Hotelzinho em Bauru-SP" description="Le Ville Pet: petshop em Bauru-SP com hotelzinho, transporte, banho e tosa. Atendimento personalizado no Villaggio Mall Center." path="/" />
       {/* ═══ HERO — ESCURO ═══ */}
       <section className="relative min-h-screen flex items-center overflow-hidden" style={{ background: 'radial-gradient(ellipse at 65% 35%, #1C1500 0%, #080808 55%, #000000 100%)' }}>
         {c.hero_bg_image_url && (

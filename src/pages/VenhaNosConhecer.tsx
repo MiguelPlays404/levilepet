@@ -1,3 +1,4 @@
+import { Seo, breadcrumbLd } from "@/components/Seo";
 import { PublicLayout } from "@/components/PublicLayout";
 import { PageHero } from "@/components/PageHero";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
@@ -34,6 +35,7 @@ const VenhaNosConhecer = () => {
 
   return (
     <PublicLayout>
+      <Seo title="Venha Nos Conhecer" description="Conheça o espaço do Le Ville Pet em Bauru-SP: estrutura, produtos utilizados e galeria de fotos do nosso petshop." path="/venha-nos-conhecer" jsonLd={breadcrumbLd("Venha Nos Conhecer", "/venha-nos-conhecer")} />
       <PageHero
         badge="📍 Venha Nos Conhecer"
         title={content?.page_title || "Conheça o Nosso Espaço"}

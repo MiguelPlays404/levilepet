@@ -1,3 +1,4 @@
+import { Seo, breadcrumbLd } from "@/components/Seo";
 import { PublicLayout } from "@/components/PublicLayout";
 import { PageHero } from "@/components/PageHero";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
@@ -44,6 +45,7 @@ const Fotos = () => {
 
   return (
     <PublicLayout>
+      <Seo title="Fotos dos Nossos Pets" description="Galeria de fotos do Le Ville Pet: pets hospedados, banho e tosa e o dia a dia do nosso petshop em Bauru-SP." path="/fotos" jsonLd={breadcrumbLd("Fotos dos Nossos Pets", "/fotos")} />
       <PageHero badge="📸 Fotos" title={cfg?.fotos_page_title || "Galeria de Momentos"} subtitle={cfg?.fotos_page_subtitle || "Os pets mais lindos de Bauru"} bgImage={cfg?.fotos_hero_image_url || undefined} />
 
       <AlbumsRail location="fotos" title="Álbuns da galeria" subtitle="Coleções organizadas por momento" background="#FAFAF8" />

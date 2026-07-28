@@ -1,3 +1,4 @@
+import { Seo, breadcrumbLd } from "@/components/Seo";
 import { useEffect, useState } from "react";
 import { PublicLayout } from "@/components/PublicLayout";
 import { PageHero } from "@/components/PageHero";
@@ -33,6 +34,7 @@ const Albuns = () => {
 
   return (
     <PublicLayout>
+      <Seo title="Álbuns de Fotos e Vídeos" description="Explore os álbuns do Le Ville Pet organizados por tema: hotelzinho, passeios, transporte e momentos dos nossos pets." path="/albuns" jsonLd={breadcrumbLd("Álbuns de Fotos e Vídeos", "/albuns")} />
       <PageHero
         badge="📚 Álbuns"
         title={cfg?.albuns_page_title || "Nossos Álbuns"}
