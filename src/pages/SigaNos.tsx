@@ -1,3 +1,4 @@
+import { Seo, breadcrumbLd } from "@/components/Seo";
 import { PublicLayout } from "@/components/PublicLayout";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { MessageCircle, Phone } from "lucide-react";
@@ -61,6 +62,7 @@ const SigaNos = () => {
 
   return (
     <PublicLayout>
+      <Seo title="Siga o Le Ville Pet nas Redes" description="Acompanhe o Le Ville Pet no Instagram, WhatsApp e demais redes sociais para novidades e o dia a dia dos pets em Bauru-SP." path="/siga-nos" jsonLd={breadcrumbLd("Siga o Le Ville Pet nas Redes", "/siga-nos")} />
       <section className="min-h-screen flex items-center justify-center py-16" style={{ background: '#0D0D0D' }}>
         <div className="w-full max-w-[520px] mx-auto px-6">
           {loading ? (

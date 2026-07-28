@@ -117,7 +117,7 @@ function HojeLightbox({ items, index, onClose, onNav }: LightboxProps) {
               playsInline
             />
           ) : (
-            <img
+            <img loading="lazy" decoding="async"
               src={item.media_url}
               alt={item.title || "Hoje no Le Ville"}
               className="w-full h-full object-contain"

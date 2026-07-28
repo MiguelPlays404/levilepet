@@ -1,3 +1,4 @@
+import { Seo } from "@/components/Seo";
 import { Link } from "react-router-dom";
 import { PublicLayout } from "@/components/PublicLayout";
 import { useState, useEffect } from "react";
@@ -51,24 +52,35 @@ const Index = () => {
   const c = config || {};
   const waNum = c.whatsapp_number || '5514997145610';
   const waMsg = encodeURIComponent(c.whatsapp_message || 'Olá! Vim pelo site Le Ville Pet! 🐾');
-  const renderMedia = (url: string | undefined, fallback: string, alt: string, className = "w-full h-full object-cover") => {
+  const renderMedia = (url: string | undefined, fallback: string, alt: string, className = "w-full h-full object-cover", priority = false) => {
     const src = url || fallback;
     const isVideo = /\.(mp4|webm|mov|m4v)(\?|$)/i.test(src);
     return isVideo ? (
       <video src={src} className={className} autoPlay muted loop playsInline controls={false} />
     ) : (
-      <img src={src} alt={alt} className={className} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
+      <img
+        src={src}
+        alt={alt}
+        className={className}
+        loading={priority ? "eager" : "lazy"}
+        // @ts-expect-error fetchPriority ainda não tipado em todas as versões do React
+        fetchpriority={priority ? "high" : undefined}
+        decoding={priority ? "sync" : "async"}
+        onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+      />
     );
+
   };
 
   return (
     <PublicLayout>
+      <Seo title="Le Ville Pet — Petshop e Hotelzinho em Bauru-SP" description="Le Ville Pet: petshop em Bauru-SP com hotelzinho, transporte, banho e tosa. Atendimento personalizado no Villaggio Mall Center." path="/" />
       {/* ═══ HERO — ESCURO ═══ */}
       <section className="relative min-h-screen flex items-center overflow-hidden" style={{ background: 'radial-gradient(ellipse at 65% 35%, #1C1500 0%, #080808 55%, #000000 100%)' }}>
         {c.hero_bg_image_url && (
           <div className="absolute inset-0">
             <div className="absolute inset-0 opacity-30 lg:opacity-45">
-              {renderMedia(c.hero_bg_image_url, '', 'Le Ville Pet', 'w-full h-full object-cover object-center')}
+              {renderMedia(c.hero_bg_image_url, '', 'Fachada do Le Ville Pet, petshop em Bauru-SP', 'w-full h-full object-cover object-center', true)}
             </div>
             <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/85 lg:from-black/55 lg:via-black/45 lg:to-black/60" />
           </div>

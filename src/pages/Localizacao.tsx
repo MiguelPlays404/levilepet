@@ -1,3 +1,4 @@
+import { Seo, breadcrumbLd } from "@/components/Seo";
 import { PublicLayout } from "@/components/PublicLayout";
 import { PageHero } from "@/components/PageHero";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
@@ -22,6 +23,7 @@ const Localizacao = () => {
 
   return (
     <PublicLayout>
+      <Seo title="Localização e Como Chegar" description="Le Ville Pet fica no Villaggio Mall Center, em Bauru-SP. Veja o mapa, endereço completo e a melhor forma de chegar até nós." path="/localizacao" jsonLd={breadcrumbLd("Localização e Como Chegar", "/localizacao")} />
       <PageHero badge="📍 Nossa Localização" title={c?.localizacao_title || "Nossa Localização"} subtitle={c?.localizacao_subtitle || "Venha nos visitar em Bauru-SP"} bgImage={c?.localizacao_hero_image_url || undefined} />
 
       <section className="py-20" style={{ background: '#FFFFFF' }}>

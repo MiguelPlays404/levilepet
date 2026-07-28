@@ -1,3 +1,4 @@
+import { Seo, breadcrumbLd } from "@/components/Seo";
 import { PublicLayout } from "@/components/PublicLayout";
 import { PageHero } from "@/components/PageHero";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
@@ -21,6 +22,7 @@ const FaleConosco = () => {
 
   return (
     <PublicLayout>
+      <Seo title="Fale Conosco" description="Fale com o Le Ville Pet pelo WhatsApp ou telefone e tire suas dúvidas sobre hotelzinho, transporte e serviços para pets em Bauru-SP." path="/fale-conosco" jsonLd={breadcrumbLd("Fale Conosco", "/fale-conosco")} />
       <PageHero badge="💬 Contato" title={c?.faleconosco_title || "Fale com o Le Ville Pet"} subtitle={c?.faleconosco_subtitle || "Estamos prontos para te atender"} bgImage={c?.faleconosco_hero_image_url || undefined} />
 
       {/* WhatsApp Card — WHITE bg */}

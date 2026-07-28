@@ -1,3 +1,4 @@
+import { Seo, breadcrumbLd } from "@/components/Seo";
 import { PublicLayout } from "@/components/PublicLayout";
 import { PageHero } from "@/components/PageHero";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
@@ -44,6 +45,7 @@ const Hotelzinho = () => {
 
   return (
     <PublicLayout>
+      <Seo title="Hotelzinho para Pets em Bauru" description="Hospedagem para cães e gatos em Bauru-SP com monitoramento, conforto e carinho o dia todo. Conheça o hotelzinho do Le Ville Pet." path="/hotelzinho" jsonLd={breadcrumbLd("Hotelzinho para Pets em Bauru", "/hotelzinho")} />
       <PageHero
         badge="🏨 Hotelzinho"
         title={content?.page_title || "Nosso Hotelzinho"}
