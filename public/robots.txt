@@ -12,3 +12,7 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /manutencao
+
+Sitemap: https://levillepet.lovable.app/sitemap.xml
