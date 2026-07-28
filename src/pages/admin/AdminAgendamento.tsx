@@ -4,6 +4,7 @@ import { MediaUploader } from "@/components/MediaUploader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getYoutubeThumbnail } from "@/lib/youtube";
+import { getVideoThumbnail } from "@/lib/videoThumb";
 import {
   Clock, Calendar, Timer, ImageIcon, Video, Link2, Upload,
   Trash2, Eye, CheckCircle2, Zap, X, RefreshCw, Play,
@@ -133,7 +134,7 @@ function QueueItem({
   item: any; onPublishNow: () => void; onCancel: () => void;
 }) {
   const isPhoto = item._kind === "photo";
-  const thumb = isPhoto ? item.image_url : (item.thumbnail_url || item.video_url);
+  const thumb = isPhoto ? item.image_url : getVideoThumbnail(item);
   const locs = isPhoto
     ? [...(item.locations ?? [item.category ?? "galeria"])]
     : [...(item.locations ?? [item.category ?? "geral"])];
@@ -347,15 +348,7 @@ export default function AdminAgendamento() {
       return;
     }
 
-    // Thumbnail obrigatória para vídeos (exceto YouTube que gera automático)
-    if (mediaType === "video") {
-      const isYouTube = linkUrl.includes("youtube") || linkUrl.includes("youtu.be");
-      const hasThumbnail = videoMode === "link" ? (isYouTube || thumbUrl.trim() !== "") : thumbUrl.trim() !== "";
-      if (!hasThumbnail) {
-        toast({ title: "⚠️ Adicione uma capa (thumbnail) para o vídeo", description: "A capa é obrigatória para que o vídeo apareça corretamente no site.", variant: "destructive" });
-        return;
-      }
-    }
+    // Capa opcional: sem capa personalizada o site usa a capa padrão do Le Ville Pet
 
     if (locations.length === 0) {
       toast({ title: "⚠️ Selecione ao menos uma categoria", variant: "destructive" });
@@ -914,7 +907,7 @@ export default function AdminAgendamento() {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
               {recentItems.map((item) => {
-                const thumb = item._kind === "photo" ? item.image_url : (item.thumbnail_url || "");
+                const thumb = item._kind === "photo" ? item.image_url : getVideoThumbnail(item);
                 const date = item._kind === "photo" ? item.created_at : item.published_at;
                 return (
                   <div key={`${item._kind}-${item.id}`} className="bg-[#18181B] rounded-xl overflow-hidden border border-[#27272A] group">
