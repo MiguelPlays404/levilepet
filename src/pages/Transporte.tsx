@@ -9,6 +9,7 @@ import {
 import { useEffect, useState } from "react";
 import { getSiteConfig, getTransporteContent, getPhotos, getVideos } from "@/lib/dataCache";
 import { getYoutubeId } from "@/lib/youtube";
+import { getVideoThumbnail, defaultVideoCover } from "@/lib/videoThumb";
 import { Lightbox } from "@/components/Lightbox";
 
 const ICON_MAP: Record<string, any> = {
@@ -44,11 +45,7 @@ const Transporte = () => {
     return () => { cancelled = true; };
   }, []);
 
-  const getThumbnail = (video: any) => {
-    if (video.thumbnail_url) return video.thumbnail_url;
-    const ytId = getYoutubeId(video.video_url);
-    return ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : '/placeholder.svg';
-  };
+  const getThumbnail = (video: any) => getVideoThumbnail(video);
   const getEmbedUrl = (url: string) => {
     const ytId = getYoutubeId(url);
     return ytId ? `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1` : url;

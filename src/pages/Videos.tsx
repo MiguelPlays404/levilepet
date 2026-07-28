@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSiteConfig } from "@/lib/dataCache";
 import { getYoutubeId } from "@/lib/youtube";
+import { getVideoThumbnail, defaultVideoCover } from "@/lib/videoThumb";
 import { AlbumsRail } from "@/components/AlbumsRail";
 
 function getUserId(): string {
@@ -61,11 +62,7 @@ const Videos = () => {
     ));
   };
 
-  const getThumbnail = (video: any) => {
-    if (video.thumbnail_url) return video.thumbnail_url;
-    const ytId = getYoutubeId(video.video_url);
-    return ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : '/placeholder.svg';
-  };
+  const getThumbnail = (video: any) => getVideoThumbnail(video);
 
   const getEmbedUrl = (url: string) => {
     const ytId = getYoutubeId(url);
