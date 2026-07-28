@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useDragScroll } from "@/hooks/useDragScroll";
+import { useSwipe } from "@/hooks/useSwipe";
 import { ChevronLeft, ChevronRight, X, Play } from "lucide-react";
 import { aspectStyle } from "@/components/AspectRatioPicker";
 import { detectPlatform, getEmbedUrl } from "@/lib/albumLinks";
@@ -24,6 +26,12 @@ interface Props {
 export function AlbumModal({ title, items, onClose, initialIndex = 0 }: Props) {
   const [index, setIndex] = useState(initialIndex);
   const item = items[index];
+  const thumbsRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  useDragScroll(thumbsRef, [items.length]);
+  const next = () => setIndex((i) => Math.min(i + 1, items.length - 1));
+  const prev = () => setIndex((i) => Math.max(i - 1, 0));
+  useSwipe(stageRef, { onLeft: next, onRight: prev }, [items.length]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -71,11 +79,11 @@ export function AlbumModal({ title, items, onClose, initialIndex = 0 }: Props) {
         </button>
       </header>
 
-      <div className="flex-1 flex items-center justify-center px-3 relative" onClick={(e) => e.stopPropagation()}>
+      <div ref={stageRef} className="flex-1 flex items-center justify-center px-3 relative" onClick={(e) => e.stopPropagation()}>
         {items.length > 1 && (
           <>
             <button
-              onClick={() => setIndex((i) => Math.max(i - 1, 0))}
+              onClick={prev}
               disabled={index === 0}
               className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-primary hover:text-black rounded-full text-white transition-colors disabled:opacity-20 z-10"
               aria-label="Anterior"
@@ -83,7 +91,7 @@ export function AlbumModal({ title, items, onClose, initialIndex = 0 }: Props) {
               <ChevronLeft className="w-5 h-5" />
             </button>
             <button
-              onClick={() => setIndex((i) => Math.min(i + 1, items.length - 1))}
+              onClick={next}
               disabled={index === items.length - 1}
               className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-primary hover:text-black rounded-full text-white transition-colors disabled:opacity-20 z-10"
               aria-label="Próxima"

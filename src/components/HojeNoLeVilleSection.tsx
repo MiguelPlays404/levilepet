@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useDragScroll } from "@/hooks/useDragScroll";
 import { ChevronLeft, ChevronRight, Play, X, Clock, Images } from "lucide-react";
 
 import { aspectStyle } from "@/components/AspectRatioPicker";
