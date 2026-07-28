@@ -490,23 +490,35 @@
 @keyframes adminCardPop { 0%{transform:scale(0.88) translateY(12px);opacity:0} 100%{transform:scale(1) translateY(0);opacity:1} }
 @keyframes uploadPulse { 0%,100%{border-color:var(--gray-300);background:white} 50%{border-color:var(--yellow-brand);background:var(--yellow-pale)} }
 
-@keyframes imageReveal { 0%{clip-path:polygon(0 100%, 100% 100%, 100% 100%, 0 100%)} 100%{clip-path:polygon(0 0, 100% 0, 100% 100%, 0 100%)} }
+@keyframes imageReveal { 0%{opacity:0;transform:scale(1.04)} 100%{opacity:1;transform:scale(1)} }
 @keyframes footerLine { from{width:0;opacity:0} to{width:100%;opacity:1} }
 @keyframes mobileMenuIn { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
 
-/* ═══ SKELETON ═══ */
-.skeleton {
-  background: linear-gradient(90deg, #1C1C1E 0%, #27272A 40%, #1C1C1E 80%);
-  background-size: 300px 100%;
-  animation: shimmer 1.4s ease-in-out infinite;
-  border-radius: 8px;
-}
+/* ═══ SKELETON ═══
+   ANTES: `background-position` animado = repaint de toda a área do skeleton a
+   cada frame, em loop infinito (vários por tela durante o carregamento).
+   AGORA: um brilho em ::after que só translada — puro compositor. */
+.skeleton,
 .skeleton-light {
-  background: linear-gradient(90deg, #E8E8E8 0%, #F0F0F0 40%, #E8E8E8 80%);
-  background-size: 300px 100%;
-  animation: shimmer 1.4s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
   border-radius: 8px;
 }
+.skeleton { background: #1C1C1E; }
+.skeleton-light { background: #E8E8E8; }
+.skeleton::after,
+.skeleton-light::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translate3d(-100%, 0, 0);
+  animation: skeletonSweep 1.25s var(--ease-in-out) infinite;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+}
+.skeleton-light::after {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.75), transparent);
+}
+@keyframes skeletonSweep { to { transform: translate3d(100%, 0, 0); } }
 
 /* ═══ WHATSAPP FAB ═══ */
 .whatsapp-fab {
