@@ -85,11 +85,15 @@ const Index = () => {
             <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/85 lg:from-black/55 lg:via-black/45 lg:to-black/60" />
           </div>
         )}
-        <div className="absolute top-[10%] right-[5%] w-[700px] h-[700px] rounded-full pointer-events-none animate-scale-breath" style={{ background: 'radial-gradient(circle, rgba(245,192,0,0.14) 0%, transparent 70%)' }} />
-        <div className="absolute bottom-[5%] left-[-5%] w-[500px] h-[500px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(245,192,0,0.07) 0%, transparent 70%)', animation: 'scaleBreath 6s ease-in-out infinite 2.5s' }} />
+        {/* Halos ambientes: `gpu` promove cada um à sua própria camada de
+            composição — sem isso, o scale infinito repintava uma área de
+            700x700px a cada frame no main thread. No mobile o CSS desliga
+            estas animações por completo. */}
+        <div className="absolute top-[10%] right-[5%] w-[700px] h-[700px] rounded-full pointer-events-none animate-scale-breath gpu" style={{ background: 'radial-gradient(circle, rgba(245,192,0,0.14) 0%, transparent 70%)' }} />
+        <div className="absolute bottom-[5%] left-[-5%] w-[500px] h-[500px] rounded-full pointer-events-none gpu" style={{ background: 'radial-gradient(circle, rgba(245,192,0,0.07) 0%, transparent 70%)', animation: 'scaleBreath 6s ease-in-out infinite 2.5s' }} />
         <div className="absolute inset-0 paw-pattern-bg pointer-events-none" />
         {[0,1,2,3,4].map(i => (
-          <div key={i} className="absolute pointer-events-none select-none" style={{ fontSize: `${16 + i * 5}px`, opacity: 0.12, animation: `floatPaw ${4.5 + i}s ease-in-out infinite ${i * 0.8}s`, top: `${15 + i * 15}%`, right: `${5 + i * 8}%`, color: '#F5C000' }}>🐾</div>
+          <div key={i} className="absolute pointer-events-none select-none hidden md:block gpu" aria-hidden="true" style={{ fontSize: `${16 + i * 5}px`, opacity: 0.12, animation: `floatPaw ${4.5 + i}s ease-in-out infinite ${i * 0.8}s`, top: `${15 + i * 15}%`, right: `${5 + i * 8}%`, color: '#F5C000' }}>🐾</div>
         ))}
         <div className="absolute right-[18%] top-[10%] bottom-[10%] w-px pointer-events-none hidden lg:block animate-line-grow-v" style={{ background: 'linear-gradient(to bottom, transparent, rgba(245,192,0,0.35), transparent)' }}>
           {[20,40,60,80].map((p,i) => (
@@ -288,7 +292,7 @@ const Index = () => {
       />
 
       {/* ═══ CARDS — CLARO (#F8F8F6) ═══ */}
-      <section className="py-20 lg:py-24" style={{ background: '#F8F8F6' }}>
+      <section className="py-20 lg:py-24 cv-auto" style={{ background: '#F8F8F6' }}>
         <div className="container mx-auto px-6">
           <div className="text-center mb-14">
             <h2 data-animate="fade-up" className="section-title text-black mb-3">{c.home_explore_title || 'Explore o Le Ville Pet'}</h2>
@@ -323,7 +327,7 @@ const Index = () => {
       </section>
 
       {/* ═══ PREÇOS — CLARO (#FAFAF8) ═══ */}
-      <section className="py-20 lg:py-24" style={{ background: '#FAFAF8' }}>
+      <section className="py-20 lg:py-24 cv-auto" style={{ background: '#FAFAF8' }}>
         <div className="container mx-auto px-6">
           <div className="text-center mb-12">
             <span data-animate="fade-up" className="inline-block text-primary text-sm font-body px-4 py-1.5 rounded-full mb-4" style={{ background: 'var(--yellow-badge)' }}>Preços</span>
@@ -434,7 +438,7 @@ const Index = () => {
       })()}
 
       {/* ═══ CTA HOTELZINHO — AMARELO (#F5C000) ═══ */}
-      <section className="py-20 lg:py-24" style={{ background: '#F5C000' }}>
+      <section className="py-20 lg:py-24 cv-auto" style={{ background: '#F5C000' }}>
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
@@ -458,7 +462,7 @@ const Index = () => {
       </section>
 
       {/* ═══ CONTATO — ESCURO (#111111) ═══ */}
-      <section className="py-20 lg:py-24" style={{ background: '#111111' }}>
+      <section className="py-20 lg:py-24 cv-auto" style={{ background: '#111111' }}>
         <div className="container mx-auto px-6">
           <div className="text-center mb-12">
             <h2 data-animate="fade-up" className="section-title text-white">{c.contact_section_title || 'Entre em Contato'}</h2>

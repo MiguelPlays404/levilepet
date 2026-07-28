@@ -111,12 +111,16 @@
   input, textarea, select { font-size: 16px; }
 }
 
-/* ═══ CUSTOM CURSOR (desktop) ═══ */
+/* ═══ CUSTOM CURSOR (desktop) ═══
+   `cursor` é herdado. Aplicá-lo via `*` forçava o motor de estilo a resolver
+   uma imagem de cursor para CADA nó do documento (recalc caro em páginas
+   grandes). Escopo em `html` + elementos interativos entrega o mesmo visual
+   com uma fração do custo. */
 @media (pointer: fine) {
-  * {
+  html {
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' stroke='%23F5C000' stroke-width='1.5' d='M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 01.35-.15h6.87a.5.5 0 00.35-.85L6.35 2.85a.5.5 0 00-.85.35z'/%3E%3C/svg%3E") 0 0, auto;
   }
-  a, button, [role="button"], .clickable, input, textarea, select {
+  a, button, [role="button"], .clickable, input, textarea, select, label, summary {
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23F5C000' stroke='%23000' stroke-width='1.5' d='M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 01.35-.15h6.87a.5.5 0 00.35-.85L6.35 2.85a.5.5 0 00-.85.35z'/%3E%3C/svg%3E") 0 0, pointer;
   }
 }
@@ -194,7 +198,9 @@
   border: none;
   position: relative;
   overflow: hidden;
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform var(--dur-fast) var(--ease-spring),
+              box-shadow var(--dur-fast) var(--ease-out),
+              background-color var(--dur-fast) var(--ease-out);
   box-shadow: 0 4px 14px var(--yellow-shadow), 0 2px 4px rgba(0,0,0,0.1);
   display: inline-flex;
   align-items: center;
@@ -236,7 +242,9 @@
   position: relative;
   overflow: hidden;
   z-index: 1;
-  transition: all 0.25s ease;
+  transition: color var(--dur-base) var(--ease-out),
+              transform var(--dur-fast) var(--ease-spring),
+              border-color var(--dur-base) var(--ease-out);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -259,6 +267,7 @@
   transform: scaleX(1);
   transform-origin: left;
 }
+.btn-secondary:active { transform: scale(0.97); }
 
 .btn-dark {
   background: #000;
@@ -269,7 +278,9 @@
   padding: 14px 32px;
   border-radius: 10px;
   border: none;
-  transition: all 0.2s ease;
+  transition: transform var(--dur-fast) var(--ease-spring),
+              box-shadow var(--dur-fast) var(--ease-out),
+              background-color var(--dur-fast) var(--ease-out);
   box-shadow: 0 4px 14px rgba(0,0,0,0.15);
   display: inline-flex;
   align-items: center;
@@ -280,9 +291,10 @@
 }
 .btn-dark:hover {
   background: #1A1A1A;
-  transform: translateY(-2px);
+  transform: translate3d(0, -2px, 0);
   box-shadow: 0 8px 24px rgba(0,0,0,0.25);
 }
+.btn-dark:active { transform: translate3d(0, 1px, 0) scale(0.98); }
 
 .btn-ghost {
   background: transparent;
@@ -293,7 +305,9 @@
   font-size: 15px;
   padding: 12px 28px;
   border-radius: 10px;
-  transition: all 0.2s ease;
+  transition: background-color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-spring);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -304,7 +318,9 @@
 .btn-ghost:hover {
   background: rgba(255,255,255,0.1);
   border-color: rgba(255,255,255,0.7);
+  transform: translate3d(0, -2px, 0);
 }
+.btn-ghost:active { transform: scale(0.97); }
 
 /* ═══ CARD STYLES ═══ */
 .card-light {
@@ -312,15 +328,18 @@
   border: 1px solid var(--gray-200);
   border-radius: 20px;
   box-shadow: var(--shadow-md);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out),
+              border-color var(--dur-base) var(--ease-out);
   overflow: hidden;
   position: relative;
 }
 .card-light:hover {
-  transform: translateY(-8px) scale(1.01);
+  transform: translate3d(0, -8px, 0) scale(1.01);
   box-shadow: var(--shadow-xl);
   border-color: var(--yellow-border);
 }
+.card-light:active { transform: translate3d(0, -3px, 0) scale(0.995); }
 .card-light::before {
   content: '';
   position: absolute;
@@ -340,26 +359,50 @@
   opacity: 0.06;
 }
 
-/* ═══ SCROLL ANIMATIONS ═══ */
-@keyframes safetyReveal { to { opacity: 1; } }
-[data-animate] { opacity: 0; animation: safetyReveal 0.4s ease 1.2s forwards; }
-[data-animate].is-visible { animation-fill-mode: both; opacity: 1 !important; }
-[data-animate="fade-up"].is-visible { animation: fadeInUp 0.6s cubic-bezier(0.4,0,0.2,1) both; }
-[data-animate="fade-down"].is-visible { animation: fadeInDown 0.6s cubic-bezier(0.4,0,0.2,1) both; }
-[data-animate="fade-left"].is-visible { animation: fadeInLeft 0.65s cubic-bezier(0.4,0,0.2,1) both; }
-[data-animate="fade-right"].is-visible { animation: fadeInRight 0.65s cubic-bezier(0.4,0,0.2,1) both; }
-[data-animate="fade-scale"].is-visible { animation: fadeInScale 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
-[data-animate="card"].is-visible { animation: cardEntrance 0.55s cubic-bezier(0.34,1.56,0.64,1) both; }
-[data-animate="card-3d"].is-visible { animation: cardReveal3D 0.7s cubic-bezier(0.4,0,0.2,1) both; }
-[data-animate="bounce"].is-visible { animation: bounceIn 0.7s cubic-bezier(0.34,1.56,0.64,1) both; }
-[data-animate="image"].is-visible { animation: imageReveal 0.8s cubic-bezier(0.4,0,0.2,1) both; }
+/* ═══ SCROLL REVEAL — baseado em transition (somente compositor) ═══
+   ANTES: todo `[data-animate]` iniciava com opacity:0 + uma @keyframes de
+   segurança rodando no load. Em páginas com 60+ elementos isso significava
+   dezenas de animações CSS ativas simultaneamente antes mesmo do primeiro
+   scroll — main-thread ocupado e queda de FPS.
+   AGORA: o estado inicial é estático (sem animação nenhuma rodando) e a
+   revelação acontece por `transition` de transform+opacity — as duas únicas
+   propriedades que o compositor resolve sem reflow/repaint.
+   Sem JS (`html` sem `.motion-ready`) o conteúdo aparece normalmente. */
+.motion-ready [data-animate] {
+  opacity: 0;
+  transform: translate3d(var(--rv-x, 0px), var(--rv-y, 16px), 0) scale(var(--rv-s, 1));
+  transition: opacity var(--dur-slow) var(--ease-out) var(--rv-delay, 0ms),
+              transform var(--dur-slow) var(--ease-out) var(--rv-delay, 0ms);
+}
+.motion-ready [data-animate="fade-up"]    { --rv-y: 18px; }
+.motion-ready [data-animate="fade-down"]  { --rv-y: -18px; }
+.motion-ready [data-animate="fade-left"]  { --rv-x: -26px; --rv-y: 0px; }
+.motion-ready [data-animate="fade-right"] { --rv-x: 26px; --rv-y: 0px; }
+.motion-ready [data-animate="fade-scale"] { --rv-y: 0px; --rv-s: 0.94; }
+.motion-ready [data-animate="card"]       { --rv-y: 22px; --rv-s: 0.97; }
+.motion-ready [data-animate="card-3d"]    { --rv-y: 26px; --rv-s: 0.98; }
+.motion-ready [data-animate="bounce"]     { --rv-y: 0px; --rv-s: 0.86; }
+.motion-ready [data-animate="image"]      { --rv-y: 14px; --rv-s: 1.04; }
 
-[data-delay="1"].is-visible { animation-delay: 0.1s !important; }
-[data-delay="2"].is-visible { animation-delay: 0.2s !important; }
-[data-delay="3"].is-visible { animation-delay: 0.3s !important; }
-[data-delay="4"].is-visible { animation-delay: 0.4s !important; }
-[data-delay="5"].is-visible { animation-delay: 0.5s !important; }
-[data-delay="6"].is-visible { animation-delay: 0.6s !important; }
+/* Molas curtas só onde o efeito pede overshoot */
+.motion-ready [data-animate="bounce"],
+.motion-ready [data-animate="card"],
+.motion-ready [data-animate="fade-scale"] {
+  transition-timing-function: var(--ease-spring);
+}
+
+.motion-ready [data-animate].is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+/* Stagger enxuto: 55ms por passo mantém a cascata legível sem parecer lenta */
+.motion-ready [data-delay="1"] { --rv-delay: 55ms; }
+.motion-ready [data-delay="2"] { --rv-delay: 110ms; }
+.motion-ready [data-delay="3"] { --rv-delay: 165ms; }
+.motion-ready [data-delay="4"] { --rv-delay: 220ms; }
+.motion-ready [data-delay="5"] { --rv-delay: 275ms; }
+.motion-ready [data-delay="6"] { --rv-delay: 330ms; }
 
 /* ═══ ANIMATION UTILITIES ═══ */
 @layer utilities {
@@ -431,7 +474,9 @@
 
 @keyframes heartBeat { 0%{transform:scale(1)} 15%{transform:scale(1.45)} 30%{transform:scale(1)} 45%{transform:scale(1.32)} 100%{transform:scale(1)} }
 
-@keyframes pageEnter { 0%{opacity:0;transform:translateY(12px);filter:blur(3px)} 60%{opacity:1;filter:blur(0)} 100%{opacity:1;transform:translateY(0);filter:blur(0)} }
+/* pageEnter sem `filter: blur()` — filtro animado força repaint em GPU a cada
+   frame na árvore inteira da página e cria containing block (quebrava fixed). */
+@keyframes pageEnter { 0%{opacity:0;transform:translate3d(0,10px,0)} 100%{opacity:1;transform:none} }
 @keyframes pageExit { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-8px)} }
 
 @keyframes btnShine { 0%{left:-120%} 100%{left:220%} }
@@ -445,25 +490,40 @@
 @keyframes adminCardPop { 0%{transform:scale(0.88) translateY(12px);opacity:0} 100%{transform:scale(1) translateY(0);opacity:1} }
 @keyframes uploadPulse { 0%,100%{border-color:var(--gray-300);background:white} 50%{border-color:var(--yellow-brand);background:var(--yellow-pale)} }
 
-@keyframes imageReveal { 0%{clip-path:polygon(0 100%, 100% 100%, 100% 100%, 0 100%)} 100%{clip-path:polygon(0 0, 100% 0, 100% 100%, 0 100%)} }
+@keyframes imageReveal { 0%{opacity:0;transform:scale(1.04)} 100%{opacity:1;transform:scale(1)} }
 @keyframes footerLine { from{width:0;opacity:0} to{width:100%;opacity:1} }
 @keyframes mobileMenuIn { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
 
-/* ═══ SKELETON ═══ */
-.skeleton {
-  background: linear-gradient(90deg, #1C1C1E 0%, #27272A 40%, #1C1C1E 80%);
-  background-size: 300px 100%;
-  animation: shimmer 1.4s ease-in-out infinite;
-  border-radius: 8px;
-}
+/* ═══ SKELETON ═══
+   ANTES: `background-position` animado = repaint de toda a área do skeleton a
+   cada frame, em loop infinito (vários por tela durante o carregamento).
+   AGORA: um brilho em ::after que só translada — puro compositor. */
+.skeleton,
 .skeleton-light {
-  background: linear-gradient(90deg, #E8E8E8 0%, #F0F0F0 40%, #E8E8E8 80%);
-  background-size: 300px 100%;
-  animation: shimmer 1.4s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
   border-radius: 8px;
 }
+.skeleton { background: #1C1C1E; }
+.skeleton-light { background: #E8E8E8; }
+.skeleton::after,
+.skeleton-light::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translate3d(-100%, 0, 0);
+  animation: skeletonSweep 1.25s var(--ease-in-out) infinite;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+}
+.skeleton-light::after {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.75), transparent);
+}
+@keyframes skeletonSweep { to { transform: translate3d(100%, 0, 0); } }
 
-/* ═══ WHATSAPP FAB ═══ */
+/* ═══ WHATSAPP FAB ═══
+   ANTES: `pulseWhatsApp` animava `box-shadow` em loop infinito — repaint
+   permanente do FAB (presente em TODAS as páginas), 24h por dia.
+   AGORA: anel em ::after animado só com transform+opacity (compositor). */
 .whatsapp-fab {
   position: fixed;
   bottom: 28px;
@@ -476,36 +536,31 @@
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  animation: pulseWhatsApp 2.8s ease infinite;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  transition: transform var(--dur-fast) var(--ease-spring),
+              box-shadow var(--dur-fast) var(--ease-out);
   box-shadow: 0 4px 20px rgba(37,211,102,0.4);
   text-decoration: none;
 }
-.whatsapp-fab:hover {
-  transform: scale(1.14) rotate(-8deg);
-  animation: none;
-  box-shadow: 0 8px 32px rgba(37,211,102,0.6);
-}
 .whatsapp-fab::after {
-  content: 'Fale Conosco!';
+  content: '';
   position: absolute;
-  right: calc(100% + 12px);
-  background: #1A1A1A;
-  color: #FFF;
-  padding: 7px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-family: 'Inter', sans-serif;
-  white-space: nowrap;
-  opacity: 0;
-  transform: translateX(6px);
-  transition: all 0.2s ease;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid hsl(var(--whatsapp));
   pointer-events: none;
+  animation: fabRing 2.8s var(--ease-out) infinite;
 }
-.whatsapp-fab:hover::after {
-  opacity: 1;
-  transform: translateX(0);
+@keyframes fabRing {
+  0%   { transform: scale(1);    opacity: 0.6; }
+  70%  { transform: scale(1.55); opacity: 0; }
+  100% { transform: scale(1.55); opacity: 0; }
 }
+.whatsapp-fab:hover {
+  transform: scale(1.1) rotate(-6deg);
+  box-shadow: 0 10px 30px rgba(37,211,102,0.55);
+}
+.whatsapp-fab:hover::after { animation-play-state: paused; opacity: 0; }
+.whatsapp-fab:active { transform: scale(0.93); }
 
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
@@ -527,3 +582,174 @@ a[href*="lovable.dev"][target="_blank"] {
 }
 .animate-admin-fade { animation: adminFade 0.28s ease-out both; }
 
+
+/* ══════════════════════════════════════════════════════════════════════
+   SISTEMA DE MOTION — tokens, microinterações, glass e acessibilidade
+   ══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Durações: curtas o bastante para parecerem instantâneas, longas o
+     bastante para o olho acompanhar. Uma escala só = consistência. */
+  --dur-instant: 90ms;
+  --dur-fast:    160ms;
+  --dur-base:    240ms;
+  --dur-slow:    420ms;
+  --dur-page:    360ms;
+
+  /* Curvas: saída rápida + desaceleração natural (padrão de sistemas de
+     motion modernos). `spring` tem overshoot mínimo — nada de gelatina. */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.35, 0.64, 1);
+  --ease-snap:   cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ═══ SCROLL ═══ */
+html {
+  scroll-behavior: smooth;
+  /* Compensa a navbar fixa ao pular para âncoras */
+  scroll-padding-top: 88px;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  /* Evita que o overscroll do body propague e cause "borracha" na página */
+  overscroll-behavior-y: none;
+}
+
+/* ═══ FOCUS VISÍVEL E CONSISTENTE ═══ */
+:where(a, button, [role="button"], input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--yellow-brand);
+  outline-offset: 3px;
+  border-radius: 6px;
+  transition: outline-offset var(--dur-instant) var(--ease-out);
+}
+:where(a, button, [role="button"]):focus:not(:focus-visible) { outline: none; }
+
+/* ═══ MICROINTERAÇÕES REUTILIZÁVEIS ═══ */
+@layer utilities {
+  /* Elevação + resposta de clique para qualquer superfície clicável */
+  .interactive {
+    transition: transform var(--dur-fast) var(--ease-spring),
+                box-shadow var(--dur-fast) var(--ease-out),
+                background-color var(--dur-fast) var(--ease-out),
+                border-color var(--dur-fast) var(--ease-out),
+                color var(--dur-fast) var(--ease-out);
+  }
+  .interactive:hover { transform: translate3d(0, -2px, 0); }
+  .interactive:active { transform: translate3d(0, 0, 0) scale(0.975); }
+
+  /* Só a compressão do clique — para itens que já têm hover próprio */
+  .press {
+    transition: transform var(--dur-instant) var(--ease-snap);
+  }
+  .press:active { transform: scale(0.96); }
+
+  /* Elevação suave em cards */
+  .lift {
+    transition: transform var(--dur-base) var(--ease-spring),
+                box-shadow var(--dur-base) var(--ease-out);
+  }
+  .lift:hover { transform: translate3d(0, -6px, 0); }
+  .lift:active { transform: translate3d(0, -2px, 0) scale(0.99); }
+
+  /* ═══ GLASSMORPHISM / LIQUID GLASS ═══
+     backdrop-filter é caro: use em superfícies pequenas e fixas
+     (navbar, modais, chips) — nunca em listas longas. */
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    backdrop-filter: blur(16px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  }
+  .glass-dark {
+    background: rgba(13, 13, 13, 0.72);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    backdrop-filter: blur(18px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  }
+  .glass-gold {
+    background: rgba(245, 192, 0, 0.14);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    backdrop-filter: blur(14px) saturate(180%);
+    border: 1px solid rgba(245, 192, 0, 0.32);
+  }
+  /* Brilho superior sutil — dá a sensação de "vidro líquido" */
+  .glass-sheen { position: relative; overflow: hidden; }
+  .glass-sheen::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 45%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.18), transparent);
+    pointer-events: none;
+  }
+
+  /* Pula layout/paint de seções fora da viewport.
+     `contain-intrinsic-size` evita salto da barra de rolagem. */
+  .cv-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 600px;
+  }
+
+  /* Promove a camada só onde há animação contínua real */
+  .gpu { transform: translateZ(0); will-change: transform; }
+}
+
+
+
+/* ═══ TUNING PARA MOBILE / APARELHOS MODESTOS ═══
+   Blur e animações ambientes infinitas são o que mais derruba FPS em GPU
+   integrada e celulares — desligamos as decorativas e aliviamos o blur. */
+@media (max-width: 768px) {
+  .animate-float-paw,
+  .animate-scale-breath,
+  .animate-bounce-slow {
+    animation: none !important;
+  }
+  .glass, .glass-dark, .glass-gold {
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+  /* Revelações mais curtas e com menos deslocamento no mobile */
+  .motion-ready [data-animate] {
+    --rv-y: 12px;
+    --rv-x: 0px;
+    transition-duration: var(--dur-base);
+  }
+}
+
+/* Sem suporte a backdrop-filter: fundo sólido em vez de texto ilegível */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass { background: rgba(255, 255, 255, 0.94); }
+  .glass-dark { background: rgba(13, 13, 13, 0.94); }
+  .glass-gold { background: rgba(245, 192, 0, 0.2); }
+}
+
+/* ═══ ACESSIBILIDADE — prefers-reduced-motion ═══
+   Nada de movimento: transições viram quase instantâneas, animações
+   decorativas em loop somem e o conteúdo aparece direto. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+  html { scroll-behavior: auto; }
+  .motion-ready [data-animate] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .whatsapp-fab::after { display: none; }
+  .interactive:hover,
+  .lift:hover,
+  .card-light:hover,
+  .btn-primary:hover,
+  .btn-dark:hover,
+  .btn-ghost:hover { transform: none; }
+}

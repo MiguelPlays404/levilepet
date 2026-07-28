@@ -1,6 +1,10 @@
 /**
  * NavigationProgress — barra de progresso no topo durante navegação
- * Corrigido: timers cancelados no cleanup, sem estado orphan.
+ *
+ * Otimização: a barra animava `width`, que dispara layout + paint a cada
+ * mudança (5 por navegação, na frente de toda a árvore da página).
+ * Agora ela ocupa 100% da largura e é animada por `transform: scaleX()`,
+ * resolvido só pelo compositor — custo praticamente zero.
  */
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -31,11 +35,11 @@ export const NavigationProgress = () => {
       timersRef.current.push(id);
     };
 
-    t(80,  () => setProgress(45));
-    t(200, () => setProgress(72));
-    t(320, () => setProgress(92));
-    t(420, () => setProgress(100));
-    t(620, () => { setVisible(false); setProgress(0); });
+    t(70,  () => setProgress(48));
+    t(170, () => setProgress(76));
+    t(280, () => setProgress(94));
+    t(360, () => setProgress(100));
+    t(540, () => { setVisible(false); setProgress(0); });
 
     return clearAllTimers;
   }, [location.pathname]);
@@ -44,19 +48,22 @@ export const NavigationProgress = () => {
 
   return (
     <div
+      aria-hidden="true"
       style={{
         position: 'fixed',
         top: 0,
         left: 0,
+        right: 0,
         height: '3px',
-        width: `${progress}%`,
+        transformOrigin: 'left center',
+        transform: `scaleX(${progress / 100})`,
         background: 'linear-gradient(90deg, #F5C000, #FFD700)',
         zIndex: 99999,
-        transition: 'width 0.18s ease, opacity 0.25s ease',
+        transition: 'transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease',
         opacity: visible ? 1 : 0,
         boxShadow: '0 0 10px rgba(245,192,0,0.6)',
-        borderRadius: '0 2px 2px 0',
         pointerEvents: 'none',
+        willChange: 'transform',
       }}
     />
   );
