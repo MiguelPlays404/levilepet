@@ -292,7 +292,7 @@ const Index = () => {
       />
 
       {/* ═══ CARDS — CLARO (#F8F8F6) ═══ */}
-      <section className="py-20 lg:py-24" style={{ background: '#F8F8F6' }}>
+      <section className="py-20 lg:py-24 cv-auto" style={{ background: '#F8F8F6' }}>
         <div className="container mx-auto px-6">
           <div className="text-center mb-14">
             <h2 data-animate="fade-up" className="section-title text-black mb-3">{c.home_explore_title || 'Explore o Le Ville Pet'}</h2>
@@ -327,7 +327,7 @@ const Index = () => {
       </section>
 
       {/* ═══ PREÇOS — CLARO (#FAFAF8) ═══ */}
-      <section className="py-20 lg:py-24" style={{ background: '#FAFAF8' }}>
+      <section className="py-20 lg:py-24 cv-auto" style={{ background: '#FAFAF8' }}>
         <div className="container mx-auto px-6">
           <div className="text-center mb-12">
             <span data-animate="fade-up" className="inline-block text-primary text-sm font-body px-4 py-1.5 rounded-full mb-4" style={{ background: 'var(--yellow-badge)' }}>Preços</span>
@@ -438,7 +438,7 @@ const Index = () => {
       })()}
 
       {/* ═══ CTA HOTELZINHO — AMARELO (#F5C000) ═══ */}
-      <section className="py-20 lg:py-24" style={{ background: '#F5C000' }}>
+      <section className="py-20 lg:py-24 cv-auto" style={{ background: '#F5C000' }}>
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
@@ -462,7 +462,7 @@ const Index = () => {
       </section>
 
       {/* ═══ CONTATO — ESCURO (#111111) ═══ */}
-      <section className="py-20 lg:py-24" style={{ background: '#111111' }}>
+      <section className="py-20 lg:py-24 cv-auto" style={{ background: '#111111' }}>
         <div className="container mx-auto px-6">
           <div className="text-center mb-12">
             <h2 data-animate="fade-up" className="section-title text-white">{c.contact_section_title || 'Entre em Contato'}</h2>
