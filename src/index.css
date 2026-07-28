@@ -359,26 +359,50 @@
   opacity: 0.06;
 }
 
-/* ═══ SCROLL ANIMATIONS ═══ */
-@keyframes safetyReveal { to { opacity: 1; } }
-[data-animate] { opacity: 0; animation: safetyReveal 0.4s ease 1.2s forwards; }
-[data-animate].is-visible { animation-fill-mode: both; opacity: 1 !important; }
-[data-animate="fade-up"].is-visible { animation: fadeInUp 0.6s cubic-bezier(0.4,0,0.2,1) both; }
-[data-animate="fade-down"].is-visible { animation: fadeInDown 0.6s cubic-bezier(0.4,0,0.2,1) both; }
-[data-animate="fade-left"].is-visible { animation: fadeInLeft 0.65s cubic-bezier(0.4,0,0.2,1) both; }
-[data-animate="fade-right"].is-visible { animation: fadeInRight 0.65s cubic-bezier(0.4,0,0.2,1) both; }
-[data-animate="fade-scale"].is-visible { animation: fadeInScale 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
-[data-animate="card"].is-visible { animation: cardEntrance 0.55s cubic-bezier(0.34,1.56,0.64,1) both; }
-[data-animate="card-3d"].is-visible { animation: cardReveal3D 0.7s cubic-bezier(0.4,0,0.2,1) both; }
-[data-animate="bounce"].is-visible { animation: bounceIn 0.7s cubic-bezier(0.34,1.56,0.64,1) both; }
-[data-animate="image"].is-visible { animation: imageReveal 0.8s cubic-bezier(0.4,0,0.2,1) both; }
+/* ═══ SCROLL REVEAL — baseado em transition (somente compositor) ═══
+   ANTES: todo `[data-animate]` iniciava com opacity:0 + uma @keyframes de
+   segurança rodando no load. Em páginas com 60+ elementos isso significava
+   dezenas de animações CSS ativas simultaneamente antes mesmo do primeiro
+   scroll — main-thread ocupado e queda de FPS.
+   AGORA: o estado inicial é estático (sem animação nenhuma rodando) e a
+   revelação acontece por `transition` de transform+opacity — as duas únicas
+   propriedades que o compositor resolve sem reflow/repaint.
+   Sem JS (`html` sem `.motion-ready`) o conteúdo aparece normalmente. */
+.motion-ready [data-animate] {
+  opacity: 0;
+  transform: translate3d(var(--rv-x, 0px), var(--rv-y, 16px), 0) scale(var(--rv-s, 1));
+  transition: opacity var(--dur-slow) var(--ease-out) var(--rv-delay, 0ms),
+              transform var(--dur-slow) var(--ease-out) var(--rv-delay, 0ms);
+}
+.motion-ready [data-animate="fade-up"]    { --rv-y: 18px; }
+.motion-ready [data-animate="fade-down"]  { --rv-y: -18px; }
+.motion-ready [data-animate="fade-left"]  { --rv-x: -26px; --rv-y: 0px; }
+.motion-ready [data-animate="fade-right"] { --rv-x: 26px; --rv-y: 0px; }
+.motion-ready [data-animate="fade-scale"] { --rv-y: 0px; --rv-s: 0.94; }
+.motion-ready [data-animate="card"]       { --rv-y: 22px; --rv-s: 0.97; }
+.motion-ready [data-animate="card-3d"]    { --rv-y: 26px; --rv-s: 0.98; }
+.motion-ready [data-animate="bounce"]     { --rv-y: 0px; --rv-s: 0.86; }
+.motion-ready [data-animate="image"]      { --rv-y: 14px; --rv-s: 1.04; }
 
-[data-delay="1"].is-visible { animation-delay: 0.1s !important; }
-[data-delay="2"].is-visible { animation-delay: 0.2s !important; }
-[data-delay="3"].is-visible { animation-delay: 0.3s !important; }
-[data-delay="4"].is-visible { animation-delay: 0.4s !important; }
-[data-delay="5"].is-visible { animation-delay: 0.5s !important; }
-[data-delay="6"].is-visible { animation-delay: 0.6s !important; }
+/* Molas curtas só onde o efeito pede overshoot */
+.motion-ready [data-animate="bounce"],
+.motion-ready [data-animate="card"],
+.motion-ready [data-animate="fade-scale"] {
+  transition-timing-function: var(--ease-spring);
+}
+
+.motion-ready [data-animate].is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+/* Stagger enxuto: 55ms por passo mantém a cascata legível sem parecer lenta */
+.motion-ready [data-delay="1"] { --rv-delay: 55ms; }
+.motion-ready [data-delay="2"] { --rv-delay: 110ms; }
+.motion-ready [data-delay="3"] { --rv-delay: 165ms; }
+.motion-ready [data-delay="4"] { --rv-delay: 220ms; }
+.motion-ready [data-delay="5"] { --rv-delay: 275ms; }
+.motion-ready [data-delay="6"] { --rv-delay: 330ms; }
 
 /* ═══ ANIMATION UTILITIES ═══ */
 @layer utilities {
@@ -450,7 +474,9 @@
 
 @keyframes heartBeat { 0%{transform:scale(1)} 15%{transform:scale(1.45)} 30%{transform:scale(1)} 45%{transform:scale(1.32)} 100%{transform:scale(1)} }
 
-@keyframes pageEnter { 0%{opacity:0;transform:translateY(12px);filter:blur(3px)} 60%{opacity:1;filter:blur(0)} 100%{opacity:1;transform:translateY(0);filter:blur(0)} }
+/* pageEnter sem `filter: blur()` — filtro animado força repaint em GPU a cada
+   frame na árvore inteira da página e cria containing block (quebrava fixed). */
+@keyframes pageEnter { 0%{opacity:0;transform:translate3d(0,10px,0)} 100%{opacity:1;transform:none} }
 @keyframes pageExit { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-8px)} }
 
 @keyframes btnShine { 0%{left:-120%} 100%{left:220%} }
