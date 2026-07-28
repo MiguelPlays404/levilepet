@@ -1,6 +1,7 @@
 import { Images, Play, Info } from "lucide-react";
 import { useState } from "react";
 import { aspectStyle } from "@/components/AspectRatioPicker";
+import { defaultVideoCover } from "@/lib/videoThumb";
 
 interface Props {
   album: {
@@ -40,6 +41,7 @@ export function AlbumCard({ album, itemCount, videoCount = 0, onClick, className
             loop
             playsInline
             autoPlay
+            poster={defaultVideoCover(ar)}
           />
         ) : (
           <img

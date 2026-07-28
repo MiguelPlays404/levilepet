@@ -379,7 +379,7 @@ const Transporte = () => {
             </button>
             <div className={`${aspectClassFor(playerVideo)} rounded-2xl overflow-hidden bg-black`}>
               {playerVideo.video_type === 'upload' ? (
-                <video src={playerVideo.video_url} className="w-full h-full" controls autoPlay />
+                <video src={playerVideo.video_url} className="w-full h-full" controls autoPlay poster={getVideoThumbnail(playerVideo)} />
               ) : (
                 <iframe src={getEmbedUrl(playerVideo.video_url)} className="w-full h-full" allowFullScreen allow="autoplay" />
               )}

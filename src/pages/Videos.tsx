@@ -140,7 +140,7 @@ const Videos = () => {
             </button>
             <div className={`${({'16:9':'aspect-video','4:3':'aspect-[4/3]','1:1':'aspect-square','3:4':'aspect-[3/4]','9:16':'aspect-[9/16]'} as any)[playerVideo.aspect_ratio || (playerVideo.orientation === 'vertical' ? '9:16' : '16:9')] || 'aspect-video'} rounded-2xl overflow-hidden bg-black`}>
               {playerVideo.video_type === 'upload' ? (
-                <video src={playerVideo.video_url} className="w-full h-full" controls autoPlay />
+                <video src={playerVideo.video_url} className="w-full h-full" controls autoPlay poster={getVideoThumbnail(playerVideo)} />
               ) : (
                 <iframe src={getEmbedUrl(playerVideo.video_url)} className="w-full h-full" allowFullScreen allow="autoplay" />
               )}
