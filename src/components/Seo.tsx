@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 
-const SITE_URL = "https://levillepet.lovable.app";
+const SITE_URL = "https://levillepet.com.br";
 
 interface SeoProps {
   /** Título da página (sem o nome da marca — ele é adicionado automaticamente). */

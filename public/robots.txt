@@ -15,4 +15,4 @@ Allow: /
 Disallow: /admin
 Disallow: /manutencao
 
-Sitemap: https://levillepet.lovable.app/sitemap.xml
+Sitemap: https://levillepet.com.br/sitemap.xml
