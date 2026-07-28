@@ -141,12 +141,16 @@ export function Navbar() {
       >
         <div
           className="flex items-center justify-between p-4 border-b"
-          style={{ borderColor: 'rgba(245,192,0,0.15)', background: '#0D0D0D' }}
+          style={{ borderColor: 'rgba(245,192,0,0.15)' }}
         >
           <span className="font-heading font-bold text-primary text-lg">
             {config?.site_name || 'Le Ville Pet'}
           </span>
-          <button onClick={closeMenu} className="text-white p-2" aria-label="Fechar menu">
+          <button
+            onClick={closeMenu}
+            className="text-white p-2 min-h-11 min-w-11 flex items-center justify-center rounded-lg press"
+            aria-label="Fechar menu"
+          >
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -156,12 +160,20 @@ export function Navbar() {
             <Link
               key={link.id}
               to={link.path}
-              className={`px-6 py-4 font-heading font-semibold text-xl transition-colors ${
+              className={`px-6 py-4 font-heading font-semibold text-xl press ${
                 location.pathname === link.path
                   ? "text-primary bg-primary/10 border-l-[3px] border-primary"
                   : "text-white hover:text-primary hover:bg-primary/5"
               }`}
-              style={{ animation: `fadeInLeft 0.3s ease ${i * 0.05}s both` }}
+              style={{
+                // Stagger só quando o drawer abre (o drawer fica montado para
+                // permitir a transição de saída, então não podemos usar
+                // animação de mount).
+                opacity: isOpen ? 1 : 0,
+                transform: isOpen ? 'translate3d(0,0,0)' : 'translate3d(16px,0,0)',
+                transition: `opacity var(--dur-base) var(--ease-out) ${isOpen ? i * 40 : 0}ms, transform var(--dur-base) var(--ease-out) ${isOpen ? i * 40 : 0}ms, color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out)`,
+              }}
+              tabIndex={isOpen ? 0 : -1}
             >
               {link.label}
             </Link>
@@ -172,11 +184,13 @@ export function Navbar() {
               href={`https://wa.me/${waNum}?text=${waMsg}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 bg-[#25D366] text-white font-heading font-bold text-base w-full py-3.5 rounded-xl hover:bg-[#128C7E] transition-colors"
+              className="flex items-center justify-center gap-2 bg-[#25D366] text-white font-heading font-bold text-base w-full py-3.5 rounded-xl hover:bg-[#128C7E] interactive"
+              tabIndex={isOpen ? 0 : -1}
             >
               <MessageCircle className="w-5 h-5" /> Fale no WhatsApp
             </a>
           </div>
+        </div>
         </div>
       </div>
     </nav>
