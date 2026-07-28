@@ -85,11 +85,15 @@ const Index = () => {
             <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/85 lg:from-black/55 lg:via-black/45 lg:to-black/60" />
           </div>
         )}
-        <div className="absolute top-[10%] right-[5%] w-[700px] h-[700px] rounded-full pointer-events-none animate-scale-breath" style={{ background: 'radial-gradient(circle, rgba(245,192,0,0.14) 0%, transparent 70%)' }} />
-        <div className="absolute bottom-[5%] left-[-5%] w-[500px] h-[500px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(245,192,0,0.07) 0%, transparent 70%)', animation: 'scaleBreath 6s ease-in-out infinite 2.5s' }} />
+        {/* Halos ambientes: `gpu` promove cada um à sua própria camada de
+            composição — sem isso, o scale infinito repintava uma área de
+            700x700px a cada frame no main thread. No mobile o CSS desliga
+            estas animações por completo. */}
+        <div className="absolute top-[10%] right-[5%] w-[700px] h-[700px] rounded-full pointer-events-none animate-scale-breath gpu" style={{ background: 'radial-gradient(circle, rgba(245,192,0,0.14) 0%, transparent 70%)' }} />
+        <div className="absolute bottom-[5%] left-[-5%] w-[500px] h-[500px] rounded-full pointer-events-none gpu" style={{ background: 'radial-gradient(circle, rgba(245,192,0,0.07) 0%, transparent 70%)', animation: 'scaleBreath 6s ease-in-out infinite 2.5s' }} />
         <div className="absolute inset-0 paw-pattern-bg pointer-events-none" />
         {[0,1,2,3,4].map(i => (
-          <div key={i} className="absolute pointer-events-none select-none" style={{ fontSize: `${16 + i * 5}px`, opacity: 0.12, animation: `floatPaw ${4.5 + i}s ease-in-out infinite ${i * 0.8}s`, top: `${15 + i * 15}%`, right: `${5 + i * 8}%`, color: '#F5C000' }}>🐾</div>
+          <div key={i} className="absolute pointer-events-none select-none hidden md:block gpu" aria-hidden="true" style={{ fontSize: `${16 + i * 5}px`, opacity: 0.12, animation: `floatPaw ${4.5 + i}s ease-in-out infinite ${i * 0.8}s`, top: `${15 + i * 15}%`, right: `${5 + i * 8}%`, color: '#F5C000' }}>🐾</div>
         ))}
         <div className="absolute right-[18%] top-[10%] bottom-[10%] w-px pointer-events-none hidden lg:block animate-line-grow-v" style={{ background: 'linear-gradient(to bottom, transparent, rgba(245,192,0,0.35), transparent)' }}>
           {[20,40,60,80].map((p,i) => (
