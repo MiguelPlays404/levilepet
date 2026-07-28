@@ -4,9 +4,11 @@ import { PageHero } from "@/components/PageHero";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { useState, useEffect } from "react";
 import { Lightbox } from "@/components/Lightbox";
-import { Search, Camera } from "lucide-react";
+import { Search, Camera, Eye, Heart } from "lucide-react";
 import { getSiteConfig, getPhotos } from "@/lib/dataCache";
 import { AlbumsRail } from "@/components/AlbumsRail";
+import { publicViewsLabel, publicLikesLabel } from "@/lib/socialStats";
+import { withVersion } from "@/lib/mediaVersion";
 
 const catKeys = ["all", "galeria", "hotelzinho", "conhecer"] as const;
 
@@ -79,13 +81,17 @@ const Fotos = () => {
                   <button key={photo.id} data-animate="fade-scale" data-delay={String(Math.min(i, 6))}
                     onClick={() => setLightboxIndex(i)}
                     className="group relative aspect-square rounded-[12px] overflow-hidden bg-[#E5E5E5]">
-                    <img src={photo.image_url} alt={photo.title}
+                    <img src={withVersion(photo.image_url, photo.updated_at)} alt={photo.title}
                       className="w-full h-full object-cover group-hover:scale-[1.08] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
                       loading="lazy"
                       onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all flex items-center justify-center">
                       <Search className="w-7 h-7 text-primary opacity-0 group-hover:opacity-100 transition-all scale-0 group-hover:scale-100" />
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 flex items-center gap-3 px-2.5 py-2 text-white text-[11px] bg-gradient-to-t from-black/70 to-transparent" style={{ fontFamily: 'Inter', fontWeight: 500 }}>
+                      <span className="flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> {publicViewsLabel(photo)}</span>
+                      <span className="flex items-center gap-1"><Heart className="w-3.5 h-3.5 fill-primary text-primary" /> {publicLikesLabel(photo)}</span>
                     </div>
                   </button>
                 ))}

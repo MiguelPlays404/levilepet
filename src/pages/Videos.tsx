@@ -2,13 +2,15 @@ import { Seo, breadcrumbLd } from "@/components/Seo";
 import { PublicLayout } from "@/components/PublicLayout";
 import { PageHero } from "@/components/PageHero";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
-import { Heart, Play, Video, X } from "lucide-react";
+import { Heart, Play, Video, X, Eye } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSiteConfig } from "@/lib/dataCache";
 import { getYoutubeId } from "@/lib/youtube";
 import { getVideoThumbnail, defaultVideoCover } from "@/lib/videoThumb";
 import { AlbumsRail } from "@/components/AlbumsRail";
+import { ThumbImage } from "@/components/ThumbImage";
+import { publicViewsLabel, publicLikesLabel } from "@/lib/socialStats";
 
 function getUserId(): string {
   let id = localStorage.getItem("lvp_user_id");
@@ -96,10 +98,12 @@ const Videos = () => {
                 return (
                   <div key={video.id} data-animate="card" data-delay={String(Math.min(i, 5))} className="bg-white rounded-[14px] overflow-hidden border border-[#E5E5E5] shadow-sm group">
                     <div className={`relative ${({'16:9':'aspect-video','4:3':'aspect-[4/3]','1:1':'aspect-square','3:4':'aspect-[3/4]','9:16':'aspect-[9/16]'} as any)[video.aspect_ratio || (video.orientation === 'vertical' ? '9:16' : '16:9')] || 'aspect-video'} cursor-pointer overflow-hidden bg-[#E5E5E5]`} onClick={() => setPlayerVideo(video)}>
-                      <img src={getThumbnail(video)} alt={video.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        loading="lazy"
-                        onError={(e) => { (e.target as HTMLImageElement).src = defaultVideoCover(video); }}
+                      <ThumbImage
+                        src={getThumbnail(video)}
+                        fallbackSrc={defaultVideoCover(video)}
+                        alt={video.title}
+                        className="absolute inset-0 w-full h-full"
+                        imgClassName="group-hover:scale-105 transition-transform duration-500"
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
                         <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center group-hover:scale-110 transition-transform"
@@ -111,13 +115,18 @@ const Videos = () => {
                     <div className="p-4">
                       <h3 className="font-heading font-semibold text-black text-base mb-1 line-clamp-2">{video.title}</h3>
                       <p className="text-[#AAA] text-[13px] mb-3" style={{ fontFamily: 'Inter' }}>{getTimeAgo(video.published_at)}</p>
+                      <div className="flex items-center gap-4">
+                      <span className="flex items-center gap-1.5 text-[#A1A1AA] text-sm" style={{ fontFamily: 'Inter', fontWeight: 500 }}>
+                        <Eye className="w-4 h-4" /> {publicViewsLabel(video)}
+                      </span>
                       <button onClick={() => toggleLike(video.id)} className="flex items-center gap-2 group/like">
                         <Heart className={`w-5 h-5 transition-all ${isLiked ? "text-primary fill-primary" : "text-[#A1A1AA] group-hover/like:text-primary"}`}
                           style={isLiked ? { animation: 'heartBeat 0.5s ease' } : undefined} />
                         <span className={`text-sm ${isLiked ? 'text-primary' : 'text-[#A1A1AA]'}`} style={{ fontFamily: 'Inter', fontWeight: 500 }}>
-                          {video.likes_count || 0}
+                          {publicLikesLabel(video)}
                         </span>
                       </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -149,7 +158,7 @@ const Videos = () => {
               <h3 className="text-white font-heading font-semibold text-lg">{playerVideo.title}</h3>
               <button onClick={() => toggleLike(playerVideo.id)} className="flex items-center gap-2">
                 <Heart className={`w-5 h-5 ${likedSet.has(playerVideo.id) ? "text-primary fill-primary" : "text-white/60 hover:text-primary"}`} />
-                <span className="text-sm text-white/60">{videos.find(v => v.id === playerVideo.id)?.likes_count || 0}</span>
+                <span className="text-sm text-white/60">{publicLikesLabel(videos.find(v => v.id === playerVideo.id) || playerVideo)}</span>
               </button>
             </div>
           </div>

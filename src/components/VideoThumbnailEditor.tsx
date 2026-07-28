@@ -4,6 +4,8 @@ import { X, ImageIcon, RotateCcw, Check, Loader2 } from "lucide-react";
 import { MediaUploader } from "@/components/MediaUploader";
 import { aspectClass, ASPECT_OPTIONS } from "@/components/AspectRatioPicker";
 import { defaultVideoCover, resolveAspect } from "@/lib/videoThumb";
+import { ThumbImage } from "@/components/ThumbImage";
+import { bumpMediaVersion, withVersion } from "@/lib/mediaVersion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -26,22 +28,24 @@ export function VideoThumbnailEditor({ video, onClose, onSaved }: Props) {
     return () => window.removeEventListener("keydown", onEsc);
   }, [onClose]);
 
-  const previewSrc = thumb || defaultVideoCover(aspect);
+  const previewStamp = thumb; // muda a versão sempre que uma nova capa é enviada
   const isDefault = !thumb;
 
   const save = async () => {
     setSaving(true);
+    const stamp = new Date().toISOString();
     const { error } = await supabase
       .from("videos")
-      .update({ thumbnail_url: thumb || "", aspect_ratio: aspect } as any)
+      .update({ thumbnail_url: thumb || "", aspect_ratio: aspect, updated_at: stamp } as any)
       .eq("id", video.id);
     setSaving(false);
     if (error) {
       toast({ title: "Erro ao salvar capa", description: error.message, variant: "destructive" });
       return;
     }
+    bumpMediaVersion();
     toast({ title: isDefault ? "✅ Capa padrão aplicada" : "✅ Capa atualizada" });
-    onSaved({ ...video, thumbnail_url: thumb || "", aspect_ratio: aspect }, thumb || "");
+    onSaved({ ...video, thumbnail_url: thumb || "", aspect_ratio: aspect, updated_at: stamp }, thumb || "");
     onClose();
   };
 
@@ -63,12 +67,25 @@ export function VideoThumbnailEditor({ video, onClose, onSaved }: Props) {
         <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Prévia */}
           <div>
-            <p className="text-xs text-[#A1A1AA] mb-2 font-heading">Prévia ({aspect})</p>
-            <div className={`${aspectClass(aspect)} w-full rounded-xl overflow-hidden bg-black border border-[#27272A]`}>
-              <img src={previewSrc} alt="Prévia da capa" className="w-full h-full object-cover" />
+            <p className="text-xs text-[#A1A1AA] mb-2 font-heading">Prévia em todas as proporções</p>
+            <div className="grid grid-cols-3 gap-2">
+              {ASPECT_OPTIONS.map((o) => (
+                <div key={o.value} className={`rounded-lg overflow-hidden border-2 ${aspect === o.value ? "border-primary" : "border-[#27272A]"}`}>
+                  <ThumbImage
+                    src={thumb ? withVersion(thumb, previewStamp) : defaultVideoCover(o.value)}
+                    fallbackSrc={defaultVideoCover(o.value)}
+                    alt={`Prévia ${o.label}`}
+                    className={`${aspectClass(o.value)} w-full bg-black`}
+                    loading="eager"
+                  />
+                  <p className="text-[10px] text-center py-1 font-heading text-[#A1A1AA]">{o.label}</p>
+                </div>
+              ))}
             </div>
             <p className="text-[11px] mt-2 text-[#71717A]">
-              {isDefault ? "🎨 Usando a capa padrão do Le Ville Pet nesta proporção." : "🖼️ Capa personalizada."}
+              {isDefault
+                ? "🎨 Usando a capa padrão do Le Ville Pet em cada proporção."
+                : "🖼️ Capa personalizada — mesmo enquadramento, sem distorção, em todos os formatos."}
             </p>
           </div>
 
