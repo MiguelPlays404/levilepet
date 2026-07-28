@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, X, Play } from "lucide-react";
 import { aspectStyle } from "@/components/AspectRatioPicker";
 import { detectPlatform, getEmbedUrl } from "@/lib/albumLinks";
+import { defaultVideoCover } from "@/lib/videoThumb";
 
 export interface AlbumItem {
   id: string;
@@ -128,7 +129,7 @@ export function AlbumModal({ title, items, onClose, initialIndex = 0 }: Props) {
         <div className="flex gap-2 overflow-x-auto py-1 justify-start lg:justify-center" style={{ scrollbarWidth: "none" }}>
           {items.map((it, i) => {
             const active = i === index;
-            const thumb = it.thumb_url || (it.media_type === "photo" ? it.media_url : null) || "/placeholder.svg";
+            const thumb = it.thumb_url || (it.media_type === "photo" ? it.media_url : null) || (it.media_type === "video" ? defaultVideoCover(it.aspect_ratio || "1:1") : "/placeholder.svg");
             return (
               <button
                 key={it.id}

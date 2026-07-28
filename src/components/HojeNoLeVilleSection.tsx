@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ChevronLeft, ChevronRight, Play, X, Clock, Images } from "lucide-react";
 
 import { aspectStyle } from "@/components/AspectRatioPicker";
+import { defaultVideoCover } from "@/lib/videoThumb";
 import { AlbumModal, type AlbumItem } from "@/components/AlbumModal";
 
 
@@ -115,6 +116,7 @@ function HojeLightbox({ items, index, onClose, onNav }: LightboxProps) {
               controls
               autoPlay
               playsInline
+              poster={defaultVideoCover(ar)}
             />
           ) : (
             <img loading="lazy" decoding="async"
@@ -327,6 +329,7 @@ export function HojeNoLeVilleSection() {
                       loop
                       playsInline
                       autoPlay
+                      poster={defaultVideoCover(ar)}
                     />
                   ) : (
                     <img

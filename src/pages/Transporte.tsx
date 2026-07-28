@@ -9,6 +9,7 @@ import {
 import { useEffect, useState } from "react";
 import { getSiteConfig, getTransporteContent, getPhotos, getVideos } from "@/lib/dataCache";
 import { getYoutubeId } from "@/lib/youtube";
+import { getVideoThumbnail, defaultVideoCover } from "@/lib/videoThumb";
 import { Lightbox } from "@/components/Lightbox";
 
 const ICON_MAP: Record<string, any> = {
@@ -44,11 +45,7 @@ const Transporte = () => {
     return () => { cancelled = true; };
   }, []);
 
-  const getThumbnail = (video: any) => {
-    if (video.thumbnail_url) return video.thumbnail_url;
-    const ytId = getYoutubeId(video.video_url);
-    return ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : '/placeholder.svg';
-  };
+  const getThumbnail = (video: any) => getVideoThumbnail(video);
   const getEmbedUrl = (url: string) => {
     const ytId = getYoutubeId(url);
     return ytId ? `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1` : url;
@@ -276,7 +273,7 @@ const Transporte = () => {
                       src={getThumbnail(video)}
                       alt={video.title}
                       loading="lazy"
-                      onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+                      onError={(e) => { (e.target as HTMLImageElement).src = defaultVideoCover(video); }}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 flex items-center justify-center group-hover:bg-black/20 transition-all">
@@ -382,7 +379,7 @@ const Transporte = () => {
             </button>
             <div className={`${aspectClassFor(playerVideo)} rounded-2xl overflow-hidden bg-black`}>
               {playerVideo.video_type === 'upload' ? (
-                <video src={playerVideo.video_url} className="w-full h-full" controls autoPlay />
+                <video src={playerVideo.video_url} className="w-full h-full" controls autoPlay poster={getVideoThumbnail(playerVideo)} />
               ) : (
                 <iframe src={getEmbedUrl(playerVideo.video_url)} className="w-full h-full" allowFullScreen allow="autoplay" />
               )}

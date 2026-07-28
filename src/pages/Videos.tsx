@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSiteConfig } from "@/lib/dataCache";
 import { getYoutubeId } from "@/lib/youtube";
+import { getVideoThumbnail, defaultVideoCover } from "@/lib/videoThumb";
 import { AlbumsRail } from "@/components/AlbumsRail";
 
 function getUserId(): string {
@@ -61,11 +62,7 @@ const Videos = () => {
     ));
   };
 
-  const getThumbnail = (video: any) => {
-    if (video.thumbnail_url) return video.thumbnail_url;
-    const ytId = getYoutubeId(video.video_url);
-    return ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : '/placeholder.svg';
-  };
+  const getThumbnail = (video: any) => getVideoThumbnail(video);
 
   const getEmbedUrl = (url: string) => {
     const ytId = getYoutubeId(url);
@@ -102,7 +99,7 @@ const Videos = () => {
                       <img src={getThumbnail(video)} alt={video.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         loading="lazy"
-                        onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+                        onError={(e) => { (e.target as HTMLImageElement).src = defaultVideoCover(video); }}
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
                         <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center group-hover:scale-110 transition-transform"
@@ -143,7 +140,7 @@ const Videos = () => {
             </button>
             <div className={`${({'16:9':'aspect-video','4:3':'aspect-[4/3]','1:1':'aspect-square','3:4':'aspect-[3/4]','9:16':'aspect-[9/16]'} as any)[playerVideo.aspect_ratio || (playerVideo.orientation === 'vertical' ? '9:16' : '16:9')] || 'aspect-video'} rounded-2xl overflow-hidden bg-black`}>
               {playerVideo.video_type === 'upload' ? (
-                <video src={playerVideo.video_url} className="w-full h-full" controls autoPlay />
+                <video src={playerVideo.video_url} className="w-full h-full" controls autoPlay poster={getVideoThumbnail(playerVideo)} />
               ) : (
                 <iframe src={getEmbedUrl(playerVideo.video_url)} className="w-full h-full" allowFullScreen allow="autoplay" />
               )}
