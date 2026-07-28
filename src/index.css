@@ -697,6 +697,17 @@ body {
   .gpu { transform: translateZ(0); will-change: transform; }
 }
 
+/* ═══ CONTENT-VISIBILITY ═══
+   Seções longas fora da viewport não pagam custo de layout/paint.
+   O contain-intrinsic-size reserva altura para o scrollbar não pular. */
+@layer utilities {
+  .cv-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 720px;
+  }
+}
+
+
 /* ═══ TUNING PARA MOBILE / APARELHOS MODESTOS ═══
    Blur e animações ambientes infinitas são o que mais derruba FPS em GPU
    integrada e celulares — desligamos as decorativas e aliviamos o blur. */
