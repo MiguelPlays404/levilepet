@@ -52,14 +52,24 @@ const Index = () => {
   const c = config || {};
   const waNum = c.whatsapp_number || '5514997145610';
   const waMsg = encodeURIComponent(c.whatsapp_message || 'Olá! Vim pelo site Le Ville Pet! 🐾');
-  const renderMedia = (url: string | undefined, fallback: string, alt: string, className = "w-full h-full object-cover") => {
+  const renderMedia = (url: string | undefined, fallback: string, alt: string, className = "w-full h-full object-cover", priority = false) => {
     const src = url || fallback;
     const isVideo = /\.(mp4|webm|mov|m4v)(\?|$)/i.test(src);
     return isVideo ? (
       <video src={src} className={className} autoPlay muted loop playsInline controls={false} />
     ) : (
-      <img src={src} alt={alt} className={className} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
+      <img
+        src={src}
+        alt={alt}
+        className={className}
+        loading={priority ? "eager" : "lazy"}
+        // @ts-expect-error fetchPriority ainda não tipado em todas as versões do React
+        fetchpriority={priority ? "high" : undefined}
+        decoding={priority ? "sync" : "async"}
+        onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+      />
     );
+
   };
 
   return (
