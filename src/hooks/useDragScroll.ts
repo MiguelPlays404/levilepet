@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { RefObject, useEffect } from "react";
 
 /**
  * Arrasto lateral fluido para carrosséis.
@@ -8,13 +8,7 @@ import { useCallback, useEffect, useRef } from "react";
  *   apenas garantindo que o snap não trave o gesto.
  * - Suprime o clique acidental no card quando o gesto foi um arrasto.
  */
-export function useDragScroll<T extends HTMLElement = HTMLDivElement>() {
-  const ref = useRef<T | null>(null);
-
-  const attach = useCallback((node: T | null) => {
-    ref.current = node;
-  }, []);
-
+export function useDragScroll(ref: RefObject<HTMLElement>, deps: unknown[] = []) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -103,7 +97,6 @@ export function useDragScroll<T extends HTMLElement = HTMLDivElement>() {
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("pointercancel", onPointerUp);
     };
-  }, []);
-
-  return attach;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
 }
