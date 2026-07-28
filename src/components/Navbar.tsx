@@ -133,10 +133,10 @@ export function Navbar() {
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
         style={{
-          isolation: 'isolate',
-          backgroundColor: 'hsl(240 6% 6% / 0.97)',
-          backdropFilter: 'blur(20px) saturate(160%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+          // Painel sólido: um drawer de navegação precisa de legibilidade
+          // total, e blur em tela cheia é justamente o que derruba FPS no
+          // celular. O glass fica reservado para a navbar.
+          backgroundColor: '#0E0E10',
           borderLeft: '1px solid rgba(245,192,0,0.12)',
           transform: isOpen ? 'translate3d(0,0,0)' : 'translate3d(100%,0,0)',
           transition: 'transform var(--dur-base) var(--ease-out)',
