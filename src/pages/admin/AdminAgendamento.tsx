@@ -617,9 +617,9 @@ export default function AdminAgendamento() {
                       {linkUrl && !linkUrl.includes("youtube") && !linkUrl.includes("youtu.be") && (
                         <div className={`p-3 rounded-xl border ${thumbUrl ? "border-green-500/30 bg-green-500/5" : "border-red-500/30 bg-red-500/5"}`}>
                           <label className="text-xs text-[#A1A1AA] mb-1 block">
-                            🖼️ Capa do vídeo <span className="text-red-400">*</span>
+                            🖼️ Capa do vídeo <span className="text-[#71717A]">(opcional)</span>
                           </label>
-                          <p className="text-[11px] text-[#71717A] mb-2">Obrigatória para links externos. Aparece antes do vídeo tocar.</p>
+                          <p className="text-[11px] text-[#71717A] mb-2">Se não enviar, usamos a capa padrão do Le Ville Pet na proporção do vídeo.</p>
                           <MediaUploader
                             accept="image"
                             pathPrefix="agendamento/videos/thumbs"
@@ -629,7 +629,7 @@ export default function AdminAgendamento() {
                             compact
                           />
                           {!thumbUrl && (
-                            <p className="text-[11px] text-red-400 mt-1.5 flex items-center gap-1">⚠️ Faça upload da capa para continuar</p>
+                            <p className="text-[11px] text-[#A1A1AA] mt-1.5 flex items-center gap-1">🎨 Sem capa personalizada: será usada a capa padrão do Le Ville Pet.</p>
                           )}
                         </div>
                       )}
