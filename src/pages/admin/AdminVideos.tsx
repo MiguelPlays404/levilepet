@@ -6,7 +6,9 @@ import { BulkActionsBar } from "@/components/BulkActionsBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getYoutubeThumbnail } from "@/lib/youtube";
-import { Link2, Trash2, Eye, EyeOff, Star, Upload, Check } from "lucide-react";
+import { Link2, Trash2, Eye, EyeOff, Star, Upload, Check, Image as ImageIcon } from "lucide-react";
+import { VideoThumbnailEditor } from "@/components/VideoThumbnailEditor";
+import { getVideoThumbnail } from "@/lib/videoThumb";
 
 const TABS = [
   { key: "all", label: "Todos" },
@@ -48,6 +50,7 @@ export default function AdminVideos() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [confirmBulk, setConfirmBulk] = useState(false);
+  const [thumbVideo, setThumbVideo] = useState<any>(null);
 
   const toggleSelect = (id: string) => setSelected(prev => {
     const next = new Set(prev);
@@ -260,7 +263,7 @@ export default function AdminVideos() {
             <MediaUploader accept="video" pathPrefix={`videos/${primaryCategory(addLocations)}`} currentUrl={pendingVideoUrl} onUploaded={handleUploadedVideo} label="" />
           </div>
           <div>
-            <label className="text-xs text-[#A1A1AA] mb-2 block">🖼️ Capa (opcional)</label>
+            <label className="text-xs text-[#A1A1AA] mb-2 block">🖼️ Capa (opcional — usa a capa padrão do Le Ville Pet)</label>
             <MediaUploader accept="image" pathPrefix="videos/thumbs" currentUrl={uploadThumb} onUploaded={(url) => setUploadThumb(url)} label="" />
           </div>
         </div>
@@ -335,7 +338,15 @@ export default function AdminVideos() {
                 </td>
                 <td className="p-4">
                   <div className="flex items-center gap-3">
-                    {v.thumbnail_url && <img src={v.thumbnail_url} alt="" className="w-16 h-10 rounded object-cover bg-[#27272A]" />}
+                    <button onClick={() => setThumbVideo(v)} title="Alterar capa" className="relative shrink-0 group/th">
+                      <img src={getVideoThumbnail(v)} alt="" className="w-16 h-10 rounded object-cover bg-[#27272A]" />
+                      <span className="absolute inset-0 rounded bg-black/60 opacity-0 group-hover/th:opacity-100 transition-opacity flex items-center justify-center">
+                        <ImageIcon className="w-4 h-4 text-primary" />
+                      </span>
+                      {!v.thumbnail_url && (
+                        <span className="absolute -bottom-1 -right-1 bg-primary text-black text-[9px] font-bold px-1 rounded">padrão</span>
+                      )}
+                    </button>
                     <span className="text-[#ccc]">{v.title || <span className="text-[#71717A] italic">(sem título)</span>} {v.is_featured && <span className="text-primary">⭐</span>}</span>
                   </div>
                 </td>
@@ -367,6 +378,9 @@ export default function AdminVideos() {
                   <div className="flex gap-1 justify-end items-center">
                     <button onClick={() => handleToggleFeatured(v)} title="Destaque na Home" className="p-2 rounded hover:bg-white/5">
                       <Star className={`w-4 h-4 ${normalizeLocations(v).includes("home") ? "text-primary fill-primary" : "text-[#71717A]"}`} />
+                    </button>
+                    <button onClick={() => setThumbVideo(v)} title="Alterar capa" className="p-2 rounded hover:bg-white/5">
+                      <ImageIcon className="w-4 h-4 text-primary" />
                     </button>
                     <button onClick={() => handleToggleActive(v.id, v.is_active)} className="p-2 rounded hover:bg-white/5">
                       {v.is_active ? <Eye className="w-4 h-4 text-green-400" /> : <EyeOff className="w-4 h-4 text-red-400" />}
@@ -404,6 +418,14 @@ export default function AdminVideos() {
             </div>
           </div>
         </div>
+      )}
+
+      {thumbVideo && (
+        <VideoThumbnailEditor
+          video={thumbVideo}
+          onClose={() => setThumbVideo(null)}
+          onSaved={(updated) => setVideos(prev => prev.map(v => v.id === updated.id ? { ...v, ...updated } : v))}
+        />
       )}
 
       {deleteVideo && (
