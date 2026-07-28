@@ -1,12 +1,16 @@
 /**
- * PageTransition — versão definitiva
+ * PageTransition — transição entre rotas
  *
- * Arquitetura correta:
- * - UM ÚNICO wrapper em volta de <Routes> no App.tsx (não por rota)
- * - CSS animation (hardware-accelerated) em vez de JS setTimeout + opacity state
- * - pointer-events: none durante a transição → sem cliques "acumulados"
- * - Sem estado React → sem re-renders causados pelo próprio componente
- * - Sem risco de timer orphan (clearTimeout no cleanup do useEffect)
+ * Otimizações desta versão:
+ * - Web Animations API em vez do truque `style.animation = 'none'` +
+ *   `void el.offsetHeight`. Aquele reflow forçado acontecia exatamente no
+ *   frame da navegação (o momento mais caro), somando um layout síncrono a
+ *   um commit já pesado. `el.animate()` reinicia sem tocar no layout.
+ * - `finished` do próprio animation em vez de `setTimeout` de 450ms — nada
+ *   de timer dessincronizado do compositor.
+ * - Só opacity + transform (sem `filter: blur`, que forçava repaint em GPU
+ *   da árvore inteira e criava containing block quebrando `position: fixed`).
+ * - Sem animação alguma quando o usuário pede redução de movimento.
  */
 import React, { useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -20,7 +24,7 @@ export const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const prevPathRef = useRef(location.pathname);
   const isFirstRef = useRef(true);
-  const timerRef = useRef<number | null>(null);
+  const animRef = useRef<Animation | null>(null);
 
   useEffect(() => {
     // Primeira montagem: sem animação
@@ -29,58 +33,51 @@ export const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
       return;
     }
 
-    // Mesma rota (hash change, query param, etc.): sem animação
+    // Mesma rota (hash, query param): sem animação
     if (prevPathRef.current === location.pathname) return;
     const prevPath = prevPathRef.current;
     prevPathRef.current = location.pathname;
 
     // Admin: a transição é controlada por AdminShell (fade só no conteúdo).
-    // Pular a animação global evita o "flash" da sidebar/header ao navegar entre
-    // páginas de /admin/*.
     if (location.pathname.startsWith('/admin') && prevPath.startsWith('/admin')) return;
 
     const el = wrapperRef.current;
-    if (!el) return;
+    if (!el || typeof el.animate !== 'function') return;
 
-    // Cancela qualquer timer anterior (caso navegação ultra-rápida)
-    if (timerRef.current !== null) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+
+    // Cancela animação anterior (navegação ultra-rápida)
+    animRef.current?.cancel();
 
     // Bloqueia cliques durante a transição → evita race conditions
     el.style.pointerEvents = 'none';
 
-    // Força reinício da animation CSS (reflow trick)
-    el.style.animation = 'none';
-    void el.offsetHeight; // flush reflow
-    el.style.animation = 'pageEnter 0.42s cubic-bezier(0.22, 1, 0.36, 1) both';
+    const anim = el.animate(
+      [
+        { opacity: 0, transform: 'translate3d(0, 10px, 0)' },
+        { opacity: 1, transform: 'translate3d(0, 0, 0)' },
+      ],
+      { duration: 360, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' }
+    );
+    animRef.current = anim;
 
-    // Libera cliques ao fim da animação
-    timerRef.current = window.setTimeout(() => {
-      if (wrapperRef.current) {
-        wrapperRef.current.style.animation = '';
-        wrapperRef.current.style.pointerEvents = '';
-      }
-      timerRef.current = null;
-    }, 450); // ~10ms de margem além dos 420ms da animation
+    const release = () => {
+      if (animRef.current !== anim) return;
+      anim.cancel(); // remove o fill → o elemento volta a não ter estilo inline
+      animRef.current = null;
+      if (wrapperRef.current) wrapperRef.current.style.pointerEvents = '';
+    };
 
-    // Cleanup: cancela timer se o componente desmontar (admin redirect, etc.)
+    anim.finished.then(release).catch(() => {
+      /* cancelada por nova navegação — o próximo ciclo assume */
+    });
+
     return () => {
-      if (timerRef.current !== null) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-      if (wrapperRef.current) {
-        wrapperRef.current.style.pointerEvents = '';
-        wrapperRef.current.style.animation = '';
-      }
+      animRef.current?.cancel();
+      animRef.current = null;
+      if (wrapperRef.current) wrapperRef.current.style.pointerEvents = '';
     };
   }, [location.pathname]);
 
-  return (
-    <div ref={wrapperRef}>
-      {children}
-    </div>
-  );
+  return <div ref={wrapperRef}>{children}</div>;
 };
