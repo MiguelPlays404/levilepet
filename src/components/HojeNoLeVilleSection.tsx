@@ -236,6 +236,8 @@ export function HojeNoLeVilleSection() {
     };
   }, []);
 
+  useDragScroll(scrollerRef, [items.length, albums.length]);
+
   const scroll = (dir: "left" | "right") => {
     const el = scrollerRef.current;
     if (!el) return;
@@ -299,7 +301,7 @@ export function HojeNoLeVilleSection() {
           {/* Carousel */}
           <div
             ref={scrollerRef}
-            className="flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-3 -mx-6 px-6"
+            className="flex gap-3 overflow-x-auto drag-rail snap-x snap-mandatory pb-3 -mx-6 px-6"
             style={{ scrollbarWidth: "none" }}
           >
             {items.map((item, i) => {

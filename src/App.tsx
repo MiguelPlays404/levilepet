@@ -64,22 +64,20 @@ const AdminShell = lazy(() =>
   import("./components/AdminLayout").then((m) => ({ default: m.AdminShell }))
 );
 
-/** Dispara o download de todos os chunks públicos em idle. */
-function prefetchPublicChunks() {
-  const run = () => {
-    FaleConosco.preload();
-    Hotelzinho.preload();
-    Transporte.preload();
-    VenhaNosConhecer.preload();
-    Localizacao.preload();
-    Fotos.preload();
-    Videos.preload();
-    SigaNos.preload();
-    Albuns.preload();
+/**
+ * Prefetch por intenção: qualquer link interno recebe o download do seu chunk
+ * assim que o mouse passa por cima (ou o dedo encosta) — a navegação vira
+ * instantânea, sem Suspense. Um único listener delegado no documento.
+ */
+function installHoverPrefetch() {
+  const onIntent = (e: Event) => {
+    const target = e.target as HTMLElement | null;
+    const anchor = target?.closest?.("a[href^='/']") as HTMLAnchorElement | null;
+    if (anchor) prefetchRoute(anchor.getAttribute("href") || undefined);
   };
-  const ric = (window as any).requestIdleCallback;
-  if (typeof ric === "function") ric(run, { timeout: 2500 });
-  else setTimeout(run, 1200);
+  document.addEventListener("pointerover", onIntent, { passive: true });
+  document.addEventListener("touchstart", onIntent, { passive: true });
+  document.addEventListener("focusin", onIntent, { passive: true });
 }
 
 /**
@@ -111,13 +109,15 @@ function installChunkErrorRecovery() {
 }
 
 import { getSiteConfig, prewarmCache } from "./lib/dataCache";
+import { prefetchAllPublicRoutes, prefetchRoute } from "./lib/routePrefetch";
 
 function BrandingApplier() {
   useEffect(() => {
     // Pré-aquece o cache em background assim que o app monta
     prewarmCache();
     // Pré-carrega chunks públicos em idle → navegação sem Suspense/flash branco
-    prefetchPublicChunks();
+    prefetchAllPublicRoutes();
+    installHoverPrefetch();
     // Recovery automático para chunks ausentes após redeploy
     installChunkErrorRecovery();
 

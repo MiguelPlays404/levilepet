@@ -126,7 +126,8 @@ export function AlbumModal({ title, items, onClose, initialIndex = 0 }: Props) {
         {item.caption && (
           <p className="text-center text-white/80 text-sm mb-2 max-w-3xl mx-auto">{item.caption}</p>
         )}
-        <div className="flex gap-2 overflow-x-auto py-1 justify-start lg:justify-center" style={{ scrollbarWidth: "none" }}>
+        <div ref={thumbsRef}
+          className="flex gap-2 overflow-x-auto drag-rail py-1 justify-start lg:justify-center" style={{ scrollbarWidth: "none" }}>
           {items.map((it, i) => {
             const active = i === index;
             const thumb = it.thumb_url || (it.media_type === "photo" ? it.media_url : null) || (it.media_type === "video" ? defaultVideoCover(it.aspect_ratio || "1:1") : "/placeholder.svg");
