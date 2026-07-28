@@ -6,6 +6,7 @@ import { Lightbox } from "@/components/Lightbox";
 import { DestaquesSection } from "@/components/DestaquesSection";
 import { HojeNoLeVilleSection } from "@/components/HojeNoLeVilleSection";
 import { AlbumsRail } from "@/components/AlbumsRail";
+import { getVideoThumbnail } from "@/lib/videoThumb";
 import { getSiteConfig, getHomeSections, getPhotos, getVideos, getSiteConfigSync, getHomeSectionsSync, getPhotosSync, getVideosSync } from "@/lib/dataCache";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { supabase } from "@/integrations/supabase/client";
@@ -386,7 +387,7 @@ const Index = () => {
         const visible = showMoreVideos ? featuredVideos : featuredVideos.slice(0, 1);
         const renderVideo = (v: any) => (
           v.video_type === 'upload' ? (
-            <video src={v.video_url} className="w-full h-full" controls preload="metadata" poster={v.thumbnail_url || undefined} />
+            <video src={v.video_url} className="w-full h-full" controls preload="metadata" poster={getVideoThumbnail(v)} />
           ) : (
             <iframe
               src={v.video_url.includes('embed') ? v.video_url : `https://www.youtube.com/embed/${v.video_url.match(/(?:v=|youtu\.be\/)([^&\s]+)/)?.[1] || ''}`}
