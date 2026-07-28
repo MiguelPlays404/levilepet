@@ -99,7 +99,7 @@ const Videos = () => {
                       <img src={getThumbnail(video)} alt={video.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         loading="lazy"
-                        onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+                        onError={(e) => { (e.target as HTMLImageElement).src = defaultVideoCover(video); }}
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
                         <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center group-hover:scale-110 transition-transform"

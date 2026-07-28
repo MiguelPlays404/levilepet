@@ -273,7 +273,7 @@ const Transporte = () => {
                       src={getThumbnail(video)}
                       alt={video.title}
                       loading="lazy"
-                      onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+                      onError={(e) => { (e.target as HTMLImageElement).src = defaultVideoCover(video); }}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 flex items-center justify-center group-hover:bg-black/20 transition-all">
