@@ -1,4 +1,5 @@
 import { Seo } from "@/components/Seo";
+import vagaBanhista from "@/assets/vaga-banhista.jpg";
 import { Link } from "react-router-dom";
 import { PublicLayout } from "@/components/PublicLayout";
 import { useState, useEffect } from "react";
