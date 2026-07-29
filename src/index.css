@@ -459,6 +459,7 @@
 
 @keyframes shimmer { 0%{background-position:-300px 0} 100%{background-position:calc(300px + 100%) 0} }
 @keyframes spinSmooth { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+@keyframes fadeInDelayed { from{opacity:0} to{opacity:1} }
 
 @keyframes heroBadgePop { 0%{transform:translateY(-16px) scale(0.8);opacity:0} 100%{transform:translateY(0) scale(1);opacity:1} }
 @keyframes floatPaw { 0%,100%{transform:translateY(0) rotate(-5deg);opacity:0.25} 50%{transform:translateY(-22px) rotate(5deg);opacity:0.6} }
