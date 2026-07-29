@@ -172,13 +172,14 @@ const Transporte = () => {
             )}
             {content?.photo_main_url && (
               <button
+                aria-label="Ver foto do motorista"
                 data-animate="fade-scale"
                 onClick={() => setLightbox(0)}
                 className="block w-full rounded-2xl overflow-hidden bg-[#222] aspect-[16/10] group"
               >
                 <img loading="lazy" decoding="async"
                   src={content.photo_main_url}
-                  alt={content.driver_name || "Motorista"}
+                  alt={content.driver_name ? `${content.driver_name} — motorista do Le Ville Pet` : "Motorista do Le Ville Pet"}
                   className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
                   onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
                 />
@@ -238,6 +239,7 @@ const Transporte = () => {
                   key={p.id}
                   data-animate="fade-scale"
                   data-delay={String(Math.min(idx, 5))}
+                  aria-label={p.title ? `Ver foto: ${p.title}` : "Ver foto"}
                   onClick={() => setLightbox((content?.photo_main_url ? 1 : 0) + idx)}
                   className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-[#222] shadow-md hover:shadow-[0_15px_40px_-10px_rgba(245,192,0,0.4)] transition-all duration-500"
                 >
@@ -273,13 +275,14 @@ const Transporte = () => {
                   key={video.id}
                   data-animate="card"
                   data-delay={String(Math.min(i, 5))}
+                  aria-label={video.title ? `Assistir vídeo: ${video.title}` : "Assistir vídeo"}
                   onClick={() => setPlayerVideo(video)}
                   className="bg-white rounded-[14px] overflow-hidden border border-[#E5E5E5] shadow-sm group text-left"
                 >
                   <div className={`relative ${aspectClassFor(video)} overflow-hidden bg-[#E5E5E5]`}>
                     <img
                       src={getThumbnail(video)}
-                      alt={video.title}
+                      alt={video.title || "Vídeo do transporte Le Ville Pet"}
                       loading="lazy"
                       onError={(e) => { (e.target as HTMLImageElement).src = defaultVideoCover(video); }}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -382,7 +385,7 @@ const Transporte = () => {
           onClick={() => setPlayerVideo(null)}
         >
           <div className="w-full max-w-[920px] mx-4 relative" onClick={(e) => e.stopPropagation()} style={{ animation: 'lightboxOpen 0.25s ease both' }}>
-            <button onClick={() => setPlayerVideo(null)} className="absolute -top-12 right-0 text-white/70 hover:text-white transition-colors">
+            <button aria-label="Fechar" onClick={() => setPlayerVideo(null)} className="absolute -top-12 right-0 text-white/70 hover:text-white transition-colors">
               <X className="w-9 h-9" />
             </button>
             <div className={`${aspectClassFor(playerVideo)} rounded-2xl overflow-hidden bg-black`}>
