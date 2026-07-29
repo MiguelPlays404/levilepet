@@ -9,6 +9,15 @@ export function Navbar() {
   const [navItems, setNavItems] = useState<any[]>(() => getNavItemsSync().filter((n: any) => n.show_in_navbar));
   const location = useLocation();
   const isOpenRef = useRef(false);
+  const [atTop, setAtTop] = useState(true);
+
+  // Barra preta sólida no topo da página; vidro fosco ao rolar
+  useEffect(() => {
+    const onScroll = () => setAtTop(window.scrollY < 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   // Fechar menu ao trocar de rota
   useEffect(() => {
