@@ -50,8 +50,15 @@ export function Navbar() {
 
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-[9999] glass-dark border-b border-[rgba(245,192,0,0.15)] shadow-lg"
-      style={{ position: 'fixed', transform: 'translateZ(0)', isolation: 'isolate' }}
+      className={`fixed top-0 left-0 right-0 z-[9999] border-b border-[rgba(245,192,0,0.15)] shadow-lg transition-colors duration-300 ${
+        atTop ? "" : "glass-dark"
+      }`}
+      style={{
+        position: 'fixed',
+        transform: 'translateZ(0)',
+        isolation: 'isolate',
+        ...(atTop ? { background: '#000000' } : null),
+      }}
     >
       <div className="container mx-auto flex items-center justify-between h-16 lg:h-[72px] px-4">
         {/* Logo */}
