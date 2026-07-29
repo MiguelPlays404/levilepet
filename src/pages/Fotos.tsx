@@ -73,7 +73,7 @@ const Fotos = () => {
             </div>
           ) : visible.length > 0 ? (
             <>
-              <p className="text-center text-[#888] text-sm mb-4" style={{ fontFamily: 'Inter' }}>
+              <p className="text-center text-[#595959] text-sm mb-4" style={{ fontFamily: 'Inter' }}>
                 Exibindo {visible.length} de {filtered.length} fotos
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -105,7 +105,7 @@ const Fotos = () => {
           ) : (
             <div className="text-center py-20">
               <Camera className="w-16 h-16 text-primary mx-auto mb-4" />
-              <p className="text-[#888] text-lg" style={{ fontFamily: 'Inter' }}>Nenhuma foto nesta categoria.</p>
+              <p className="text-[#595959] text-lg" style={{ fontFamily: 'Inter' }}>Nenhuma foto nesta categoria.</p>
             </div>
           )}
         </div>

@@ -135,7 +135,7 @@ const Videos = () => {
           ) : (
             <div className="text-center py-20">
               <Video className="w-16 h-16 text-primary mx-auto mb-4" />
-              <p className="text-[#888] text-lg" style={{ fontFamily: 'Inter' }}>Nenhum vídeo ainda.</p>
+              <p className="text-[#595959] text-lg" style={{ fontFamily: 'Inter' }}>Nenhum vídeo ainda.</p>
             </div>
           )}
         </div>
