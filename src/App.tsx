@@ -157,7 +157,16 @@ function BrandingApplier() {
  *  evitando o flash de tela branca quando o prefetch ainda não terminou. */
 function GlobalSuspenseFallback() {
   return (
-    <div className="fixed inset-0 z-[9998] flex items-center justify-center pointer-events-none" style={{ background: '#09090B' }}>
+    <div
+      className="fixed inset-0 z-[9998] flex items-center justify-center pointer-events-none"
+      style={{
+        background: 'rgba(9, 9, 11, 0.35)',
+        backdropFilter: 'blur(2px)',
+        WebkitBackdropFilter: 'blur(2px)',
+        opacity: 0,
+        animation: 'fadeInDelayed 0.5s ease 0.25s forwards',
+      }}
+    >
       <div
         className="w-10 h-10 rounded-full border-2 border-primary/20"
         style={{ borderTopColor: '#F5C000', animation: 'spinSmooth 0.9s linear infinite' }}
