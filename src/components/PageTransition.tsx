@@ -54,10 +54,10 @@ export const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
 
     const anim = el.animate(
       [
-        { opacity: 0, transform: 'translate3d(0, 10px, 0)' },
+        { opacity: 0.35, transform: 'translate3d(0, 6px, 0)' },
         { opacity: 1, transform: 'translate3d(0, 0, 0)' },
       ],
-      { duration: 360, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' }
+      { duration: 280, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' }
     );
     animRef.current = anim;
 
