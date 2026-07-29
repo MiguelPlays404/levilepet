@@ -115,9 +115,9 @@ const Hotelzinho = () => {
             <h2 data-animate="fade-up" className="section-title text-white text-center mb-10">{cfg?.hotel_gallery_section_title || 'Nosso Espaço'}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {photos.map((photo, i) => (
-                <button key={photo.id} data-animate="fade-scale" data-delay={String(Math.min(i, 5))} onClick={() => setLightboxIndex(i)}
+                <button key={photo.id} aria-label={photo.title ? `Ver foto: ${photo.title}` : "Ver foto"} data-animate="fade-scale" data-delay={String(Math.min(i, 5))} onClick={() => setLightboxIndex(i)}
                   className="group relative aspect-[4/3] rounded-[14px] overflow-hidden bg-[#333]">
-                  <img src={photo.image_url} alt={photo.title}
+                  <img src={photo.image_url} alt={photo.title || "Foto do hotelzinho Le Ville Pet"}
                     className="w-full h-full object-cover group-hover:scale-[1.08] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
                     loading="lazy"
                     onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}

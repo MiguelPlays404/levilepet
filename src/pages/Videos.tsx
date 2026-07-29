@@ -119,7 +119,7 @@ const Videos = () => {
                       <span className="flex items-center gap-1.5 text-[#A1A1AA] text-sm" style={{ fontFamily: 'Inter', fontWeight: 500 }}>
                         <Eye className="w-4 h-4" /> {publicViewsLabel(video)}
                       </span>
-                      <button onClick={() => toggleLike(video.id)} className="flex items-center gap-2 group/like">
+                      <button aria-label="Curtir vídeo" onClick={() => toggleLike(video.id)} className="flex items-center gap-2 group/like">
                         <Heart className={`w-5 h-5 transition-all ${isLiked ? "text-primary fill-primary" : "text-[#A1A1AA] group-hover/like:text-primary"}`}
                           style={isLiked ? { animation: 'heartBeat 0.5s ease' } : undefined} />
                         <span className={`text-sm ${isLiked ? 'text-primary' : 'text-[#A1A1AA]'}`} style={{ fontFamily: 'Inter', fontWeight: 500 }}>
@@ -144,7 +144,7 @@ const Videos = () => {
       {playerVideo && (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.96)', backdropFilter: 'blur(8px)' }} onClick={() => setPlayerVideo(null)}>
           <div className="w-full max-w-[920px] mx-4" onClick={e => e.stopPropagation()} style={{ animation: 'lightboxOpen 0.25s ease both' }}>
-            <button onClick={() => setPlayerVideo(null)} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
+            <button aria-label="Fechar" onClick={() => setPlayerVideo(null)} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
               <X className="w-9 h-9" />
             </button>
             <div className={`${({'16:9':'aspect-video','4:3':'aspect-[4/3]','1:1':'aspect-square','3:4':'aspect-[3/4]','9:16':'aspect-[9/16]'} as any)[playerVideo.aspect_ratio || (playerVideo.orientation === 'vertical' ? '9:16' : '16:9')] || 'aspect-video'} rounded-2xl overflow-hidden bg-black`}>
@@ -156,7 +156,7 @@ const Videos = () => {
             </div>
             <div className="mt-4 flex items-center justify-between">
               <h3 className="text-white font-heading font-semibold text-lg">{playerVideo.title}</h3>
-              <button onClick={() => toggleLike(playerVideo.id)} className="flex items-center gap-2">
+              <button aria-label="Curtir vídeo" onClick={() => toggleLike(playerVideo.id)} className="flex items-center gap-2">
                 <Heart className={`w-5 h-5 ${likedSet.has(playerVideo.id) ? "text-primary fill-primary" : "text-white/60 hover:text-primary"}`} />
                 <span className="text-sm text-white/60">{publicLikesLabel(videos.find(v => v.id === playerVideo.id) || playerVideo)}</span>
               </button>

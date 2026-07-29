@@ -369,9 +369,9 @@ const Index = () => {
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5">
               {photos.map((photo: any, i: number) => (
-                <button key={photo.id} data-animate="fade-scale" data-delay={String(i)} onClick={() => setLightboxIndex(i)}
+                <button key={photo.id} aria-label={photo.title ? `Ver foto: ${photo.title}` : "Ver foto"} data-animate="fade-scale" data-delay={String(i)} onClick={() => setLightboxIndex(i)}
                   className="group relative aspect-square rounded-[14px] overflow-hidden bg-[#333]">
-                  <img src={photo.image_url} alt={photo.title} className="w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.08]" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
+                  <img src={photo.image_url} alt={photo.title || "Foto do Le Ville Pet"} className="w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.08]" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-300 flex items-center justify-center">
                     <Search className="w-8 h-8 text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 scale-0 group-hover:scale-100" />
                   </div>

@@ -78,10 +78,10 @@ const Fotos = () => {
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 {visible.map((photo, i) => (
-                  <button key={photo.id} data-animate="fade-scale" data-delay={String(Math.min(i, 6))}
+                  <button key={photo.id} aria-label={photo.title ? `Ver foto: ${photo.title}` : "Ver foto"} data-animate="fade-scale" data-delay={String(Math.min(i, 6))}
                     onClick={() => setLightboxIndex(i)}
                     className="group relative aspect-square rounded-[12px] overflow-hidden bg-[#E5E5E5]">
-                    <img src={withVersion(photo.image_url, photo.updated_at)} alt={photo.title}
+                    <img src={withVersion(photo.image_url, photo.updated_at)} alt={photo.title || "Foto do Le Ville Pet"}
                       className="w-full h-full object-cover group-hover:scale-[1.08] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
                       loading="lazy"
                       onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
