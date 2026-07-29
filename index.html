@@ -47,23 +47,59 @@
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "PetStore",
+        "@type": ["LocalBusiness", "PetStore"],
+        "@id": "https://levillepet.com.br/#localbusiness",
         "name": "Le Ville Pet",
         "slogan": "a gente se entende",
+        "description": "Petshop, hotelzinho e transporte para pets no Villaggio Mall Center, Bauru-SP.",
         "url": "https://levillepet.com.br/",
         "image": "https://levillepet.com.br/images/logo-levillepet.png",
-        "telephone": "+55 14 99714-5610",
+        "logo": "https://levillepet.com.br/images/logo-levillepet.png",
+        "telephone": "+5514997145610",
+        "priceRange": "$$",
+        "currenciesAccepted": "BRL",
         "address": {
           "@type": "PostalAddress",
-          "streetAddress": "Villaggio Mall Center",
+          "streetAddress": "Av. Affonso José Aiello, 14-45 - Loja 19, Villaggio Mall Center",
           "addressLocality": "Bauru",
           "addressRegion": "SP",
+          "postalCode": "17018-520",
           "addressCountry": "BR"
         },
-        "areaServed": "Bauru, SP",
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": -22.3526,
+          "longitude": -49.0399
+        },
+        "areaServed": {
+          "@type": "City",
+          "name": "Bauru"
+        },
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+            "opens": "09:00",
+            "closes": "19:00"
+          },
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": "Saturday",
+            "opens": "09:00",
+            "closes": "17:00"
+          }
+        ],
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "customer service",
+          "telephone": "+5514997145610",
+          "areaServed": "BR",
+          "availableLanguage": "Portuguese"
+        },
         "hasMap": "https://maps.app.goo.gl/nkuDnVyBe6ZHYNbS8"
       }
     </script>
+
   </head>
   <body>
     <div id="root"></div>
