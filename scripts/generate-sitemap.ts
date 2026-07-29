@@ -49,3 +49,29 @@ function generateSitemap(list: SitemapEntry[]) {
 
 writeFileSync(resolve("public/sitemap.xml"), generateSitemap(entries));
 console.log(`sitemap.xml written (${entries.length} entries)`);
+
+// ---- robots.txt (gerado no mesmo passo para nunca ficar desatualizado) ----
+const robots = [
+  "User-agent: Googlebot",
+  "Allow: /",
+  "",
+  "User-agent: Bingbot",
+  "Allow: /",
+  "",
+  "User-agent: Twitterbot",
+  "Allow: /",
+  "",
+  "User-agent: facebookexternalhit",
+  "Allow: /",
+  "",
+  "User-agent: *",
+  "Allow: /",
+  "Disallow: /admin",
+  "Disallow: /manutencao",
+  "",
+  `Sitemap: ${BASE_URL}/sitemap.xml`,
+  "",
+].join("\n");
+
+writeFileSync(resolve("public/robots.txt"), robots);
+console.log("robots.txt written");
