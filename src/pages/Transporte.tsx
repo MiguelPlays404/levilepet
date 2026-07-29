@@ -79,7 +79,15 @@ const Transporte = () => {
 
   return (
     <PublicLayout>
-      <Seo title="Transporte de Pets em Bauru" description="Busca e leva seu cão ou gato com segurança em Bauru-SP para usar nossos serviços: banho e tosa, hotelzinho ou creche. Veja cobertura e agende pelo WhatsApp." path="/transporte" jsonLd={breadcrumbLd("Transporte de Pets em Bauru", "/transporte")} />
+      <Seo title="Transporte de Pets em Bauru" description="Busca e leva seu cão ou gato com segurança em Bauru-SP para usar nossos serviços: banho e tosa, hotelzinho ou creche. Veja cobertura e agende pelo WhatsApp." path="/transporte" jsonLd={faqs.length > 0 ? [breadcrumbLd("Transporte de Pets em Bauru", "/transporte"), {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: faqs.map((f) => ({
+          "@type": "Question",
+          name: f.q,
+          acceptedAnswer: { "@type": "Answer", text: f.a },
+        })),
+      }] : breadcrumbLd("Transporte de Pets em Bauru", "/transporte")} />
       <PageHero
         badge="🚐 Transporte"
         title={content?.page_title || "Transporte Pet"}
