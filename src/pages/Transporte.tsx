@@ -79,7 +79,7 @@ const Transporte = () => {
 
   return (
     <PublicLayout>
-      <Seo title="Transporte de Pets em Bauru" description="Leva e traz de cães e gatos em Bauru-SP com segurança e motoristas treinados. Veja cobertura, valores e agende pelo WhatsApp." path="/transporte" jsonLd={breadcrumbLd("Transporte de Pets em Bauru", "/transporte")} />
+      <Seo title="Transporte de Pets em Bauru" description="Busca e leva seu cão ou gato com segurança em Bauru-SP para usar nossos serviços: banho e tosa, hotelzinho ou creche. Veja cobertura e agende pelo WhatsApp." path="/transporte" jsonLd={breadcrumbLd("Transporte de Pets em Bauru", "/transporte")} />
       <PageHero
         badge="🚐 Transporte"
         title={content?.page_title || "Transporte Pet"}
