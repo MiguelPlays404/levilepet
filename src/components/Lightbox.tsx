@@ -39,19 +39,21 @@ export function Lightbox({ images, initialIndex, onClose }: LightboxProps) {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <button onClick={onClose} className="absolute top-4 right-4 text-text-on-dark z-10 hover:text-primary transition-colors">
+      <button aria-label="Fechar" onClick={onClose} className="absolute top-4 right-4 text-text-on-dark z-10 hover:text-primary transition-colors">
         <X className="w-8 h-8" />
       </button>
 
       {images.length > 1 && (
         <>
           <button
+            aria-label="Anterior"
             onClick={(e) => { e.stopPropagation(); prev(); }}
             className="absolute left-4 top-1/2 -translate-y-1/2 text-text-on-dark hover:text-primary transition-colors z-10"
           >
             <ChevronLeft className="w-10 h-10" />
           </button>
           <button
+            aria-label="Próximo"
             onClick={(e) => { e.stopPropagation(); next(); }}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-text-on-dark hover:text-primary transition-colors z-10"
           >
@@ -71,7 +73,8 @@ export function Lightbox({ images, initialIndex, onClose }: LightboxProps) {
         <img
           key={images[current].url}
           src={images[current].url}
-          alt={images[current].title || "Foto"}
+          alt={images[current].title || "Foto do Le Ville Pet"}
+
           className="max-w-full max-h-[80vh] object-contain rounded-lg animate-[fadeIn_0.25s_ease]"
         />
         {images[current].title && (
