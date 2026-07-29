@@ -59,10 +59,11 @@ const VenhaNosConhecer = () => {
               {photos.slice(0, 3).map((photo, i) => (
                 <button
                   key={photo.id}
+                  aria-label={photo.title ? `Ver foto: ${photo.title}` : "Ver foto"}
                   className={`rounded-xl overflow-hidden cursor-pointer group bg-[#E5E5E5] ${i === 0 ? "col-span-2 aspect-[16/9]" : "aspect-square"}`}
                   onClick={() => setLightboxIndex(i)}
                 >
-                  <img src={photo.image_url} alt={photo.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
+                  <img src={photo.image_url} alt={photo.title || "Foto da loja Le Ville Pet"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
                 </button>
               ))}
             </div>
@@ -99,10 +100,10 @@ const VenhaNosConhecer = () => {
             <h2 data-animate="fade-up" className="section-title text-black text-center mb-10">{cfg?.conhecer_gallery_title || 'Galeria do Espaço'}</h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {photos.map((photo, i) => (
-                <button key={photo.id} data-animate="fade-scale" data-delay={String(Math.min(i, 7))}
+                <button key={photo.id} aria-label={photo.title ? `Ver foto: ${photo.title}` : "Ver foto"} data-animate="fade-scale" data-delay={String(Math.min(i, 7))}
                   onClick={() => setLightboxIndex(i)}
                   className="group relative aspect-square rounded-xl overflow-hidden bg-[#E5E5E5]">
-                  <img src={photo.image_url} alt={photo.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
+                  <img src={photo.image_url} alt={photo.title || "Foto da loja Le Ville Pet"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center">
                     <span className="text-primary text-xl opacity-0 group-hover:opacity-100 transition-opacity">🔍</span>
                   </div>

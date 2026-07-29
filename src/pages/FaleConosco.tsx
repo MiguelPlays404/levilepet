@@ -60,7 +60,7 @@ const FaleConosco = () => {
                 {c?.fixed_phone && (
                   <a data-animate="fade-up" href={`tel:${c.fixed_phone.replace(/\D/g,'')}`} className="flex items-center gap-3 text-[#444] hover:text-primary transition-colors">
                     <Phone className="w-5 h-5 text-primary shrink-0" />
-                    {c.fixed_phone} <span className="text-[10px] text-[#888]">Telefone Fixo</span>
+                    {c.fixed_phone} <span className="text-[10px] text-[#595959]">Telefone Fixo</span>
                   </a>
                 )}
                 <a data-animate="fade-up" data-delay="1" href={`https://wa.me/${waNum}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-[#444] hover:text-primary transition-colors">
@@ -85,7 +85,7 @@ const FaleConosco = () => {
               )}
             </div>
           </div>
-          <p data-animate="fade-up" className="text-center text-[#888] text-sm mt-10" style={{ fontFamily: 'Inter' }}>
+          <p data-animate="fade-up" className="text-center text-[#595959] text-sm mt-10" style={{ fontFamily: 'Inter' }}>
             {c?.faleconosco_visit_text || 'Venha nos visitar! Estamos te esperando 🐾'}
           </p>
         </div>

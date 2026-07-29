@@ -73,7 +73,7 @@ export function AdminShell() {
       <div className="min-h-screen flex" style={{ background: '#09090B', color: '#fff' }}>
         <aside className="w-[260px] shrink-0 h-screen sticky top-0 flex flex-col" style={{ background: '#111113', borderRight: '1px solid rgba(245,192,0,0.15)' }}>
           <div className="p-5 border-b" style={{ borderColor: 'rgba(245,192,0,0.15)' }}>
-            <img src="/images/logo-levillepet.png" alt="Le Ville Pet" className="h-10 rounded" />
+            <img src="/images/logo-levillepet.png" alt="Le Ville Pet" className="h-10 w-10 object-contain rounded" width={40} height={40} />
             <p className="text-primary text-xs font-heading italic mt-1">Painel Admin</p>
           </div>
           <nav className="flex-1 py-3 overflow-y-auto">

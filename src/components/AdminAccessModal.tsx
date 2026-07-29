@@ -44,7 +44,7 @@ export function AdminAccessModal({ open, onClose }: AdminAccessModalProps) {
           </button>
         </div>
         <div className="text-center mb-6">
-          <img src="/images/logo-levillepet.png" alt="Le Ville Pet" className="h-14 mx-auto mb-4 rounded-lg" />
+          <img src="/images/logo-levillepet.png" alt="Le Ville Pet" className="h-14 w-14 object-contain mx-auto mb-4 rounded-lg" width={56} height={56} />
           <h3 className="font-heading font-bold text-text-on-dark text-xl">Acesso Restrito</h3>
           <p className="text-text-muted text-sm mt-1">Digite o código de acesso</p>
         </div>

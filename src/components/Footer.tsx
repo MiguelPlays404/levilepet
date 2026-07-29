@@ -25,7 +25,7 @@ export function Footer() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-2 group">
-            <img src={c?.logo_url || "/images/logo-levillepet.png"} alt={c?.site_name || 'Le Ville Pet'} className="h-8 rounded-md" />
+            <img src={c?.logo_url || "/images/logo-levillepet.png"} alt={c?.site_name || 'Le Ville Pet'} className="h-8 w-8 object-contain rounded-md" width={32} height={32} />
             <span className="font-heading italic text-primary text-xs hidden sm:inline">"{c?.site_slogan || 'a gente se entende'}"</span>
           </Link>
 

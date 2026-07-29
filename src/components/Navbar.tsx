@@ -79,7 +79,7 @@ export function Navbar() {
           <img
             src={config?.logo_url || "/images/logo-levillepet.png"}
             alt={config?.site_name || 'Le Ville Pet'}
-            className="h-10 lg:h-[46px] rounded-lg"
+            className="h-10 w-10 lg:h-[46px] lg:w-[46px] object-contain rounded-lg"
             width={46}
             height={46}
             decoding="async"
