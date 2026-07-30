@@ -44,6 +44,7 @@ const navItems = [
   { label: "Redes Sociais", path: "/admin/social", icon: Share2 },
   { type: "separator", label: "SISTEMA" },
   { label: "Segurança", path: "/admin/seguranca", icon: Shield },
+  { label: "Auditoria & Registros", path: "/admin/auditoria", icon: ScrollText },
   { label: "Backup & Restauração", path: "/admin/backup", icon: Archive },
   { label: "Downloads em Massa", path: "/admin/downloads", icon: DownloadCloud },
   { label: "Guia & Ajuda", path: "/admin/guia", icon: BookOpen },
