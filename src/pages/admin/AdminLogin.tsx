@@ -131,14 +131,21 @@ export default function AdminLogin() {
         </div>
 
         {error && <p className="text-red-400 text-xs">{error}</p>}
+        {lockedFor > 0 && (
+          <p className="text-amber-400 text-xs">
+            Acesso temporariamente bloqueado. Tente novamente em{" "}
+            {lockedFor >= 60 ? `${Math.ceil(lockedFor / 60)} min` : `${lockedFor}s`}.
+          </p>
+        )}
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || lockedFor > 0}
           className="w-full py-2.5 rounded-lg bg-primary text-black font-semibold text-sm hover:opacity-90 disabled:opacity-50 transition-opacity"
         >
-          {loading ? "Entrando..." : "Entrar"}
+          {lockedFor > 0 ? `Aguarde ${lockedFor}s` : loading ? "Entrando..." : "Entrar"}
         </button>
+
 
         <button
           type="button"
