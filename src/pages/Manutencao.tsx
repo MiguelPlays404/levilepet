@@ -85,14 +85,17 @@ export default function Manutencao() {
               >
                 <div className="relative group">
                   <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Digite seu nome..."
-                    className="w-full bg-[#0A0A0B] border border-[#3F3F46] focus:border-primary/50 rounded-xl px-5 py-4 text-white text-sm outline-none transition-all placeholder:text-[#52525B] group-hover:border-[#52525B]"
+                    type="password"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    value={code}
+                    onChange={(e) => { setCode(e.target.value); setError(""); }}
+                    placeholder="Código de acesso..."
+                    className="w-full bg-[#0A0A0B] border border-[#3F3F46] focus:border-primary/50 rounded-xl px-5 py-4 text-white text-sm outline-none transition-all placeholder:text-[#52525B] group-hover:border-[#52525B] text-center tracking-[0.4em]"
                     required
                   />
                 </div>
+                {error && <p className="text-red-400 text-xs">{error}</p>}
                 <button
                   type="submit"
                   disabled={loading}
@@ -102,7 +105,7 @@ export default function Manutencao() {
                     <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
                   ) : (
                     <>
-                      Enviar <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      Entrar <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </>
                   )}
                 </button>
@@ -118,8 +121,9 @@ export default function Manutencao() {
                   <CheckCircle2 className="w-8 h-8 text-green-500" />
                 </div>
                 <h2 className="text-xl font-heading font-semibold text-white">
-                  Obrigado, {name}!
+                  Obrigado!
                 </h2>
+
                 <p className="text-[#A1A1AA] text-sm leading-relaxed">
                   Avisaremos assim que retornarmos. Fique de olho em nossas redes sociais para novidades!
                 </p>
