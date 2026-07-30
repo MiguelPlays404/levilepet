@@ -59,6 +59,7 @@ const AdminHojeNoLeVille = lazy(() => import("./pages/admin/AdminHojeNoLeVille")
 const AdminVagas = lazy(() => import("./pages/admin/AdminVagas"));
 const AdminBackup = lazy(() => import("./pages/admin/AdminBackup"));
 const AdminAlbuns = lazy(() => import("./pages/admin/AdminAlbuns"));
+const AdminDownloads = lazy(() => import("./pages/admin/AdminDownloads"));
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const AdminShell = lazy(() =>
   import("./components/AdminLayout").then((m) => ({ default: m.AdminShell }))
@@ -242,6 +243,7 @@ const App = () => (
                     <Route path="/admin/vagas" element={<AdminVagas />} />
                     <Route path="/admin/backup" element={<AdminBackup />} />
                     <Route path="/admin/albuns" element={<AdminAlbuns />} />
+                    <Route path="/admin/downloads" element={<AdminDownloads />} />
                   </Route>
                   <Route path="*" element={<NotFound />} />
                 </Routes>
