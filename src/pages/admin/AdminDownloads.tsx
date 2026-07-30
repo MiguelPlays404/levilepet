@@ -1,70 +1,45 @@
-import { useEffect, useState } from "react";
-import JSZip from "jszip";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Download, Image as ImageIcon, Video as VideoIcon, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import {
+  RATIOS,
+  ratioOf,
+  bulkDownloadStore,
+  startBulkDownload,
+  type Ratio,
+} from "@/lib/bulkDownload";
 
-const RATIOS = ["16:9", "4:3", "1:1", "3:4", "9:16"] as const;
-type Ratio = (typeof RATIOS)[number];
+type RangeState = { from: string; to: string };
 
-function ratioOf(item: any): Ratio {
-  const r = item.aspect_ratio || (item.orientation === "vertical" ? "9:16" : "16:9");
-  return (RATIOS as readonly string[]).includes(r) ? (r as Ratio) : "16:9";
-}
-
-function ratioValue(r: Ratio): number {
-  const [w, h] = r.split(":").map(Number);
-  return w / h;
-}
-
-function extFromUrl(url: string, fallback: string) {
-  const clean = url.split("?")[0].split("#")[0];
-  const m = clean.match(/\.([a-zA-Z0-9]{2,5})$/);
-  return m ? m[1].toLowerCase() : fallback;
-}
-
-/** Recorta a imagem exatamente na proporção usada no site (object-cover centralizado). */
-async function cropToRatio(blob: Blob, ratio: Ratio): Promise<{ blob: Blob; ext: string }> {
-  const target = ratioValue(ratio);
-  const bitmap = await createImageBitmap(blob);
-  const srcRatio = bitmap.width / bitmap.height;
-
-  let sx = 0, sy = 0, sw = bitmap.width, sh = bitmap.height;
-  if (srcRatio > target) {
-    sw = Math.round(bitmap.height * target);
-    sx = Math.round((bitmap.width - sw) / 2);
-  } else if (srcRatio < target) {
-    sh = Math.round(bitmap.width / target);
-    sy = Math.round((bitmap.height - sh) / 2);
-  }
-
-  const canvas = document.createElement("canvas");
-  canvas.width = sw;
-  canvas.height = sh;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return { blob, ext: "jpg" };
-  ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, sw, sh);
-  bitmap.close?.();
-
-  const out: Blob = await new Promise((resolve) =>
-    canvas.toBlob((b) => resolve(b || blob), "image/jpeg", 0.95)
-  );
-  return { blob: out, ext: "jpg" };
+function sliceByRange(items: any[], range: RangeState) {
+  const from = Math.max(1, parseInt(range.from) || 1);
+  const to = Math.min(items.length, parseInt(range.to) || items.length);
+  if (to < from) return [];
+  return items.slice(from - 1, to);
 }
 
 export default function AdminDownloads() {
   const [photos, setPhotos] = useState<any[]>([]);
   const [videos, setVideos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState<"fotos" | "videos" | null>(null);
-  const [progress, setProgress] = useState("");
-  const [percent, setPercent] = useState(0);
   const [groupByRatio, setGroupByRatio] = useState(true);
   const [cropPhotos, setCropPhotos] = useState(true);
+  const [customPhotos, setCustomPhotos] = useState(false);
+  const [customVideos, setCustomVideos] = useState(false);
+  const [photoRange, setPhotoRange] = useState<RangeState>({ from: "1", to: "" });
+  const [videoRange, setVideoRange] = useState<RangeState>({ from: "1", to: "" });
+  const [photoRatios, setPhotoRatios] = useState<Ratio[]>([]);
+  const [videoRatios, setVideoRatios] = useState<Ratio[]>([]);
+
+  const state = useSyncExternalStore(bulkDownloadStore.subscribe, bulkDownloadStore.getSnapshot);
+  const busy = state.running;
 
   useEffect(() => {
     (async () => {
@@ -78,114 +53,133 @@ export default function AdminDownloads() {
     })();
   }, []);
 
+  useEffect(() => {
+    if (state.finishedMessage) {
+      toast.success(state.finishedMessage);
+      bulkDownloadStore.clearMessages();
+    }
+    if (state.errorMessage) {
+      toast.error(state.errorMessage);
+      bulkDownloadStore.clearMessages();
+    }
+  }, [state.finishedMessage, state.errorMessage]);
+
   const downloadableVideos = videos.filter((v) => v.video_type === "upload" && v.video_url);
   const externalVideos = videos.filter((v) => v.video_type !== "upload");
 
-  function saveZip(blob: Blob, name: string) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = name;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  const filterRatios = (items: any[], ratios: Ratio[]) =>
+    ratios.length ? items.filter((i) => ratios.includes(ratioOf(i))) : items;
+
+  const selectedPhotos = customPhotos
+    ? sliceByRange(filterRatios(photos, photoRatios), photoRange)
+    : photos;
+  const selectedVideos = customVideos
+    ? sliceByRange(filterRatios(downloadableVideos, videoRatios), videoRange)
+    : downloadableVideos;
+
+  function toggleRatio(list: Ratio[], set: (v: Ratio[]) => void, r: Ratio) {
+    set(list.includes(r) ? list.filter((x) => x !== r) : [...list, r]);
   }
 
-  async function downloadPhotos() {
-    if (!photos.length) return toast.error("Nenhuma foto encontrada.");
-    setBusy("fotos");
-    setPercent(0);
-    try {
-      const zip = new JSZip();
-      let index = 0;
-      let failed = 0;
-      for (const photo of photos) {
-        index++;
-        setProgress(`Baixando foto ${index} de ${photos.length}…`);
-        setPercent(Math.round((index / photos.length) * 100));
-        try {
-          const res = await fetch(photo.image_url, { mode: "cors" });
-          if (!res.ok) throw new Error(String(res.status));
-          let blob = await res.blob();
-          let ext = extFromUrl(photo.image_url, "jpg");
-          const ratio = ratioOf(photo);
-          if (cropPhotos) {
-            const cropped = await cropToRatio(blob, ratio);
-            blob = cropped.blob;
-            ext = cropped.ext;
-          }
-          const folder = groupByRatio ? `${ratio.replace(":", "x")}/` : "";
-          zip.file(`${folder}foto ${index}.${ext}`, blob);
-        } catch {
-          failed++;
-        }
-      }
-      setProgress("Compactando…");
-      const out = await zip.generateAsync({ type: "blob" });
-      saveZip(out, `le-ville-pet-fotos-${new Date().toISOString().slice(0, 10)}.zip`);
-      toast.success(`${photos.length - failed} fotos baixadas${failed ? ` (${failed} falharam)` : ""}.`);
-    } catch (e: any) {
-      toast.error(`Erro ao gerar o ZIP: ${e.message}`);
-    } finally {
-      setBusy(null);
-      setProgress("");
-      setPercent(0);
-    }
+  function downloadPhotos() {
+    if (!selectedPhotos.length) return toast.error("Nenhuma foto na seleção.");
+    startBulkDownload({
+      kind: "fotos",
+      items: selectedPhotos,
+      urlOf: (p) => p.image_url,
+      fallbackExt: "jpg",
+      namePrefix: "foto",
+      groupByRatio,
+      crop: cropPhotos,
+    });
   }
 
-  async function downloadVideos() {
-    if (!downloadableVideos.length) return toast.error("Nenhum vídeo enviado para o site (apenas links externos).");
-    setBusy("videos");
-    setPercent(0);
-    try {
-      const zip = new JSZip();
-      let index = 0;
-      let failed = 0;
-      for (const video of downloadableVideos) {
-        index++;
-        setProgress(`Baixando vídeo ${index} de ${downloadableVideos.length}…`);
-        setPercent(Math.round((index / downloadableVideos.length) * 100));
-        try {
-          const res = await fetch(video.video_url, { mode: "cors" });
-          if (!res.ok) throw new Error(String(res.status));
-          const blob = await res.blob();
-          const ext = extFromUrl(video.video_url, "mp4");
-          const folder = groupByRatio ? `${ratioOf(video).replace(":", "x")}/` : "";
-          zip.file(`${folder}video ${index}.${ext}`, blob);
-        } catch {
-          failed++;
-        }
-      }
-      if (externalVideos.length) {
-        zip.file(
-          "links-externos.txt",
-          externalVideos.map((v, i) => `${i + 1}. ${v.title || "sem título"} — ${v.video_url}`).join("\n")
-        );
-      }
-      setProgress("Compactando…");
-      const out = await zip.generateAsync({ type: "blob" });
-      saveZip(out, `le-ville-pet-videos-${new Date().toISOString().slice(0, 10)}.zip`);
-      toast.success(
-        `${downloadableVideos.length - failed} vídeos baixados${failed ? ` (${failed} falharam)` : ""}.`
-      );
-    } catch (e: any) {
-      toast.error(`Erro ao gerar o ZIP: ${e.message}`);
-    } finally {
-      setBusy(null);
-      setProgress("");
-      setPercent(0);
-    }
+  function downloadVideos() {
+    if (!selectedVideos.length) return toast.error("Nenhum vídeo na seleção.");
+    startBulkDownload({
+      kind: "videos",
+      items: selectedVideos,
+      urlOf: (v) => v.video_url,
+      fallbackExt: "mp4",
+      namePrefix: "video",
+      groupByRatio,
+      crop: false,
+      extraFiles: externalVideos.length
+        ? [
+            {
+              name: "links-externos.txt",
+              content: externalVideos
+                .map((v, i) => `${i + 1}. ${v.title || "sem título"} — ${v.video_url}`)
+                .join("\n"),
+            },
+          ]
+        : [],
+    });
   }
 
   const counts = (items: any[]) =>
     RATIOS.map((r) => ({ r, n: items.filter((i) => ratioOf(i) === r).length })).filter((x) => x.n > 0);
 
+  const rangeEditor = (
+    total: number,
+    range: RangeState,
+    setRange: (r: RangeState) => void,
+    ratios: Ratio[],
+    setRatios: (r: Ratio[]) => void,
+    selected: number
+  ) => (
+    <div className="space-y-3 mb-4 rounded-lg bg-[#0F0F11] border border-white/[0.06] p-3">
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <Label className="text-[11px] text-[#71717A]">De</Label>
+          <Input
+            inputMode="numeric"
+            value={range.from}
+            onChange={(e) => setRange({ ...range, from: e.target.value.replace(/\D/g, "") })}
+            placeholder="1"
+            className="h-8 text-sm"
+          />
+        </div>
+        <div className="flex-1">
+          <Label className="text-[11px] text-[#71717A]">Até</Label>
+          <Input
+            inputMode="numeric"
+            value={range.to}
+            onChange={(e) => setRange({ ...range, to: e.target.value.replace(/\D/g, "") })}
+            placeholder={String(total)}
+            className="h-8 text-sm"
+          />
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {RATIOS.map((r) => (
+          <button
+            key={r}
+            type="button"
+            onClick={() => toggleRatio(ratios, setRatios, r)}
+            aria-label={`Filtrar proporção ${r}`}
+            className={`px-2 py-1 rounded-md text-[11px] font-body border ${
+              ratios.includes(r)
+                ? "bg-primary text-black border-primary"
+                : "bg-transparent text-[#A1A1AA] border-white/10"
+            }`}
+          >
+            {r}
+          </button>
+        ))}
+      </div>
+      <p className="text-[11px] text-[#71717A] font-body">{selected} item(ns) selecionado(s)</p>
+    </div>
+  );
+
   return (
     <AdminLayout title="Downloads em Massa">
       <div className="max-w-4xl space-y-6">
         <p className="text-[#A1A1AA] text-sm font-body">
-          Baixe todas as fotos ou vídeos do site de uma vez, em um único arquivo ZIP, já numerados
+          Baixe fotos ou vídeos em um único ZIP, já numerados
           (<span className="text-primary">foto 1, foto 2…</span> / <span className="text-primary">video 1, video 2…</span>)
-          e mantendo a mesma proporção usada no site. Esta página é exclusiva do painel administrativo.
+          e mantendo a proporção usada no site. Os arquivos são baixados em paralelo e o download
+          continua rodando mesmo se você navegar para outra página do painel.
         </p>
 
         <Card className="bg-[#18181B] border-white/[0.07] p-5 space-y-3">
@@ -210,12 +204,20 @@ export default function AdminDownloads() {
             <p className="text-3xl font-heading font-extrabold text-white mb-1">
               {loading ? "…" : photos.length}
             </p>
-            <p className="text-xs text-[#71717A] font-body mb-4">
+            <p className="text-xs text-[#71717A] font-body mb-3">
               {counts(photos).map((c) => `${c.n}× ${c.r}`).join(" · ") || "Nenhuma foto"}
             </p>
+
+            <label className="flex items-center gap-3 cursor-pointer mb-3">
+              <Checkbox checked={customPhotos} onCheckedChange={(v) => setCustomPhotos(!!v)} />
+              <span className="text-xs text-[#ccc] font-body">Quantidade personalizada</span>
+            </label>
+            {customPhotos &&
+              rangeEditor(photos.length, photoRange, setPhotoRange, photoRatios, setPhotoRatios, selectedPhotos.length)}
+
             <Button onClick={downloadPhotos} disabled={!!busy || loading} className="w-full">
               {busy === "fotos" ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
-              Baixar todas as fotos (.zip)
+              Baixar {customPhotos ? `${selectedPhotos.length} fotos` : "todas as fotos"} (.zip)
             </Button>
           </Card>
 
@@ -227,12 +229,27 @@ export default function AdminDownloads() {
             <p className="text-3xl font-heading font-extrabold text-white mb-1">
               {loading ? "…" : downloadableVideos.length}
             </p>
-            <p className="text-xs text-[#71717A] font-body mb-4">
+            <p className="text-xs text-[#71717A] font-body mb-3">
               {counts(downloadableVideos).map((c) => `${c.n}× ${c.r}`).join(" · ") || "Nenhum vídeo enviado"}
             </p>
+
+            <label className="flex items-center gap-3 cursor-pointer mb-3">
+              <Checkbox checked={customVideos} onCheckedChange={(v) => setCustomVideos(!!v)} />
+              <span className="text-xs text-[#ccc] font-body">Quantidade personalizada</span>
+            </label>
+            {customVideos &&
+              rangeEditor(
+                downloadableVideos.length,
+                videoRange,
+                setVideoRange,
+                videoRatios,
+                setVideoRatios,
+                selectedVideos.length
+              )}
+
             <Button onClick={downloadVideos} disabled={!!busy || loading} className="w-full">
               {busy === "videos" ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
-              Baixar todos os vídeos (.zip)
+              Baixar {customVideos ? `${selectedVideos.length} vídeos` : "todos os vídeos"} (.zip)
             </Button>
           </Card>
         </div>
@@ -249,9 +266,9 @@ export default function AdminDownloads() {
 
         {busy && (
           <Card className="bg-[#18181B] border-white/[0.07] p-5">
-            <p className="text-sm text-[#ccc] font-body mb-2">{progress}</p>
+            <p className="text-sm text-[#ccc] font-body mb-2">{state.label}</p>
             <div className="h-2 rounded-full bg-[#27272A] overflow-hidden">
-              <div className="h-full bg-primary transition-all" style={{ width: `${percent}%` }} />
+              <div className="h-full bg-primary transition-all" style={{ width: `${state.percent}%` }} />
             </div>
           </Card>
         )}
