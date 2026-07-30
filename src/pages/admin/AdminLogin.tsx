@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { FunctionsHttpError } from "@supabase/supabase-js";
 import { Lock } from "lucide-react";
+
 
 /** Aceita apenas caminhos relativos same-origin (previne open redirect). */
 function safeNext(raw: string | null): string {
