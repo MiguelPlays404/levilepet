@@ -70,10 +70,12 @@ export function AdminAccessModal({ open, onClose }: AdminAccessModalProps) {
           {error && <p className="text-destructive text-xs text-center mb-2">{error}</p>}
           <button
             type="submit"
-            className="w-full bg-primary text-primary-foreground font-heading font-bold py-3 rounded-lg mt-3 hover:bg-primary-vibrant transition-colors"
+            disabled={loading}
+            className="w-full bg-primary text-primary-foreground font-heading font-bold py-3 rounded-lg mt-3 hover:bg-primary-vibrant transition-colors disabled:opacity-60"
           >
-            Entrar
+            {loading ? "Verificando..." : "Entrar"}
           </button>
+
           <button
             type="button"
             onClick={onClose}
