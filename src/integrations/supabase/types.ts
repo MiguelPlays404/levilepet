@@ -115,6 +115,99 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_log: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          created_at: string
+          details: Json
+          entity: string | null
+          entity_id: string | null
+          id: string
+          ip: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+          ip?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+          ip?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      auth_attempts: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          ident: string
+          ip: string | null
+          kind: string
+          success: boolean
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          ident: string
+          ip?: string | null
+          kind?: string
+          success?: boolean
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          ident?: string
+          ip?: string | null
+          kind?: string
+          success?: boolean
+        }
+        Relationships: []
+      }
+      auth_lockouts: {
+        Row: {
+          fail_count: number
+          ident: string
+          locked_until: string | null
+          stage: number
+          updated_at: string
+        }
+        Insert: {
+          fail_count?: number
+          ident: string
+          locked_until?: string | null
+          stage?: number
+          updated_at?: string
+        }
+        Update: {
+          fail_count?: number
+          ident?: string
+          locked_until?: string | null
+          stage?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       conhecer_content: {
         Row: {
           about_text: string | null

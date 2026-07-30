@@ -9,6 +9,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { MaintenanceGuard } from "@/components/MaintenanceGuard";
 import { RoutePersistence } from "@/components/RoutePersistence";
 import { SecurityHeaders } from "@/components/SecurityHeaders";
+import { CodeShield } from "@/components/CodeShield";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import Index from "./pages/Index";
 import { lazy, Suspense, useEffect } from "react";
@@ -60,6 +61,7 @@ const AdminVagas = lazy(() => import("./pages/admin/AdminVagas"));
 const AdminBackup = lazy(() => import("./pages/admin/AdminBackup"));
 const AdminAlbuns = lazy(() => import("./pages/admin/AdminAlbuns"));
 const AdminDownloads = lazy(() => import("./pages/admin/AdminDownloads"));
+const AdminAuditoria = lazy(() => import("./pages/admin/AdminAuditoria"));
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const AdminShell = lazy(() =>
   import("./components/AdminLayout").then((m) => ({ default: m.AdminShell }))
@@ -195,6 +197,7 @@ const App = () => (
         {/* ScrollToTop: rola para o topo em toda troca de rota */}
         <ScrollToTop />
         <SecurityHeaders />
+        <CodeShield />
         <BrandingApplier />
         <NavigationProgress />
         <RoutePersistence>
@@ -244,6 +247,7 @@ const App = () => (
                     <Route path="/admin/backup" element={<AdminBackup />} />
                     <Route path="/admin/albuns" element={<AdminAlbuns />} />
                     <Route path="/admin/downloads" element={<AdminDownloads />} />
+                    <Route path="/admin/auditoria" element={<AdminAuditoria />} />
                   </Route>
                   <Route path="*" element={<NotFound />} />
                 </Routes>

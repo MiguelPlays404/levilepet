@@ -1,39 +1,50 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { verifyAccessCode } from "@/lib/adminGate";
 import { Hammer, ArrowRight, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 
 export default function Manutencao() {
-  const [name, setName] = useState("");
+  const [code, setCode] = useState("");
   const [status, setStatus] = useState<"idle" | "success" | "admin">("idle");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   useEffect(() => {
     // Check if maintenance mode is actually on
-    supabase.from("site_config").select("maintenance_mode").single().then(({ data }) => {
+    supabase.from("site_config").select("maintenance_mode").maybeSingle().then(({ data }) => {
       if (data && !data.maintenance_mode) {
         navigate("/");
       }
     });
   }, [navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
-
+    if (!code.trim()) return;
+    setError("");
     setLoading(true);
 
-    setTimeout(() => {
-      sessionStorage.setItem("maintenance_bypass", "true");
-      navigate("/admin/login");
-      setLoading(false);
-    }, 400);
+    // Validação 100% no servidor (com bloqueio progressivo e auditoria).
+    const res = await verifyAccessCode(code.trim());
+    setLoading(false);
+    setCode("");
+
+    if (!res.ok) {
+      setError(
+        res.locked
+          ? `Muitas tentativas. Aguarde ${res.retryAfter ?? 30}s.`
+          : res.error || "Código incorreto."
+      );
+      return;
+    }
+    setStatus("admin");
+    setTimeout(() => navigate("/admin/login"), 500);
   };
+
 
   return (
     <div className="min-h-screen bg-[#0A0A0B] flex items-center justify-center p-6 overflow-hidden relative">
@@ -74,14 +85,17 @@ export default function Manutencao() {
               >
                 <div className="relative group">
                   <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Digite seu nome..."
-                    className="w-full bg-[#0A0A0B] border border-[#3F3F46] focus:border-primary/50 rounded-xl px-5 py-4 text-white text-sm outline-none transition-all placeholder:text-[#52525B] group-hover:border-[#52525B]"
+                    type="password"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    value={code}
+                    onChange={(e) => { setCode(e.target.value); setError(""); }}
+                    placeholder="Código de acesso..."
+                    className="w-full bg-[#0A0A0B] border border-[#3F3F46] focus:border-primary/50 rounded-xl px-5 py-4 text-white text-sm outline-none transition-all placeholder:text-[#52525B] group-hover:border-[#52525B] text-center tracking-[0.4em]"
                     required
                   />
                 </div>
+                {error && <p className="text-red-400 text-xs">{error}</p>}
                 <button
                   type="submit"
                   disabled={loading}
@@ -91,7 +105,7 @@ export default function Manutencao() {
                     <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
                   ) : (
                     <>
-                      Enviar <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      Entrar <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </>
                   )}
                 </button>
@@ -107,8 +121,9 @@ export default function Manutencao() {
                   <CheckCircle2 className="w-8 h-8 text-green-500" />
                 </div>
                 <h2 className="text-xl font-heading font-semibold text-white">
-                  Obrigado, {name}!
+                  Obrigado!
                 </h2>
+
                 <p className="text-[#A1A1AA] text-sm leading-relaxed">
                   Avisaremos assim que retornarmos. Fique de olho em nossas redes sociais para novidades!
                 </p>

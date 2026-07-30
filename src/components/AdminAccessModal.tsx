@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
+import { verifyAccessCode } from "@/lib/adminGate";
 
 interface AdminAccessModalProps {
   open: boolean;
@@ -10,27 +11,36 @@ interface AdminAccessModalProps {
 export function AdminAccessModal({ open, onClose }: AdminAccessModalProps) {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   if (!open) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (code === "190103") {
-      const session = {
-        authenticated: true,
-        timestamp: Date.now(),
-      };
-      sessionStorage.setItem("levillepet_admin_session", JSON.stringify(session));
-      setCode("");
-      setError("");
-      onClose();
-      navigate("/admin");
-    } else {
-      setError("Código incorreto. Tente novamente.");
-      setCode("");
+    if (!code.trim() || loading) return;
+    setError("");
+    setLoading(true);
+
+    // O código NÃO existe mais no bundle: quem valida é o servidor,
+    // que também aplica o bloqueio progressivo e registra a tentativa.
+    const res = await verifyAccessCode(code.trim());
+    setLoading(false);
+    setCode("");
+
+    if (!res.ok) {
+      setError(
+        res.locked
+          ? `Muitas tentativas. Aguarde ${res.retryAfter ?? 30}s.`
+          : res.error || "Código incorreto. Tente novamente."
+      );
+      return;
     }
+    setError("");
+    onClose();
+    navigate("/admin/login");
   };
+
 
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-surface-dark/80 backdrop-blur-sm" onClick={onClose}>
@@ -60,10 +70,12 @@ export function AdminAccessModal({ open, onClose }: AdminAccessModalProps) {
           {error && <p className="text-destructive text-xs text-center mb-2">{error}</p>}
           <button
             type="submit"
-            className="w-full bg-primary text-primary-foreground font-heading font-bold py-3 rounded-lg mt-3 hover:bg-primary-vibrant transition-colors"
+            disabled={loading}
+            className="w-full bg-primary text-primary-foreground font-heading font-bold py-3 rounded-lg mt-3 hover:bg-primary-vibrant transition-colors disabled:opacity-60"
           >
-            Entrar
+            {loading ? "Verificando..." : "Entrar"}
           </button>
+
           <button
             type="button"
             onClick={onClose}

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getSiteConfig } from "@/lib/dataCache";
+import { hasMaintenanceBypass } from "@/lib/adminGate";
 
 /**
  * MaintenanceGuard
@@ -24,10 +25,11 @@ export function MaintenanceGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Bypass de sessão (usuário inseriu código secreto)
-    if (sessionStorage.getItem("maintenance_bypass") === "true") {
+    // Bypass só existe se o servidor validou o código de acesso (e ainda é válido)
+    if (hasMaintenanceBypass()) {
       return;
     }
+
 
     if (ranRef.current) return;
     ranRef.current = true;

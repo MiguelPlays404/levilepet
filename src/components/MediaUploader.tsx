@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { logAudit } from "@/lib/audit";
 import { Upload, X, Image as ImageIcon, Video as VideoIcon, Loader2 } from "lucide-react";
 
 interface Props {
@@ -82,6 +83,13 @@ export function MediaUploader({
         xhr.send(file);
       });
       const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+      // Registro de auditoria de TODO upload (quem, quando, arquivo, tamanho)
+      void logAudit({
+        action: "upload",
+        entity: bucket,
+        entity_id: path,
+        details: { file: file.name, size: file.size, type: file.type, url: data.publicUrl },
+      });
       return data.publicUrl;
     } catch (e: any) {
       toast({ title: `Erro ao enviar ${file.name}`, description: e.message, variant: "destructive" });
