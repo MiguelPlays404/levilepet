@@ -1,39 +1,50 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { verifyAccessCode } from "@/lib/adminGate";
 import { Hammer, ArrowRight, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 
 export default function Manutencao() {
-  const [name, setName] = useState("");
+  const [code, setCode] = useState("");
   const [status, setStatus] = useState<"idle" | "success" | "admin">("idle");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   useEffect(() => {
     // Check if maintenance mode is actually on
-    supabase.from("site_config").select("maintenance_mode").single().then(({ data }) => {
+    supabase.from("site_config").select("maintenance_mode").maybeSingle().then(({ data }) => {
       if (data && !data.maintenance_mode) {
         navigate("/");
       }
     });
   }, [navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
-
+    if (!code.trim()) return;
+    setError("");
     setLoading(true);
 
-    setTimeout(() => {
-      sessionStorage.setItem("maintenance_bypass", "true");
-      navigate("/admin/login");
-      setLoading(false);
-    }, 400);
+    // Validação 100% no servidor (com bloqueio progressivo e auditoria).
+    const res = await verifyAccessCode(code.trim());
+    setLoading(false);
+    setCode("");
+
+    if (!res.ok) {
+      setError(
+        res.locked
+          ? `Muitas tentativas. Aguarde ${res.retryAfter ?? 30}s.`
+          : res.error || "Código incorreto."
+      );
+      return;
+    }
+    setStatus("admin");
+    setTimeout(() => navigate("/admin/login"), 500);
   };
+
 
   return (
     <div className="min-h-screen bg-[#0A0A0B] flex items-center justify-center p-6 overflow-hidden relative">
