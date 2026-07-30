@@ -37,26 +37,49 @@ export default function AdminLogin() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const { data, error: signErr } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    if (signErr || !data.user) {
-      setError("Credenciais inválidas");
+
+    // Login validado NO SERVIDOR (edge function `admin-gate`), com rate limiting
+    // progressivo e registro de auditoria. O cliente nunca decide se pode entrar.
+    const { data, error: fnErr } = await supabase.functions.invoke("admin-gate", {
+      body: { action: "login", email: email.trim(), password },
+    });
+
+    if (fnErr || !data?.ok || !data?.session) {
+      let msg = "Credenciais inválidas";
+      if (fnErr instanceof FunctionsHttpError) {
+        try {
+          const payload = await fnErr.context.json();
+          msg = payload?.error || msg;
+          if (payload?.locked) {
+            setLockedFor(Number(payload.retryAfter) || 30);
+            msg = "Muitas tentativas. Aguarde o tempo indicado.";
+          } else if (typeof payload?.remaining === "number") {
+            msg = `${payload.error} Restam ${payload.remaining} tentativa(s).`;
+          }
+        } catch { /* mantém mensagem padrão */ }
+      }
+      setError(msg);
       setLoading(false);
       return;
     }
-    // Se o retorno for a tela de consentimento OAuth, qualquer usuário autenticado pode continuar.
+
+    const { error: sessErr } = await supabase.auth.setSession({
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+    });
+    if (sessErr) {
+      setError("Não foi possível iniciar a sessão. Tente novamente.");
+      setLoading(false);
+      return;
+    }
+
     if (nextPath.startsWith("/.lovable/oauth/consent")) {
       window.location.href = nextPath;
       return;
     }
-    const { data: roleRow } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id).eq("role", "admin").maybeSingle();
-    if (!roleRow) {
-      await supabase.auth.signOut();
-      setError("Esta conta não tem acesso administrativo");
-      setLoading(false);
-      return;
-    }
     navigate(nextPath, { replace: true });
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A] px-4">
