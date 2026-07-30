@@ -20,6 +20,15 @@ export default function AdminLogin() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [lockedFor, setLockedFor] = useState(0);
+
+  // Contagem regressiva do bloqueio progressivo (30s → 60s → 15min)
+  useEffect(() => {
+    if (lockedFor <= 0) return;
+    const t = setInterval(() => setLockedFor((s) => (s <= 1 ? 0 : s - 1)), 1000);
+    return () => clearInterval(t);
+  }, [lockedFor]);
+
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
