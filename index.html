@@ -1,18 +1,128 @@
-CREATE OR REPLACE FUNCTION public.admin_list_tables()
-RETURNS TABLE(table_name text)
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT c.relname::text
-  FROM pg_class c
-  JOIN pg_namespace n ON n.oid = c.relnamespace
-  WHERE n.nspname = 'public'
-    AND c.relkind = 'r'
-    AND c.relname NOT LIKE 'pg_%'
-  ORDER BY c.relname;
-$$;
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title data-rh="true">Le Ville Pet — Petshop e Hotelzinho em Bauru-SP</title>
+    <meta data-rh="true" name="description" content="Petshop em Bauru-SP com hotelzinho para pets, transporte, banho e tosa. Atendimento personalizado no Villaggio Mall Center. A gente se entende." />
+    <meta name="keywords" content="petshop bauru, hotelzinho para pets bauru, pet shop bauru sp, le ville pet, transporte de pets bauru" />
+    <meta data-rh="true" name="robots" content="index, follow" />
+    <meta name="author" content="Le Ville Pet" />
+    <link rel="canonical" href="https://levillepet.com.br/" />
+    <meta name="google-site-verification" content="7R_F-y5pX9NoI21mrwU4kP2WwOYOGbAtvqT5sXD9KEQ" />
+    <meta name="theme-color" content="#09090B" />
 
-REVOKE ALL ON FUNCTION public.admin_list_tables() FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.admin_list_tables() TO authenticated, service_role;
+    <meta property="og:site_name" content="Le Ville Pet" />
+    <meta data-rh="true" property="og:type" content="website" />
+    <meta data-rh="true" property="og:locale" content="pt_BR" />
+    <meta data-rh="true" property="og:url" content="https://levillepet.com.br/" />
+    <meta data-rh="true" property="og:title" content="Le Ville Pet — Petshop e Hotelzinho em Bauru-SP" />
+    <meta data-rh="true" property="og:description" content="Petshop em Bauru-SP com hotelzinho para pets, transporte, banho e tosa. Atendimento personalizado no Villaggio Mall Center." />
+    <meta data-rh="true" property="og:image" content="https://levillepet.com.br/images/logo-levillepet.png" />
+
+    <meta data-rh="true" name="twitter:card" content="summary_large_image" />
+    <meta data-rh="true" name="twitter:title" content="Le Ville Pet — Petshop e Hotelzinho em Bauru-SP" />
+    <meta data-rh="true" name="twitter:description" content="Petshop em Bauru-SP com hotelzinho para pets, transporte, banho e tosa. Atendimento personalizado no Villaggio Mall Center." />
+    <meta data-rh="true" name="twitter:image" content="https://levillepet.com.br/images/logo-levillepet.png" />
+
+    <link rel="icon" type="image/png" href="/images/logo-levillepet.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://wxssfflxmextixxzvtzr.supabase.co" crossorigin />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Inter:wght@300;400;500;600&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Inter:wght@300;400;500;600&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Inter:wght@300;400;500;600&display=swap" /></noscript>
+
+    <!-- Marca que o JS está ativo ANTES do primeiro paint: só então o CSS
+         esconde os elementos [data-animate] para revelá-los no scroll.
+         Sem JS (ou se o bundle falhar) o conteúdo continua 100% visível. -->
+    <script>
+      (function () {
+        try {
+          var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          if (!reduce) document.documentElement.classList.add('motion-ready');
+        } catch (e) {}
+      })();
+    </script>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": ["LocalBusiness", "PetStore"],
+        "@id": "https://levillepet.com.br/#localbusiness",
+        "name": "Le Ville Pet",
+        "slogan": "a gente se entende",
+        "description": "Petshop com 9 anos de mercado, mais de 40.000 pets atendidos e avaliação 5 estrelas: hotelzinho, banho e tosa e transporte para nossos serviços no Villaggio Mall Center, Bauru-SP.",
+        "url": "https://levillepet.com.br/",
+        "image": "https://levillepet.com.br/images/logo-levillepet.png",
+        "logo": "https://levillepet.com.br/images/logo-levillepet.png",
+        "telephone": "+5514997145610",
+        "priceRange": "$$",
+        "currenciesAccepted": "BRL",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Av. Affonso José Aiello, 14-45 - Loja 19, Villaggio Mall Center",
+          "addressLocality": "Bauru",
+          "addressRegion": "SP",
+          "postalCode": "17018-520",
+          "addressCountry": "BR"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": -22.3526,
+          "longitude": -49.0399
+        },
+        "areaServed": {
+          "@type": "City",
+          "name": "Bauru"
+        },
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+            "opens": "09:00",
+            "closes": "19:00"
+          },
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": "Saturday",
+            "opens": "09:00",
+            "closes": "17:00"
+          }
+        ],
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "customer service",
+          "telephone": "+5514997145610",
+          "areaServed": "BR",
+          "availableLanguage": "Portuguese"
+        },
+        "hasMap": "https://maps.app.goo.gl/nkuDnVyBe6ZHYNbS8"
+      }
+    </script>
+
+  </head>
+  <body>
+    <div id="root">
+      <!-- Conteúdo mínimo real, substituído pelo React ao montar (createRoot). Garante que
+           crawlers que não executam JavaScript (a maioria dos bots de IA) vejam informação
+           verdadeira, idêntica à exibida ao usuário — não é cloaking, é um fallback estático. -->
+      <main>
+        <h1>Le Ville Pet — Petshop e Hotelzinho em Bauru-SP</h1>
+        <p>Petshop no Villaggio Mall Center, Bauru-SP. 9 anos de mercado, mais de 40.000 pets atendidos, avaliação 5 estrelas. Hotelzinho, creche, banho e tosa profissional, com transporte de busca e entrega para quem usa nossos serviços.</p>
+        <nav aria-label="Páginas principais">
+          <ul>
+            <li><a href="/hotelzinho">Hotelzinho para Pets em Bauru</a></li>
+            <li><a href="/transporte">Transporte de Pets em Bauru</a></li>
+            <li><a href="/venha-nos-conhecer">Venha Nos Conhecer</a></li>
+            <li><a href="/localizacao">Localização e Como Chegar</a></li>
+            <li><a href="/fale-conosco">Fale Conosco</a></li>
+            <li><a href="/fotos">Fotos dos Nossos Pets</a></li>
+          </ul>
+        </nav>
+        <p>Endereço: Av. Affonso José Aiello, 14-45, Loja 19, Villaggio Mall Center, Bauru - SP, 17018-520. WhatsApp: (14) 99714-5610.</p>
+      </main>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

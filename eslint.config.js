@@ -1,62 +1,29 @@
-CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _role app_role)
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT EXISTS (
-    SELECT 1
-    FROM public.user_roles
-    WHERE user_id = _user_id
-      AND role = _role
-  )
-$$;
+import js from "@eslint/js";
+import globals from "globals";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+import tseslint from "typescript-eslint";
 
-GRANT EXECUTE ON FUNCTION public.has_role(uuid, app_role) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.has_role(uuid, app_role) TO service_role;
-
-DROP POLICY IF EXISTS "levillepet admin insert" ON storage.objects;
-DROP POLICY IF EXISTS "levillepet admin update" ON storage.objects;
-DROP POLICY IF EXISTS "levillepet admin delete" ON storage.objects;
-DROP POLICY IF EXISTS "levillepet admin read metadata" ON storage.objects;
-
-CREATE POLICY "levillepet admin read metadata"
-ON storage.objects
-FOR SELECT
-TO authenticated
-USING (
-  bucket_id = 'levillepet-media'
-  AND public.has_role(auth.uid(), 'admin'::public.app_role)
-);
-
-CREATE POLICY "levillepet admin insert"
-ON storage.objects
-FOR INSERT
-TO authenticated
-WITH CHECK (
-  bucket_id = 'levillepet-media'
-  AND public.has_role(auth.uid(), 'admin'::public.app_role)
-);
-
-CREATE POLICY "levillepet admin update"
-ON storage.objects
-FOR UPDATE
-TO authenticated
-USING (
-  bucket_id = 'levillepet-media'
-  AND public.has_role(auth.uid(), 'admin'::public.app_role)
-)
-WITH CHECK (
-  bucket_id = 'levillepet-media'
-  AND public.has_role(auth.uid(), 'admin'::public.app_role)
-);
-
-CREATE POLICY "levillepet admin delete"
-ON storage.objects
-FOR DELETE
-TO authenticated
-USING (
-  bucket_id = 'levillepet-media'
-  AND public.has_role(auth.uid(), 'admin'::public.app_role)
+export default tseslint.config(
+  { ignores: ["dist"] },
+  {
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+    plugins: {
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh,
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+      "@typescript-eslint/no-unused-vars": "warn",
+      "no-console": ["warn", { allow: ["warn", "error"] }],
+      "no-debugger": "error",
+      "@typescript-eslint/no-explicit-any": "warn",
+    },
+  },
 );
