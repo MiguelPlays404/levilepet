@@ -1,5 +1,4 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
 /**
  * admin-gate — portão único de acesso administrativo.
@@ -8,7 +7,38 @@ import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
  *     6 tentativas -> 30s -> (mais 5) 60s -> (mais 5) 15min -> reinicia o ciclo
  * - Valida o código de acesso (mantido apenas como secret no servidor)
  * - Registra TODA tentativa (sucesso e falha) com timestamp, IP e user-agent
+ *
+ * SEGURANÇA: este endpoint lida com login/senha e códigos de acesso, então o
+ * CORS NÃO usa o wildcard padrão ('*') da lib. Só o domínio oficial do site
+ * (e o preview do Lovable / localhost, só em dev) recebem
+ * Access-Control-Allow-Origin — qualquer outro site que tentar chamar essa
+ * função a partir do navegador de um visitante não consegue ler a resposta.
+ * Isso é defesa em profundidade: a proteção real continua sendo o rate
+ * limit + bloqueio progressivo, que valem para QUALQUER origem.
  */
+
+const ALLOWED_ORIGINS = [
+  "https://levillepet.com.br",
+  "https://www.levillepet.com.br",
+];
+const ALLOWED_ORIGIN_SUFFIXES = [".lovableproject.com", ".lovable.app"]; // preview/dev do Lovable
+
+function corsHeadersFor(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin") ?? "";
+  const isLocalDev = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+  const allowed =
+    ALLOWED_ORIGINS.includes(origin) ||
+    ALLOWED_ORIGIN_SUFFIXES.some((suf) => origin.endsWith(suf)) ||
+    isLocalDev;
+
+  const headers: Record<string, string> = {
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    Vary: "Origin",
+  };
+  if (allowed) headers["Access-Control-Allow-Origin"] = origin;
+  return headers;
+}
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -23,12 +53,6 @@ const NEXT_WINDOW_ATTEMPTS = 5; // após o 1º bloqueio, cada 5 falhas dispara o
 const admin = createClient(SUPABASE_URL, SERVICE_ROLE, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
-
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
 
 function clientIp(req: Request) {
   const fwd = req.headers.get("x-forwarded-for") || "";
@@ -76,7 +100,14 @@ async function clearFailures(ident: string) {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const cors = corsHeadersFor(req);
+  const json = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { ...cors, "Content-Type": "application/json" },
+    });
+
+  if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   const ip = clientIp(req);

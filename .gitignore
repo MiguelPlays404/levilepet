@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Nunca versionar o .env, mesmo que hoje só tenha valores públicos
+# (VITE_SUPABASE_*): é hábito de segurança, não depende do conteúdo atual.
+.env
+.env.*
+!.env.example
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

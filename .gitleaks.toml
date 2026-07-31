@@ -15,3 +15,9 @@ paths = [
   '''bun\.lockb''',
   '''package-lock\.json''',
 ]
+
+[[rules]]
+id = "sql-plaintext-password-in-crypt"
+description = "Senha em texto puro dentro de crypt(...) em migração SQL"
+regex = '''crypt\(\s*'[^']{4,}'\s*,'''
+tags = ["sql", "password", "custom"]

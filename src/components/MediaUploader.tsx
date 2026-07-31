@@ -18,6 +18,24 @@ interface Props {
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
+// SEGURANÇA: esta é uma checagem de conveniência no cliente (evita upload
+// grande/errado por engano). A proteção real continua sendo a RLS do
+// Supabase, que já exige papel admin pra escrever no bucket — mesmo que
+// alguém contorne esses limites no DevTools, ainda precisa estar logado
+// como admin. Ainda assim, vale limitar: reduz custo de storage e fecha a
+// porta de subir um arquivo com extensão inesperada (ex.: .html, .svg com
+// script embutido) para dentro de um bucket público.
+const MAX_UPLOAD_BYTES = 100 * 1024 * 1024; // 100MB
+const ALLOWED_EXTENSIONS = new Set([
+  "jpg", "jpeg", "png", "webp", "gif", "avif",
+  "mp4", "webm", "mov", "m4v",
+]);
+
+function safeExtension(fileName: string): string {
+  const raw = (fileName.split(".").pop() || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  return ALLOWED_EXTENSIONS.has(raw) ? raw : "";
+}
+
 const getUploadErrorMessage = (responseText: string) => {
   try {
     const parsed = JSON.parse(responseText);
@@ -58,7 +76,23 @@ export function MediaUploader({
   const acceptAttr = accept === "image" ? "image/*" : accept === "video" ? "video/*" : "image/*,video/*";
 
   const uploadOne = useCallback(async (file: File): Promise<string | null> => {
-    const ext = file.name.split(".").pop() || "bin";
+    const ext = safeExtension(file.name);
+    if (!ext) {
+      toast({
+        title: `Tipo de arquivo não permitido: ${file.name}`,
+        description: "Envie apenas imagens (jpg, png, webp, gif, avif) ou vídeos (mp4, webm, mov, m4v).",
+        variant: "destructive",
+      });
+      return null;
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      toast({
+        title: `Arquivo muito grande: ${file.name}`,
+        description: `Limite de ${MAX_UPLOAD_BYTES / (1024 * 1024)}MB por arquivo.`,
+        variant: "destructive",
+      });
+      return null;
+    }
     const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const path = `${pathPrefix}/${safeName}`;
     const url = `${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`;
@@ -195,7 +229,7 @@ export function MediaUploader({
             <p className="text-sm font-medium">
               Clique ou arraste {multiple ? (accept === "video" ? "vários vídeos" : accept === "both" ? "vários arquivos" : "várias imagens") : (accept === "video" ? "um vídeo" : accept === "both" ? "uma imagem ou vídeo" : "uma imagem")}
             </p>
-            <p className="text-xs mt-1">{multiple ? "Selecione ou arraste vários de uma vez · " : ""}Sem limite de tamanho</p>
+            <p className="text-xs mt-1">{multiple ? "Selecione ou arraste vários de uma vez · " : ""}Até 100MB por arquivo</p>
           </div>
         )}
       </div>
