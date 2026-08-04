@@ -18,6 +18,7 @@ COPY . .
 # Variáveis de build injetadas em runtime (não há segredos no build público)
 ARG VITE_SUPABASE_URL=""
 ARG VITE_SUPABASE_PUBLISHABLE_KEY=""
+# Se vazias, o vite.config aplica os valores públicos padrão do projeto.
 ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
 ENV VITE_SUPABASE_PUBLISHABLE_KEY=$VITE_SUPABASE_PUBLISHABLE_KEY
 
