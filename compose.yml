@@ -1,0 +1,33 @@
+# ─────────────────────────────────────────────────────────────
+#  Le Ville Pet — Docker Compose
+#  Uso:
+#    docker compose up -d --build
+#    Abre em http://localhost:8080
+#
+#  As variáveis do Supabase são passadas como build args.
+#  Defina-as em um arquivo .env (na raiz do repo) ou exporte no shell:
+#    VITE_SUPABASE_URL=...
+#    VITE_SUPABASE_PUBLISHABLE_KEY=...
+# ─────────────────────────────────────────────────────────────
+
+services:
+  levillepet:
+    container_name: levillepet
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Lidas do ambiente/host — nunca vão parar na imagem final,
+        # são injetadas apenas no momento do build do Vite.
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY:-}
+    image: levillepet:latest
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
