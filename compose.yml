@@ -1,33 +1,38 @@
 # ─────────────────────────────────────────────────────────────
-#  Le Ville Pet — Docker Compose
-#  Uso:
-#    docker compose up -d --build
-#    Abre em http://localhost:7070
+#  Le Ville Pet — Docker Compose (compatível com Dokploy)
+#  Uso local:
+#    docker compose up -d --build   →  http://localhost:7070
 #
-#  As variáveis do Supabase são passadas como build args.
-#  Defina-as em um arquivo .env (na raiz do repo) ou exporte no shell:
-#    VITE_SUPABASE_URL=...
-#    VITE_SUPABASE_PUBLISHABLE_KEY=...
+#  No Dokploy: o Traefik acessa o container pela rede "dokploy-network"
+#  na porta 80. Configure o domínio levillepet.com.br apontando para
+#  o serviço "levillepet" / porta 80.
 # ─────────────────────────────────────────────────────────────
 
 services:
   levillepet:
-    container_name: levillepet
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        # Lidas do ambiente/host — nunca vão parar na imagem final,
-        # são injetadas apenas no momento do build do Vite.
         VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
         VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY:-}
     image: levillepet:latest
+    # Porta interna usada pelo proxy (Traefik/Dokploy)
+    expose:
+      - "80"
+    # Mapeamento opcional para acesso direto/local
     ports:
       - "7070:80"
-    restart: unless-stopped
+    restart: always
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:80/"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 5s
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:80/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - dokploy-network
+
+networks:
+  dokploy-network:
+    external: true
