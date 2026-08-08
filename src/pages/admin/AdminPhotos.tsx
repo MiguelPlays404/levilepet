@@ -4,7 +4,7 @@ import { MediaUploader } from "@/components/MediaUploader";
 import { BulkActionsBar } from "@/components/BulkActionsBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Star, Eye, EyeOff, Pencil, X, Search, Check } from "lucide-react";
+import { Trash2, Star, Eye, EyeOff, Pencil, X, Search, Check, ArrowUpDown } from "lucide-react";
 
 const categories = [
   { value: "galeria", label: "Galeria Geral" },
@@ -41,6 +41,7 @@ export default function AdminPhotos() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("galeria");
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "alphabetical">("newest");
   const [uploadLocations, setUploadLocations] = useState<string[]>(["galeria"]);
   const [editPhoto, setEditPhoto] = useState<any>(null);
   const [deletePhoto, setDeletePhoto] = useState<any>(null);
@@ -79,7 +80,8 @@ export default function AdminPhotos() {
   useEffect(() => { fetchPhotos(); }, []);
 
   const fetchPhotos = async () => {
-    const { data } = await supabase.from("photos").select("*").order("display_order");
+    // Usamos created_at para garantir que fotos novas apareçam conforme enviadas
+    const { data } = await supabase.from("photos").select("*").order("created_at", { ascending: false });
     setPhotos(data || []);
     setLoading(false);
   };
@@ -142,7 +144,13 @@ export default function AdminPhotos() {
     fetchPhotos();
   };
 
-  const filtered = photos.filter(p => {
+  const sorted = [...photos].sort((a, b) => {
+    if (sortBy === "alphabetical") return (a.title || "").localeCompare(b.title || "");
+    if (sortBy === "oldest") return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime(); // newest
+  });
+
+  const filtered = sorted.filter(p => {
     if (activeTab !== "all" && !normalizeLocations(p).includes(activeTab)) return false;
     if (searchTerm && !p.title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
     return true;
@@ -179,11 +187,24 @@ export default function AdminPhotos() {
         <p className="text-[11px] text-[#71717A] mt-2">💡 Arraste várias fotos de uma vez. Cada uma é enviada sem título — você pode editar depois se quiser.</p>
       </div>
 
-      {/* Filters */}
+      {/* Filters & Sorting */}
       <div className="flex flex-wrap gap-3 mb-6">
         <div className="flex items-center gap-2 bg-[#27272A] border border-[#3F3F46] rounded-lg px-3">
           <Search className="w-4 h-4 text-[#71717A]" />
           <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar..." className="bg-transparent text-sm text-white py-2 outline-none w-40" />
+        </div>
+
+        <div className="flex items-center gap-2 bg-[#27272A] border border-[#3F3F46] rounded-lg px-3">
+          <ArrowUpDown className="w-4 h-4 text-[#71717A]" />
+          <select 
+            value={sortBy} 
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="bg-transparent text-sm text-white py-2 outline-none cursor-pointer"
+          >
+            <option value="newest" className="bg-[#18181B]">Mais Novos</option>
+            <option value="oldest" className="bg-[#18181B]">Mais Antigos</option>
+            <option value="alphabetical" className="bg-[#18181B]">Ordem Alfabética</option>
+          </select>
         </div>
       </div>
 
@@ -197,13 +218,18 @@ export default function AdminPhotos() {
             const isSelected = selected.has(photo.id);
             return (
             <div key={photo.id} className={`bg-[#18181B] rounded-xl overflow-hidden border transition-all ${isSelected ? "border-primary ring-2 ring-primary/40" : photo.is_active ? "border-[#27272A]" : "border-red-500/40 opacity-60"}`}>
-              <div className="relative aspect-video bg-black cursor-pointer" onClick={() => toggleSelect(photo.id)}>
-                <img src={photo.image_url} alt={photo.title} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
+              <div className="relative cursor-pointer group" onClick={() => toggleSelect(photo.id)}>
+                <img 
+                  src={photo.image_url} 
+                  alt={photo.title} 
+                  className="w-full h-auto object-contain max-h-[500px] bg-black/20" 
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} 
+                />
                 <div className={`absolute top-2 right-2 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${isSelected ? "bg-primary border-primary" : "bg-black/60 border-white/60"}`}>
                   {isSelected && <Check className="w-4 h-4 text-black" strokeWidth={3} />}
                 </div>
-                {photo.is_featured && <span className="absolute top-2 left-2 bg-primary text-black text-[10px] font-bold px-2 py-0.5 rounded">⭐ DESTAQUE</span>}
-                {!photo.is_active && <span className="absolute bottom-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">OCULTA</span>}
+                {photo.is_featured && <span className="absolute top-2 left-2 bg-primary text-black text-[10px] font-bold px-2 py-0.5 rounded shadow-lg">⭐ DESTAQUE</span>}
+                {!photo.is_active && <span className="absolute bottom-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg">OCULTA</span>}
               </div>
               <div className="p-3 space-y-2">
                 <p className="text-sm text-white font-medium truncate">{photo.title || <span className="text-[#71717A] italic">(sem título)</span>}</p>
