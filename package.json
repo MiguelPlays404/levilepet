@@ -11,8 +11,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "predev": "bunx tsx scripts/check-env.ts && bunx tsx scripts/generate-sitemap.ts",
-    "prebuild": "bunx tsx scripts/check-env.ts && bunx tsx scripts/generate-sitemap.ts"
+    "predev": "node scripts/check-env.ts && node scripts/generate-sitemap.ts",
+    "prebuild": "node scripts/check-env.ts && node scripts/generate-sitemap.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
