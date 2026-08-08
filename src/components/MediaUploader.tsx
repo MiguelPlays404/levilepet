@@ -2,7 +2,8 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { logAudit } from "@/lib/audit";
-import { useUploadStore } from "@/lib/uploadStore";
+import { useUploadStore, UploadProgress } from "@/lib/uploadStore";
+import { storeFileForResume, getStoredFile, removeStoredFile } from "@/lib/uploadPersistence";
 import { Upload, X, Image as ImageIcon, Video as VideoIcon, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 
 interface Props {
@@ -55,25 +56,29 @@ export function MediaUploader({
   const [dragOver, setDragOver] = useState(false);
   const [batchInfo, setBatchInfo] = useState<{ done: number; total: number } | null>(null);
   const { toast } = useToast();
-  const { addUpload, updateProgress, markCompleted, markError } = useUploadStore();
-  const uploadIdRef = useRef<string | null>(null);
+  const { uploads, addUpload, updateProgress, markCompleted, markError, setXhr } = useUploadStore();
 
   const acceptAttr = accept === "image" ? "image/*" : accept === "video" ? "video/*" : "image/*,video/*";
 
-  const uploadOne = useCallback(async (file: File, batchData?: { id: string; index: number; total: number }): Promise<string | null> => {
+  const uploadOne = useCallback(async (file: File, uploadId: string, index: number, total: number): Promise<string | null> => {
     const ext = file.name.split(".").pop() || "bin";
     const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const path = `${pathPrefix}/${safeName}`;
     const url = `${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`;
     
     try {
+      // Persistir arquivo no IndexedDB para retomada se necessário
+      await storeFileForResume(uploadId, file);
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
-        throw new Error("Sessão de admin expirada. Entre novamente para enviar arquivos.");
+        throw new Error("Sessão expirada. Entre novamente.");
       }
 
-      await new Promise<void>((resolve, reject) => {
+      const publicUrl = await new Promise<string>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
+        setXhr(uploadId, xhr);
+        
         xhr.open("POST", url, true);
         xhr.setRequestHeader("Authorization", `Bearer ${session.access_token}`);
         xhr.setRequestHeader("apikey", SUPABASE_KEY);
@@ -84,31 +89,83 @@ export function MediaUploader({
           if (e.lengthComputable) {
             const p = Math.round((e.loaded / e.total) * 100);
             setProgress(p);
-            if (batchData) {
-              updateProgress(batchData.id, p, batchData.index);
-            }
+            updateProgress(uploadId, p, index);
           }
         };
         
-        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(getUploadErrorMessage(xhr.responseText))));
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+            resolve(data.publicUrl);
+          } else {
+            reject(new Error(getUploadErrorMessage(xhr.responseText)));
+          }
+        };
+        
         xhr.onerror = () => reject(new Error("Falha de rede"));
+        xhr.onabort = () => reject(new Error("Upload cancelado pelo usuário"));
         xhr.send(file);
       });
 
-      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+      // Sucesso: limpar cache e notificar
+      await removeStoredFile(uploadId);
+      setXhr(uploadId, undefined);
+      
       void logAudit({
         action: "upload",
         entity: bucket,
         entity_id: path,
-        details: { file: file.name, size: file.size, type: file.type, url: data.publicUrl },
+        details: { file: file.name, size: file.size, type: file.type, url: publicUrl },
       });
-      return data.publicUrl;
+      
+      return publicUrl;
     } catch (e: any) {
-      if (batchData) markError(batchData.id, e.message);
-      toast({ title: `Erro ao enviar ${file.name}`, description: e.message, variant: "destructive" });
+      setXhr(uploadId, undefined);
+      if (e.message !== "Upload cancelado pelo usuário") {
+        markError(uploadId, e.message);
+        toast({ title: `Erro ao enviar ${file.name}`, description: e.message, variant: "destructive" });
+      }
       return null;
     }
-  }, [bucket, pathPrefix, toast, updateProgress, markError]);
+  }, [bucket, pathPrefix, toast, updateProgress, markError, setXhr]);
+
+  // Hook para detectar retomada automática e retentativas manuais do store
+  useEffect(() => {
+    const processUploads = async () => {
+      const pending = Object.values(uploads).filter(u => u.status === 'uploading' && !u.xhr);
+      
+      for (const upload of pending) {
+        let file = (upload as any).fileData;
+        
+        if (!file) {
+          file = await getStoredFile(upload.id);
+        }
+        
+        if (file) {
+          try {
+            const url = await uploadOne(file, upload.id, upload.done, upload.total);
+            if (url) {
+              markCompleted(upload.id);
+              if (upload.onUploaded) {
+                await upload.onUploaded(url);
+              } else if (!multiple && upload.id.startsWith('single-')) {
+                // Para uploads individuais via UI local
+                await onUploaded(url);
+                setPreview(url);
+              }
+            }
+          } catch (err) {
+            console.error("Retomada falhou:", err);
+          }
+        } else {
+          // Arquivo não encontrado no cache nem em memória
+          markError(upload.id, "Arquivo não encontrado para retomada");
+        }
+      }
+    };
+
+    processUploads();
+  }, [uploads, uploadOne, markCompleted, markError, multiple, onUploaded]);
 
   const handleFiles = useCallback(async (files: FileList | File[]) => {
     const arr = Array.from(files);
@@ -117,58 +174,37 @@ export function MediaUploader({
     setUploading(true);
     setProgress(0);
     
-    const uploadId = `${Date.now()}-${Math.random().toString(36).slice(2, 5)}`;
-    uploadIdRef.current = uploadId;
-    
     if (multiple) {
-      addUpload(uploadId, arr.length > 1 ? `${arr.length} arquivos` : arr[0].name, arr.length);
       setBatchInfo({ done: 0, total: arr.length });
-      let success = 0;
       
       for (let i = 0; i < arr.length; i++) {
-        try {
-          setProgress(0);
-          const u = await uploadOne(arr[i], { id: uploadId, index: i, total: arr.length });
-          if (u) {
-            await onUploaded(u);
-            success++;
-          }
-        } catch (e) {
-          console.error(e);
-        } finally {
-          setBatchInfo({ done: i + 1, total: arr.length });
-          updateProgress(uploadId, 0, i + 1);
-        }
+        const file = arr[i];
+        const uploadId = `batch-${Date.now()}-${i}`;
+        
+        // Adiciona ao store global. O useEffect acima cuidará da execução real do uploadOne
+        // Mas para fluidez imediata, podemos disparar aqui se quisermos seqüencial
+        addUpload(
+          uploadId, 
+          file.name, 
+          arr.length, 
+          bucket, 
+          pathPrefix, 
+          file, 
+          (url) => onUploaded(url)
+        );
       }
       
-      if (success === arr.length) markCompleted(uploadId);
-      toast({ title: `✅ ${success} de ${arr.length} enviados` });
+      toast({ title: `📦 ${arr.length} envios agendados em segundo plano` });
       setBatchInfo(null);
     } else {
-      addUpload(uploadId, arr[0].name, 1);
-      try {
-        const u = await uploadOne(arr[0], { id: uploadId, index: 0, total: 1 });
-        if (u) {
-          await onUploaded(u);
-          setPreview(u);
-          markCompleted(uploadId);
-          toast({ title: "✅ Upload concluído!" });
-        }
-      } catch (e) {
-        markError(uploadId, getFriendlyError(e));
-        toast({ title: "Erro ao concluir upload", description: getFriendlyError(e), variant: "destructive" });
-      }
+      const file = arr[0];
+      const uploadId = `single-${Date.now()}`;
+      addUpload(uploadId, file.name, 1, bucket, pathPrefix, file);
+      // O useEffect detectará status='uploading' e iniciará o uploadOne
     }
     
     setUploading(false);
-    setTimeout(() => {
-      setProgress(0);
-      // Ocultar da lista global após 5s se sucesso
-      setTimeout(() => {
-        // useUploadStore.getState().clearUpload(uploadId); // Opcional: deixar para o usuário fechar
-      }, 5000);
-    }, 500);
-  }, [multiple, onUploaded, toast, uploadOne, addUpload, updateProgress, markCompleted, markError]);
+  }, [multiple, onUploaded, toast, addUpload, bucket, pathPrefix]);
 
   const isVideo = preview && /\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(preview);
 
@@ -212,11 +248,8 @@ export function MediaUploader({
         ) : uploading ? (
           <div className="text-center py-4">
             <Loader2 className="w-8 h-8 mx-auto animate-spin text-primary mb-3" />
-            <div className="w-full bg-[#27272A] rounded-full h-2 overflow-hidden">
-              <div className="h-full bg-primary transition-all duration-150" style={{ width: `${progress}%` }} />
-            </div>
             <p className="text-xs text-[#A1A1AA] mt-2">
-              {batchInfo ? `Enviando ${batchInfo.done + 1} de ${batchInfo.total}... ${progress}%` : `Enviando... ${progress}%`}
+              Processando envios...
             </p>
           </div>
         ) : (
@@ -227,7 +260,7 @@ export function MediaUploader({
             <p className="text-sm font-medium">
               Clique ou arraste {multiple ? (accept === "video" ? "vários vídeos" : accept === "both" ? "vários arquivos" : "várias imagens") : (accept === "video" ? "um vídeo" : accept === "both" ? "uma imagem ou vídeo" : "uma imagem")}
             </p>
-            <p className="text-xs mt-1">{multiple ? "Selecione ou arraste vários de uma vez · " : ""}Sem limite de tamanho</p>
+            <p className="text-xs mt-1">{multiple ? "Selecione ou arraste vários de uma vez · " : ""}Retomada automática ativa</p>
           </div>
         )}
       </div>
