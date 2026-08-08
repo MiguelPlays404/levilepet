@@ -2,6 +2,7 @@ import { useState, useEffect, createContext, useContext, Suspense } from "react"
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import { LayoutDashboard, Image, Video, Hotel, Eye, Settings, Share2, Shield, LogOut, ExternalLink, Home, Type, Palette, Compass, BookOpen, Star, Truck, CalendarClock, Tv2, Briefcase, Archive, Images, DownloadCloud, ScrollText } from "lucide-react";
 import { destroyAdminSession } from "@/lib/adminSession";
+import { GlobalUploadIndicator } from "./GlobalUploadIndicator";
 
 /** Loader temático mostrado enquanto o chunk da próxima página admin carrega. */
 function AdminContentLoader() {
@@ -72,6 +73,7 @@ export function AdminShell() {
 
   return (
     <AdminTitleContext.Provider value={{ setTitle }}>
+      <GlobalUploadIndicator />
       <div className="min-h-screen flex" style={{ background: '#09090B', color: '#fff' }}>
         <aside className="w-[260px] shrink-0 h-screen sticky top-0 flex flex-col" style={{ background: '#111113', borderRight: '1px solid rgba(245,192,0,0.15)' }}>
           <div className="p-5 border-b" style={{ borderColor: 'rgba(245,192,0,0.15)' }}>

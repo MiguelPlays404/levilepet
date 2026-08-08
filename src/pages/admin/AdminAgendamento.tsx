@@ -335,7 +335,7 @@ export default function AdminAgendamento() {
     };
 
     check();
-    const id = setInterval(check, 15000);
+    const id = setInterval(check, 5000);
     return () => clearInterval(id);
   }, [fetchQueue, fetchRecent, toast]);
 

@@ -96,6 +96,13 @@ export default function AdminVideos() {
     setLoading(false);
   };
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchVideos();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleAddLink = async () => {
     if (!linkUrl.trim()) return;
     // YouTube links: horizontal por padrão mas ainda pode ser alterado
