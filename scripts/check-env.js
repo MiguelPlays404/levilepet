@@ -1,6 +1,6 @@
 // Valida que as variáveis públicas do backend existem antes do build.
-const { existsSync, readFileSync } = require("fs");
-const { resolve } = require("path");
+import { existsSync, readFileSync } from "fs";
+import { resolve } from "path";
 
 const REQUIRED = ["VITE_SUPABASE_URL", "VITE_SUPABASE_PUBLISHABLE_KEY"];
 const fromFile = {};

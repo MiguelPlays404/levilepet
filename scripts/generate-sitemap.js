@@ -1,6 +1,6 @@
 // Gera public/sitemap.xml e robots.txt antes do build.
-const { writeFileSync } = require("fs");
-const { resolve } = require("path");
+import { writeFileSync } from "fs";
+import { resolve } from "path";
 
 const BASE_URL = "https://levillepet.com.br";
 
