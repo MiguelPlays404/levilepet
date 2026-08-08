@@ -1,4 +1,4 @@
-import { useUploadStore } from "@/lib/uploadStore";
+import { useUploadStore, UploadProgress } from "@/lib/uploadStore";
 import { Loader2, X, CheckCircle2, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 
@@ -6,7 +6,7 @@ export function GlobalUploadIndicator() {
   const { uploads, clearUpload } = useUploadStore();
   const [minimized, setMinimized] = useState(false);
   
-  const activeUploads = Object.values(uploads);
+  const activeUploads = Object.values(uploads) as UploadProgress[];
   if (activeUploads.length === 0) return null;
 
   const totalDone = activeUploads.reduce((acc, u) => acc + (u.status === 'completed' ? 1 : 0), 0);
@@ -14,8 +14,8 @@ export function GlobalUploadIndicator() {
   const isProcessing = activeUploads.some(u => u.status === 'uploading');
 
   return (
-    <div className="fixed top-4 right-4 z-[9999] w-80 max-w-[calc(100vw-2rem)]">
-      <div className="bg-[#18181B] border border-primary/20 rounded-xl shadow-2xl shadow-black/50 overflow-hidden">
+    <div className="fixed top-20 right-4 z-[9999] w-80 max-w-[calc(100vw-2rem)] animate-in fade-in slide-in-from-right-4">
+      <div className="bg-[#18181B]/95 backdrop-blur-md border border-primary/20 rounded-xl shadow-2xl shadow-black/50 overflow-hidden">
         {/* Header */}
         <div className="px-4 py-3 bg-[#111113] border-b border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -24,7 +24,7 @@ export function GlobalUploadIndicator() {
             ) : (
               <CheckCircle2 className="w-4 h-4 text-green-500" />
             )}
-            <span className="text-xs font-heading font-bold text-white uppercase tracking-wider">
+            <span className="text-[10px] font-heading font-bold text-white uppercase tracking-wider">
               {isProcessing ? "Enviando arquivos..." : "Uploads concluídos"}
             </span>
           </div>
