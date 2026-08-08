@@ -1,8 +1,8 @@
 // Valida que as variáveis públicas do backend existem antes do build.
 // Rodado no prebuild — falha cedo em vez de publicar um site quebrado.
 
-import { existsSync, readFileSync } from "fs";
-import { resolve } from "path";
+const { existsSync, readFileSync } = require("fs");
+const { resolve } = require("path");
 
 const REQUIRED = ["VITE_SUPABASE_URL", "VITE_SUPABASE_PUBLISHABLE_KEY"];
 

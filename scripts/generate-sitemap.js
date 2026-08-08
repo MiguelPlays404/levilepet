@@ -1,7 +1,7 @@
 // Roda antes de `vite dev` e `vite build` (hooks predev/prebuild); escreve public/sitemap.xml.
 
-import { writeFileSync } from "fs";
-import { resolve } from "path";
+const { writeFileSync } = require("fs");
+const { resolve } = require("path");
 
 const BASE_URL = "https://levillepet.com.br";
 
