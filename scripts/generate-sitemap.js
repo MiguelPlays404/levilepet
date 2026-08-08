@@ -1,18 +1,10 @@
-// Roda antes de `vite dev` e `vite build` (hooks predev/prebuild); escreve public/sitemap.xml.
-
+// Gera public/sitemap.xml e robots.txt antes do build.
 import { writeFileSync } from "fs";
 import { resolve } from "path";
 
 const BASE_URL = "https://levillepet.com.br";
 
-interface SitemapEntry {
-  path: string;
-  lastmod?: string;
-  changefreq?: "always" | "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "never";
-  priority?: string;
-}
-
-const entries: SitemapEntry[] = [
+const entries = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
   { path: "/hotelzinho", changefreq: "weekly", priority: "0.9" },
   { path: "/transporte", changefreq: "weekly", priority: "0.9" },
@@ -25,7 +17,7 @@ const entries: SitemapEntry[] = [
   { path: "/siga-nos", changefreq: "monthly", priority: "0.6" },
 ];
 
-function generateSitemap(list: SitemapEntry[]) {
+function generateSitemap(list) {
   const urls = list.map((e) =>
     [
       `  <url>`,
@@ -36,7 +28,7 @@ function generateSitemap(list: SitemapEntry[]) {
       `  </url>`,
     ]
       .filter(Boolean)
-      .join("\n"),
+      .join("\n")
   );
 
   return [
@@ -50,7 +42,6 @@ function generateSitemap(list: SitemapEntry[]) {
 writeFileSync(resolve("public/sitemap.xml"), generateSitemap(entries));
 console.log(`sitemap.xml written (${entries.length} entries)`);
 
-// ---- robots.txt (gerado no mesmo passo para nunca ficar desatualizado) ----
 const robots = [
   "User-agent: Googlebot",
   "Allow: /",
