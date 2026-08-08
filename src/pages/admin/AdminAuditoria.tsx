@@ -57,7 +57,11 @@ export default function AdminAuditoria() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { 
+    load(); 
+    const id = setInterval(load, 10000);
+    return () => clearInterval(id);
+  }, []);
 
   const filteredAudit = useMemo(() => {
     const term = q.trim().toLowerCase();
