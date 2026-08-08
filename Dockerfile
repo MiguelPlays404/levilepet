@@ -7,8 +7,12 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
-# Instala o Bun (mais rápido para scripts prebuild) e copia dependências
-RUN npm install -g bun
+# Instala ferramentas essenciais
+RUN apk add --no-cache curl bash
+
+# Instala o Bun
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/root/.bun/bin:${PATH}"
 
 COPY package.json bun.lock* package-lock.json* ./
 RUN npm ci
