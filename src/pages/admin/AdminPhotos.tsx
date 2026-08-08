@@ -86,6 +86,15 @@ export default function AdminPhotos() {
     setLoading(false);
   };
 
+  // Refetch automático quando algo termina o upload (usando polling simples ou poderia ser real-time)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Se houver fotos sendo enviadas, fetch mais frequente
+      fetchPhotos();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleUploaded = async (url: string) => {
     if (!url) return;
     const locations = uploadLocations.length ? uploadLocations : [activeTab === "all" ? "galeria" : activeTab];
@@ -223,6 +232,7 @@ export default function AdminPhotos() {
                   src={photo.image_url} 
                   alt={photo.title} 
                   className="w-full h-auto object-contain max-h-[500px] bg-black/20" 
+                  loading="lazy"
                   onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} 
                 />
                 <div className={`absolute top-2 right-2 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${isSelected ? "bg-primary border-primary" : "bg-black/60 border-white/60"}`}>
