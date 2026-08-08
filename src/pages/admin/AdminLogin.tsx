@@ -52,7 +52,7 @@ export default function AdminLogin() {
     // Login validado NO SERVIDOR (edge function `admin-gate`), com rate limiting
     // progressivo e registro de auditoria. O cliente nunca decide se pode entrar.
     const { data, error: fnErr } = await supabase.functions.invoke("admin-gate", {
-      body: { action: "login", email: email.trim(), password },
+      body: { action: "login", email: email.trim().toLowerCase(), password: password.trim() },
     });
 
     if (fnErr || !data?.ok || !data?.session) {
