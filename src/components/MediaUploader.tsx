@@ -1,8 +1,9 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { logAudit } from "@/lib/audit";
-import { Upload, X, Image as ImageIcon, Video as VideoIcon, Loader2 } from "lucide-react";
+import { useUploadStore } from "@/lib/uploadStore";
+import { Upload, X, Image as ImageIcon, Video as VideoIcon, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 
 interface Props {
   accept?: "image" | "video" | "both";
@@ -54,14 +55,17 @@ export function MediaUploader({
   const [dragOver, setDragOver] = useState(false);
   const [batchInfo, setBatchInfo] = useState<{ done: number; total: number } | null>(null);
   const { toast } = useToast();
+  const { addUpload, updateProgress, markCompleted, markError } = useUploadStore();
+  const uploadIdRef = useRef<string | null>(null);
 
   const acceptAttr = accept === "image" ? "image/*" : accept === "video" ? "video/*" : "image/*,video/*";
 
-  const uploadOne = useCallback(async (file: File): Promise<string | null> => {
+  const uploadOne = useCallback(async (file: File, batchData?: { id: string; index: number; total: number }): Promise<string | null> => {
     const ext = file.name.split(".").pop() || "bin";
     const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const path = `${pathPrefix}/${safeName}`;
     const url = `${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`;
+    
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
@@ -75,15 +79,23 @@ export function MediaUploader({
         xhr.setRequestHeader("apikey", SUPABASE_KEY);
         xhr.setRequestHeader("x-upsert", "true");
         xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+        
         xhr.upload.onprogress = (e) => {
-          if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
+          if (e.lengthComputable) {
+            const p = Math.round((e.loaded / e.total) * 100);
+            setProgress(p);
+            if (batchData) {
+              updateProgress(batchData.id, p, batchData.index);
+            }
+          }
         };
+        
         xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(getUploadErrorMessage(xhr.responseText))));
         xhr.onerror = () => reject(new Error("Falha de rede"));
         xhr.send(file);
       });
+
       const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-      // Registro de auditoria de TODO upload (quem, quando, arquivo, tamanho)
       void logAudit({
         action: "upload",
         entity: bucket,
@@ -92,51 +104,71 @@ export function MediaUploader({
       });
       return data.publicUrl;
     } catch (e: any) {
+      if (batchData) markError(batchData.id, e.message);
       toast({ title: `Erro ao enviar ${file.name}`, description: e.message, variant: "destructive" });
       return null;
     }
-  }, [bucket, pathPrefix, toast]);
+  }, [bucket, pathPrefix, toast, updateProgress, markError]);
 
   const handleFiles = useCallback(async (files: FileList | File[]) => {
     const arr = Array.from(files);
     if (arr.length === 0) return;
+    
     setUploading(true);
     setProgress(0);
-
+    
+    const uploadId = `${Date.now()}-${Math.random().toString(36).slice(2, 5)}`;
+    uploadIdRef.current = uploadId;
+    
     if (multiple) {
+      addUpload(uploadId, arr.length > 1 ? `${arr.length} arquivos` : arr[0].name, arr.length);
       setBatchInfo({ done: 0, total: arr.length });
       let success = 0;
+      
       for (let i = 0; i < arr.length; i++) {
         try {
           setProgress(0);
-          const u = await uploadOne(arr[i]);
+          const u = await uploadOne(arr[i], { id: uploadId, index: i, total: arr.length });
           if (u) {
             await onUploaded(u);
             success++;
           }
         } catch (e) {
-          toast({ title: `Erro ao salvar ${arr[i].name}`, description: getFriendlyError(e), variant: "destructive" });
+          console.error(e);
         } finally {
           setBatchInfo({ done: i + 1, total: arr.length });
+          updateProgress(uploadId, 0, i + 1);
         }
       }
+      
+      if (success === arr.length) markCompleted(uploadId);
       toast({ title: `✅ ${success} de ${arr.length} enviados` });
       setBatchInfo(null);
     } else {
+      addUpload(uploadId, arr[0].name, 1);
       try {
-        const u = await uploadOne(arr[0]);
+        const u = await uploadOne(arr[0], { id: uploadId, index: 0, total: 1 });
         if (u) {
           await onUploaded(u);
           setPreview(u);
+          markCompleted(uploadId);
           toast({ title: "✅ Upload concluído!" });
         }
       } catch (e) {
+        markError(uploadId, getFriendlyError(e));
         toast({ title: "Erro ao concluir upload", description: getFriendlyError(e), variant: "destructive" });
       }
     }
+    
     setUploading(false);
-    setTimeout(() => setProgress(0), 500);
-  }, [multiple, onUploaded, toast, uploadOne]);
+    setTimeout(() => {
+      setProgress(0);
+      // Ocultar da lista global após 5s se sucesso
+      setTimeout(() => {
+        // useUploadStore.getState().clearUpload(uploadId); // Opcional: deixar para o usuário fechar
+      }, 5000);
+    }, 500);
+  }, [multiple, onUploaded, toast, uploadOne, addUpload, updateProgress, markCompleted, markError]);
 
   const isVideo = preview && /\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(preview);
 
