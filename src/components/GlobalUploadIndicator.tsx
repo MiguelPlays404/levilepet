@@ -1,17 +1,29 @@
 import { useUploadStore, UploadProgress } from "@/lib/uploadStore";
-import { Loader2, X, CheckCircle2, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, X, CheckCircle2, AlertCircle, ChevronDown, ChevronUp, RotateCcw, Ban } from "lucide-react";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export function GlobalUploadIndicator() {
-  const { uploads, clearUpload } = useUploadStore();
+  const { uploads, clearUpload, cancelUpload, retryUpload } = useUploadStore();
   const [minimized, setMinimized] = useState(false);
+  const { toast } = useToast();
   
-  const activeUploads = Object.values(uploads) as UploadProgress[];
-  if (activeUploads.length === 0) return null;
+  const allUploads = Object.values(uploads) as UploadProgress[];
+  if (allUploads.length === 0) return null;
 
-  const totalDone = activeUploads.reduce((acc, u) => acc + (u.status === 'completed' ? 1 : 0), 0);
-  const totalCount = activeUploads.length;
-  const isProcessing = activeUploads.some(u => u.status === 'uploading');
+  const totalDone = allUploads.reduce((acc, u) => acc + (u.status === 'completed' ? 1 : 0), 0);
+  const totalCount = allUploads.length;
+  const isProcessing = allUploads.some(u => u.status === 'uploading');
+
+  const handleRetry = (id: string) => {
+    retryUpload(id);
+    toast({ title: "Reiniciando upload..." });
+  };
+
+  const handleCancel = (id: string) => {
+    cancelUpload(id);
+    toast({ title: "Upload cancelado", variant: "destructive" });
+  };
 
   return (
     <div className="fixed top-20 right-4 z-[9999] w-80 max-w-[calc(100vw-2rem)] animate-in fade-in slide-in-from-right-4">
@@ -25,7 +37,7 @@ export function GlobalUploadIndicator() {
               <CheckCircle2 className="w-4 h-4 text-green-500" />
             )}
             <span className="text-[10px] font-heading font-bold text-white uppercase tracking-wider">
-              {isProcessing ? "Enviando arquivos..." : "Uploads concluídos"}
+              {isProcessing ? "Enviando arquivos..." : "Uploads gerenciados"}
             </span>
           </div>
           <div className="flex items-center gap-1">
@@ -37,7 +49,7 @@ export function GlobalUploadIndicator() {
             </button>
             {!isProcessing && (
               <button 
-                onClick={() => activeUploads.forEach(u => clearUpload(u.id))}
+                onClick={() => allUploads.forEach(u => clearUpload(u.id))}
                 className="p-1 hover:bg-red-500/20 hover:text-red-400 rounded text-[#A1A1AA] transition-colors"
               >
                 <X className="w-4 h-4" />
@@ -49,7 +61,7 @@ export function GlobalUploadIndicator() {
         {/* List */}
         {!minimized && (
           <div className="max-h-60 overflow-y-auto p-3 space-y-3">
-            {activeUploads.map((upload) => (
+            {allUploads.map((upload) => (
               <div key={upload.id} className="space-y-1.5 group">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-[11px] text-[#A1A1AA] truncate flex-1">
@@ -57,17 +69,41 @@ export function GlobalUploadIndicator() {
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-mono text-primary">
-                      {upload.status === 'uploading' ? `${upload.done}/${upload.total}` : 
-                       upload.status === 'completed' ? 'Concluído' : 'Erro'}
+                      {upload.status === 'uploading' ? `${upload.progress}%` : 
+                       upload.status === 'completed' ? 'Concluído' : 
+                       upload.status === 'cancelled' ? 'Cancelado' : 'Erro'}
                     </span>
-                    {upload.status !== 'uploading' && (
-                      <button 
-                        onClick={() => clearUpload(upload.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="w-3 h-3 text-[#71717A] hover:text-white" />
-                      </button>
-                    )}
+                    
+                    <div className="flex items-center gap-1">
+                      {upload.status === 'uploading' && (
+                        <button 
+                          onClick={() => handleCancel(upload.id)}
+                          title="Cancelar"
+                          className="p-1 hover:bg-red-500/20 rounded transition-colors"
+                        >
+                          <Ban className="w-3 h-3 text-red-400" />
+                        </button>
+                      )}
+                      
+                      {(upload.status === 'error' || upload.status === 'cancelled') && (
+                        <button 
+                          onClick={() => handleRetry(upload.id)}
+                          title="Tentar novamente"
+                          className="p-1 hover:bg-primary/20 rounded transition-colors"
+                        >
+                          <RotateCcw className="w-3 h-3 text-primary" />
+                        </button>
+                      )}
+
+                      {(upload.status === 'completed' || upload.status === 'cancelled' || upload.status === 'error') && (
+                        <button 
+                          onClick={() => clearUpload(upload.id)}
+                          className="p-1 hover:bg-white/5 rounded transition-colors"
+                        >
+                          <X className="w-3 h-3 text-[#71717A] hover:text-white" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -75,7 +111,8 @@ export function GlobalUploadIndicator() {
                   <div 
                     className={`h-full transition-all duration-300 ${
                       upload.status === 'error' ? 'bg-red-500' : 
-                      upload.status === 'completed' ? 'bg-green-500' : 'bg-primary'
+                      upload.status === 'completed' ? 'bg-green-500' : 
+                      upload.status === 'cancelled' ? 'bg-orange-500' : 'bg-primary'
                     }`}
                     style={{ width: `${upload.status === 'completed' ? 100 : upload.progress}%` }}
                   />
@@ -85,6 +122,12 @@ export function GlobalUploadIndicator() {
                   <p className="text-[9px] text-red-400 flex items-center gap-1">
                     <AlertCircle className="w-2.5 h-2.5" />
                     {upload.errorMessage || "Erro desconhecido"}
+                  </p>
+                )}
+                
+                {upload.attempts > 1 && upload.status === 'uploading' && (
+                  <p className="text-[8px] text-[#71717A]">
+                    Tentativa {upload.attempts}
                   </p>
                 )}
               </div>
