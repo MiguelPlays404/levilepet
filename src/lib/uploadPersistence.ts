@@ -23,7 +23,7 @@ export async function storeFileForResume(id: string, file: File) {
 
 export async function getStoredFile(id: string): Promise<File | null> {
   const db = await getDB();
-  return (await db.get(STORE_NAME)) as File || null;
+  return (await db.get(STORE_NAME, id)) as File || null;
 }
 
 export async function removeStoredFile(id: string) {
