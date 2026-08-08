@@ -8,7 +8,9 @@ export function GlobalUploadIndicator() {
   const [minimized, setMinimized] = useState(false);
   const { toast } = useToast();
   
-  const allUploads = Object.values(uploads) as UploadProgress[];
+  const allUploads = (Object.values(uploads || {}) as (UploadProgress | undefined)[]).filter(
+    (u): u is UploadProgress => !!u && typeof u.id === "string",
+  );
   if (allUploads.length === 0) return null;
 
   const totalDone = allUploads.reduce((acc, u) => acc + (u.status === 'completed' ? 1 : 0), 0);
