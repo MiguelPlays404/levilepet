@@ -1,1 +1,0 @@
-DELETE FROM public.auth_lockouts WHERE ident LIKE '%laura78marinho@gmail.com';
