@@ -120,3 +120,18 @@ Atualize o `.env` com os valores gerados e reinicie o serviço.
 
 ### Auth não funciona
 - Confirme que `JWT_SECRET` usada para gerar `ANON_KEY` e `SERVICE_ROLE_KEY` é exatamente a mesma configurada no `gotrue` e `postgrest`.
+
+## Importar o backup no novo Supabase
+
+1. Gere o backup em `/admin/backup` (baixa um `.zip` com `data/*.json` e `media/`).
+2. No seu computador, com o projeto clonado:
+
+```bash
+SUPABASE_URL=https://api.seu-dominio.com \
+SUPABASE_SERVICE_ROLE_KEY=sua-service-role-key \
+STORAGE_BUCKET=levillepet-media \
+npm run import:backup -- ./backup-levillepet.zip
+```
+
+O script importa as tabelas na ordem correta (pais antes dos filhos), usa `upsert` por `id`
+(pode rodar de novo sem duplicar) e envia as mídias para o bucket, criando-o se não existir.
