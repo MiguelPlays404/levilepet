@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "predev": "node scripts/check-env.js && node scripts/generate-sitemap.js",
-    "prebuild": "node scripts/check-env.js && node scripts/generate-sitemap.js"
+    "prebuild": "node scripts/check-env.js && node scripts/generate-sitemap.js",
+    "import:backup": "node scripts/import-backup.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
