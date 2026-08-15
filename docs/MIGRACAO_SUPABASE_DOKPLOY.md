@@ -135,3 +135,26 @@ npm run import:backup -- ./backup-levillepet.zip
 
 O script importa as tabelas na ordem correta (pais antes dos filhos), usa `upsert` por `id`
 (pode rodar de novo sem duplicar) e envia as mídias para o bucket, criando-o se não existir.
+
+## Arquivos de inicialização (criados no projeto)
+
+- `supabase/volumes/kong.yml` — roteamento do gateway (`/auth/v1`, `/rest/v1`, `/storage/v1`, `/realtime/v1`).
+- `supabase/volumes/db/init/00-roles.sql` — roles `anon`, `authenticated`, `service_role`, `authenticator` e extensões.
+- `supabase/volumes/db/init/01-schema.sql` — todas as tabelas do site, RLS, GRANTs, triggers de `updated_at`,
+  a função `auto_publish_scheduled_media()` e o agendamento por `pg_cron`.
+
+Os dois SQL rodam sozinhos na **primeira** subida do container do banco (volume vazio).
+Se precisar reexecutar, apague o volume `supabase-db-data` e suba de novo.
+
+## Ordem recomendada
+
+1. `docker network create supabase-network` no servidor.
+2. Preencher o `.env` a partir de `supabase/.env.example` (senha forte, `JWT_SECRET` com 32+ caracteres,
+   `ANON_KEY` e `SERVICE_ROLE_KEY` gerados a partir desse mesmo `JWT_SECRET`).
+3. Subir `supabase-compose.yml` no Dokploy e apontar o domínio da API para a porta do Kong (8000).
+4. Criar o usuário admin no Studio e inserir a linha correspondente em `user_roles` com o papel `admin`.
+5. Gerar o backup em `/admin/backup` e rodar `npm run import:backup -- backup.zip`.
+6. Atualizar `.env` do site com `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` novos e refazer o deploy.
+
+> As Edge Functions (`admin-gate`) não fazem parte desta stack. No self-hosted é preciso subir o
+> `supabase/edge-runtime` à parte ou substituir a validação do código por uma função no banco.
