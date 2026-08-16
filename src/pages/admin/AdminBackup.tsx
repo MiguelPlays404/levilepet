@@ -19,6 +19,29 @@ import { AdminLayout } from "@/components/AdminLayout";
 
 const STORAGE_BUCKET = "levillepet-media";
 
+// Projeto Supabase atual. Backups antigos guardam URLs do projeto anterior;
+// ao restaurar dados nós reescrevemos o domínio para o projeto atual.
+const CURRENT_SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || "").replace(/\/$/, "");
+
+function rewriteLegacyHosts<T>(value: T): T {
+  if (!CURRENT_SUPABASE_URL) return value;
+  if (typeof value === "string") {
+    return value.replace(
+      /https:\/\/[a-z0-9]+\.supabase\.co(?=\/storage\/v1\/)/g,
+      CURRENT_SUPABASE_URL
+    ) as unknown as T;
+  }
+  if (Array.isArray(value)) return value.map((v) => rewriteLegacyHosts(v)) as unknown as T;
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      out[k] = rewriteLegacyHosts(v);
+    }
+    return out as unknown as T;
+  }
+  return value;
+}
+
 // Ordem de restauração: tabelas "pais" antes das "filhas".
 // As demais tabelas descobertas dinamicamente entram em ordem alfabética no final.
 const RESTORE_ORDER_HINT = [
@@ -99,6 +122,7 @@ function AdminBackupInner() {
   const [percent, setPercent] = useState<number>(0);
   const [lastResult, setLastResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [includeStorage, setIncludeStorage] = useState(true);
+  const [mediaOnly, setMediaOnly] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function handleExport() {
@@ -205,7 +229,9 @@ function AdminBackupInner() {
     if (!file) return;
     if (
       !confirm(
-        "ATENÇÃO: A restauração vai SUBSTITUIR TODOS os dados do site (tabelas e arquivos de mídia) pelos do backup.\n\nDeseja continuar?"
+        mediaOnly
+          ? "Restaurar SOMENTE as fotos e vídeos do ZIP. Os textos e configurações atuais do site NÃO serão alterados.\n\nDeseja continuar?"
+          : "ATENÇÃO: A restauração vai SUBSTITUIR TODOS os dados do site (tabelas e arquivos de mídia) pelos do backup.\n\nDeseja continuar?"
       )
     )
       return;
@@ -222,54 +248,68 @@ function AdminBackupInner() {
       const manifest: BackupManifest = JSON.parse(await manifestFile.async("string"));
       if (manifest.app !== "le-ville-pet") throw new Error("Backup de outra aplicação.");
 
-      // 1) Restaura tabelas em ordem segura
+      // 1) Restaura tabelas em ordem segura (pulado no modo "somente mídias")
       const order = sortForRestore(manifest.tables);
       let totalRestored = 0;
 
-      for (let ti = 0; ti < order.length; ti++) {
-        const table = order[ti];
-        if (SKIP_TABLES.has(table)) continue;
-        const f = zip.file(`data/${table}.json`);
-        if (!f) continue;
-        setProgress(`Restaurando tabela ${table}…`);
-        setPercent(5 + Math.round(((ti + 1) / order.length) * 35));
-        const rows: any[] = JSON.parse(await f.async("string"));
+      if (!mediaOnly) {
+        for (let ti = 0; ti < order.length; ti++) {
+          const table = order[ti];
+          if (SKIP_TABLES.has(table)) continue;
+          const f = zip.file(`data/${table}.json`);
+          if (!f) continue;
+          setProgress(`Restaurando tabela ${table}…`);
+          setPercent(5 + Math.round(((ti + 1) / order.length) * 35));
+          const rows: any[] = rewriteLegacyHosts(JSON.parse(await f.async("string")));
 
-        const { error: delErr } = await supabase.from(table as any).delete().not("id", "is", null);
-        if (delErr) { console.warn(`Limpar ${table}: ${delErr.message}`); continue; }
+          const { error: delErr } = await supabase.from(table as any).delete().not("id", "is", null);
+          if (delErr) { console.warn(`Limpar ${table}: ${delErr.message}`); continue; }
 
-        for (let i = 0; i < rows.length; i += 500) {
-          const chunk = rows.slice(i, i + 500);
-          if (chunk.length === 0) continue;
-          const { error: insErr } = await supabase.from(table as any).insert(chunk);
-          if (insErr) throw new Error(`Inserir ${table}: ${insErr.message}`);
+          for (let i = 0; i < rows.length; i += 500) {
+            const chunk = rows.slice(i, i + 500);
+            if (chunk.length === 0) continue;
+            const { error: insErr } = await supabase.from(table as any).insert(chunk);
+            if (insErr) throw new Error(`Inserir ${table}: ${insErr.message}`);
+          }
+          totalRestored += rows.length;
         }
-        totalRestored += rows.length;
       }
 
-      // 2) Restaura arquivos de storage
-      let storageRestored = 0;
-      const storageFolder = zip.folder(`storage/${STORAGE_BUCKET}`);
-      if (storageFolder) {
-        const files: { path: string; entry: JSZip.JSZipObject }[] = [];
-        zip.forEach((relPath, entry) => {
-          const prefix = `storage/${STORAGE_BUCKET}/`;
-          if (relPath.startsWith(prefix) && !entry.dir) {
-            files.push({ path: relPath.slice(prefix.length), entry });
-          }
-        });
 
-        for (let i = 0; i < files.length; i++) {
-          const { path, entry } = files[i];
-          setProgress(`Restaurando mídia ${i + 1}/${files.length}: ${path}`);
-          setPercent(42 + Math.round(((i + 1) / Math.max(files.length, 1)) * 56));
-          const blob = await entry.async("blob");
-          const { error: upErr } = await supabase.storage
-            .from(STORAGE_BUCKET)
-            .upload(path, blob, { upsert: true });
-          if (upErr) { console.warn(`Upload ${path}: ${upErr.message}`); continue; }
-          storageRestored++;
-        }
+      // 2) Restaura arquivos de storage (aceita qualquer nome de bucket dentro do ZIP)
+      let storageRestored = 0;
+      const files: { path: string; entry: JSZip.JSZipObject }[] = [];
+      zip.forEach((relPath, entry) => {
+        if (entry.dir || !relPath.startsWith("storage/")) return;
+        const rest = relPath.slice("storage/".length);
+        const slash = rest.indexOf("/");
+        if (slash === -1) return;
+        files.push({ path: rest.slice(slash + 1), entry });
+      });
+
+      if (files.length > 0) {
+        let done = 0;
+        const CONCURRENCY = 4;
+        let cursor = 0;
+        const worker = async () => {
+          while (cursor < files.length) {
+            const { path, entry } = files[cursor++];
+            try {
+              const blob = await entry.async("blob");
+              const { error: upErr } = await supabase.storage
+                .from(STORAGE_BUCKET)
+                .upload(path, blob, { upsert: true });
+              if (upErr) console.warn(`Upload ${path}: ${upErr.message}`);
+              else storageRestored++;
+            } catch (err) {
+              console.warn(`Upload ${path}:`, err);
+            }
+            done++;
+            setProgress(`Restaurando mídia ${done}/${files.length}`);
+            setPercent(42 + Math.round((done / files.length) * 56));
+          }
+        };
+        await Promise.all(Array.from({ length: CONCURRENCY }, worker));
       }
 
       setLastResult({
@@ -346,13 +386,28 @@ function AdminBackupInner() {
             </div>
             <div>
               <h2 className="text-white font-heading">Restaurar Backup</h2>
-              <p className="text-xs text-[#71717A]">Sobrescreve banco e mídias.</p>
+              <p className="text-xs text-[#71717A]">
+                {mediaOnly ? "Reenvia só as fotos e vídeos." : "Sobrescreve banco e mídias."}
+              </p>
             </div>
+          </div>
+          <div className="flex items-center gap-3 rounded-md border border-[#27272A] bg-[#0B0B0D] p-3">
+            <Checkbox
+              id="media-only"
+              checked={mediaOnly}
+              onCheckedChange={(c) => setMediaOnly(c === true)}
+            />
+            <label htmlFor="media-only" className="text-xs text-[#D4D4D8] cursor-pointer">
+              Restaurar <strong>somente as mídias</strong> (fotos e vídeos) — mantém textos e configurações atuais.
+              Recomendado para recuperar arquivos perdidos.
+            </label>
           </div>
           <div className="flex items-start gap-2 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-md p-3">
             <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
             <span>
-              Esta ação apaga TODOS os dados e arquivos atuais e substitui pelos do ZIP. Gere um backup antes.
+              {mediaOnly
+                ? "Os arquivos com o mesmo nome serão sobrescritos. Nenhum texto ou configuração é apagado."
+                : "Esta ação apaga TODOS os dados e arquivos atuais e substitui pelos do ZIP. Gere um backup antes."}
             </span>
           </div>
           <input
