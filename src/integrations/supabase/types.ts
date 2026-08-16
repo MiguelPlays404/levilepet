@@ -10,118 +10,110 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.4"
+    PostgrestVersion: "14.15"
   }
   public: {
     Tables: {
       album_items: {
         Row: {
-          album_id: string
+          album_id: string | null
           aspect_ratio: string | null
           caption: string | null
-          created_at: string
+          created_at: string | null
           id: string
-          media_type: string
-          media_url: string
-          position: number
-          source_type: string
+          media_type: string | null
+          media_url: string | null
+          position: number | null
+          source_type: string | null
           thumb_url: string | null
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
-          album_id: string
+          album_id?: string | null
           aspect_ratio?: string | null
           caption?: string | null
-          created_at?: string
+          created_at?: string | null
           id?: string
-          media_type?: string
-          media_url: string
-          position?: number
-          source_type?: string
+          media_type?: string | null
+          media_url?: string | null
+          position?: number | null
+          source_type?: string | null
           thumb_url?: string | null
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
-          album_id?: string
+          album_id?: string | null
           aspect_ratio?: string | null
           caption?: string | null
-          created_at?: string
+          created_at?: string | null
           id?: string
-          media_type?: string
-          media_url?: string
-          position?: number
-          source_type?: string
+          media_type?: string | null
+          media_url?: string | null
+          position?: number | null
+          source_type?: string | null
           thumb_url?: string | null
-          updated_at?: string
+          updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "album_items_album_id_fkey"
-            columns: ["album_id"]
-            isOneToOne: false
-            referencedRelation: "albums"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       albums: {
         Row: {
           aspect_ratio: string | null
           cover_type: string | null
           cover_url: string | null
-          created_at: string
+          created_at: string | null
           description: string | null
           expire_at: string | null
           id: string
-          is_active: boolean
-          locations: string[]
-          position: number
+          is_active: boolean | null
+          locations: string[] | null
+          position: number | null
           publish_at: string | null
-          show_in_hoje: boolean
-          title: string
-          updated_at: string
+          show_in_hoje: boolean | null
+          title: string | null
+          updated_at: string | null
         }
         Insert: {
           aspect_ratio?: string | null
           cover_type?: string | null
           cover_url?: string | null
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           expire_at?: string | null
           id?: string
-          is_active?: boolean
-          locations?: string[]
-          position?: number
+          is_active?: boolean | null
+          locations?: string[] | null
+          position?: number | null
           publish_at?: string | null
-          show_in_hoje?: boolean
-          title?: string
-          updated_at?: string
+          show_in_hoje?: boolean | null
+          title?: string | null
+          updated_at?: string | null
         }
         Update: {
           aspect_ratio?: string | null
           cover_type?: string | null
           cover_url?: string | null
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           expire_at?: string | null
           id?: string
-          is_active?: boolean
-          locations?: string[]
-          position?: number
+          is_active?: boolean | null
+          locations?: string[] | null
+          position?: number | null
           publish_at?: string | null
-          show_in_hoje?: boolean
-          title?: string
-          updated_at?: string
+          show_in_hoje?: boolean | null
+          title?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
       audit_log: {
         Row: {
-          action: string
+          action: string | null
           actor_email: string | null
           actor_id: string | null
-          created_at: string
-          details: Json
+          created_at: string | null
+          details: Json | null
           entity: string | null
           entity_id: string | null
           id: string
@@ -129,11 +121,11 @@ export type Database = {
           user_agent: string | null
         }
         Insert: {
-          action: string
+          action?: string | null
           actor_email?: string | null
           actor_id?: string | null
-          created_at?: string
-          details?: Json
+          created_at?: string | null
+          details?: Json | null
           entity?: string | null
           entity_id?: string | null
           id?: string
@@ -141,11 +133,11 @@ export type Database = {
           user_agent?: string | null
         }
         Update: {
-          action?: string
+          action?: string | null
           actor_email?: string | null
           actor_id?: string | null
-          created_at?: string
-          details?: Json
+          created_at?: string | null
+          details?: Json | null
           entity?: string | null
           entity_id?: string | null
           id?: string
@@ -156,55 +148,55 @@ export type Database = {
       }
       auth_attempts: {
         Row: {
-          created_at: string
+          created_at: string | null
           email: string | null
           id: string
-          ident: string
+          ident: string | null
           ip: string | null
-          kind: string
-          success: boolean
+          kind: string | null
+          success: boolean | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           email?: string | null
           id?: string
-          ident: string
+          ident?: string | null
           ip?: string | null
-          kind?: string
-          success?: boolean
+          kind?: string | null
+          success?: boolean | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           email?: string | null
           id?: string
-          ident?: string
+          ident?: string | null
           ip?: string | null
-          kind?: string
-          success?: boolean
+          kind?: string | null
+          success?: boolean | null
         }
         Relationships: []
       }
       auth_lockouts: {
         Row: {
-          fail_count: number
+          fail_count: number | null
           ident: string
           locked_until: string | null
-          stage: number
-          updated_at: string
+          stage: number | null
+          updated_at: string | null
         }
         Insert: {
-          fail_count?: number
+          fail_count?: number | null
           ident: string
           locked_until?: string | null
-          stage?: number
-          updated_at?: string
+          stage?: number | null
+          updated_at?: string | null
         }
         Update: {
-          fail_count?: number
+          fail_count?: number | null
           ident?: string
           locked_until?: string | null
-          stage?: number
-          updated_at?: string
+          stage?: number | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -238,87 +230,87 @@ export type Database = {
       guia_articles: {
         Row: {
           category: string | null
-          content: string
+          content: string | null
           created_at: string | null
           display_order: number | null
           icon: string | null
           id: string
           is_pinned: boolean | null
           keywords: string | null
-          title: string
+          title: string | null
           updated_at: string | null
         }
         Insert: {
           category?: string | null
-          content: string
+          content?: string | null
           created_at?: string | null
           display_order?: number | null
           icon?: string | null
           id?: string
           is_pinned?: boolean | null
           keywords?: string | null
-          title: string
+          title?: string | null
           updated_at?: string | null
         }
         Update: {
           category?: string | null
-          content?: string
+          content?: string | null
           created_at?: string | null
           display_order?: number | null
           icon?: string | null
           id?: string
           is_pinned?: boolean | null
           keywords?: string | null
-          title?: string
+          title?: string | null
           updated_at?: string | null
         }
         Relationships: []
       }
       hoje_no_le_ville: {
         Row: {
-          aspect_ratio: string
-          created_at: string
+          aspect_ratio: string | null
+          created_at: string | null
           description: string | null
-          display_order: number
+          display_order: number | null
           expires_at: string | null
           id: string
-          is_active: boolean
-          media_type: string
-          media_url: string
-          orientation: string
-          published_at: string
+          is_active: boolean | null
+          media_type: string | null
+          media_url: string | null
+          orientation: string | null
+          published_at: string | null
           title: string | null
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
-          aspect_ratio?: string
-          created_at?: string
+          aspect_ratio?: string | null
+          created_at?: string | null
           description?: string | null
-          display_order?: number
+          display_order?: number | null
           expires_at?: string | null
           id?: string
-          is_active?: boolean
-          media_type?: string
-          media_url: string
-          orientation?: string
-          published_at?: string
+          is_active?: boolean | null
+          media_type?: string | null
+          media_url?: string | null
+          orientation?: string | null
+          published_at?: string | null
           title?: string | null
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
-          aspect_ratio?: string
-          created_at?: string
+          aspect_ratio?: string | null
+          created_at?: string | null
           description?: string | null
-          display_order?: number
+          display_order?: number | null
           expires_at?: string | null
           id?: string
-          is_active?: boolean
-          media_type?: string
-          media_url?: string
-          orientation?: string
-          published_at?: string
+          is_active?: boolean | null
+          media_type?: string | null
+          media_url?: string | null
+          orientation?: string | null
+          published_at?: string | null
           title?: string | null
-          updated_at?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -329,9 +321,9 @@ export type Database = {
           icon: string | null
           id: string
           is_active: boolean | null
-          link_url: string
-          section_key: string
-          title: string
+          link_url: string | null
+          section_key: string | null
+          title: string | null
         }
         Insert: {
           description?: string | null
@@ -339,9 +331,9 @@ export type Database = {
           icon?: string | null
           id?: string
           is_active?: boolean | null
-          link_url: string
-          section_key: string
-          title: string
+          link_url?: string | null
+          section_key?: string | null
+          title?: string | null
         }
         Update: {
           description?: string | null
@@ -349,9 +341,9 @@ export type Database = {
           icon?: string | null
           id?: string
           is_active?: boolean | null
-          link_url?: string
-          section_key?: string
-          title?: string
+          link_url?: string | null
+          section_key?: string | null
+          title?: string | null
         }
         Relationships: []
       }
@@ -427,8 +419,8 @@ export type Database = {
           display_order: number | null
           id: string
           is_active: boolean | null
-          label: string
-          path: string
+          label: string | null
+          path: string | null
           show_in_footer: boolean | null
           show_in_navbar: boolean | null
           updated_at: string | null
@@ -438,8 +430,8 @@ export type Database = {
           display_order?: number | null
           id?: string
           is_active?: boolean | null
-          label: string
-          path: string
+          label?: string | null
+          path?: string | null
           show_in_footer?: boolean | null
           show_in_navbar?: boolean | null
           updated_at?: string | null
@@ -449,8 +441,8 @@ export type Database = {
           display_order?: number | null
           id?: string
           is_active?: boolean | null
-          label?: string
-          path?: string
+          label?: string | null
+          path?: string | null
           show_in_footer?: boolean | null
           show_in_navbar?: boolean | null
           updated_at?: string | null
@@ -460,44 +452,44 @@ export type Database = {
       photos: {
         Row: {
           aspect_ratio: string | null
-          category: string
+          category: string | null
           created_at: string | null
           display_order: number | null
           id: string
-          image_url: string
+          image_url: string | null
           is_active: boolean | null
           is_featured: boolean | null
           locations: string[] | null
           publish_at: string | null
-          title: string
+          title: string | null
           updated_at: string | null
         }
         Insert: {
           aspect_ratio?: string | null
-          category?: string
+          category?: string | null
           created_at?: string | null
           display_order?: number | null
           id?: string
-          image_url: string
+          image_url?: string | null
           is_active?: boolean | null
           is_featured?: boolean | null
           locations?: string[] | null
           publish_at?: string | null
-          title?: string
+          title?: string | null
           updated_at?: string | null
         }
         Update: {
           aspect_ratio?: string | null
-          category?: string
+          category?: string | null
           created_at?: string | null
           display_order?: number | null
           id?: string
-          image_url?: string
+          image_url?: string | null
           is_active?: boolean | null
           is_featured?: boolean | null
           locations?: string[] | null
           publish_at?: string | null
-          title?: string
+          title?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -648,7 +640,7 @@ export type Database = {
           whatsapp_active: boolean | null
           whatsapp_btn_text: string | null
           whatsapp_message: string | null
-          whatsapp_number: string
+          whatsapp_number: string | null
           youtube_active: boolean | null
           youtube_btn_text: string | null
           youtube_handle: string | null
@@ -799,7 +791,7 @@ export type Database = {
           whatsapp_active?: boolean | null
           whatsapp_btn_text?: string | null
           whatsapp_message?: string | null
-          whatsapp_number?: string
+          whatsapp_number?: string | null
           youtube_active?: boolean | null
           youtube_btn_text?: string | null
           youtube_handle?: string | null
@@ -950,7 +942,7 @@ export type Database = {
           whatsapp_active?: boolean | null
           whatsapp_btn_text?: string | null
           whatsapp_message?: string | null
-          whatsapp_number?: string
+          whatsapp_number?: string | null
           youtube_active?: boolean | null
           youtube_btn_text?: string | null
           youtube_handle?: string | null
@@ -1164,57 +1156,57 @@ export type Database = {
       }
       user_roles: {
         Row: {
-          created_at: string
+          created_at: string | null
           id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
+          role: string | null
+          user_id: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
+          role?: string | null
+          user_id?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
+          role?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
       vagas: {
         Row: {
-          created_at: string
-          display_order: number
+          created_at: string | null
+          display_order: number | null
           id: string
-          is_active: boolean
+          is_active: boolean | null
           requirements: string | null
           schedule: string | null
-          title: string
-          updated_at: string
+          title: string | null
+          updated_at: string | null
           whatsapp_message: string | null
         }
         Insert: {
-          created_at?: string
-          display_order?: number
+          created_at?: string | null
+          display_order?: number | null
           id?: string
-          is_active?: boolean
+          is_active?: boolean | null
           requirements?: string | null
           schedule?: string | null
-          title: string
-          updated_at?: string
+          title?: string | null
+          updated_at?: string | null
           whatsapp_message?: string | null
         }
         Update: {
-          created_at?: string
-          display_order?: number
+          created_at?: string | null
+          display_order?: number | null
           id?: string
-          is_active?: boolean
+          is_active?: boolean | null
           requirements?: string | null
           schedule?: string | null
-          title?: string
-          updated_at?: string
+          title?: string | null
+          updated_at?: string | null
           whatsapp_message?: string | null
         }
         Relationships: []
@@ -1222,34 +1214,26 @@ export type Database = {
       video_likes: {
         Row: {
           created_at: string | null
-          device_id: string
+          device_id: string | null
           id: string
           user_identifier: string | null
-          video_id: string
+          video_id: string | null
         }
         Insert: {
           created_at?: string | null
-          device_id: string
+          device_id?: string | null
           id?: string
           user_identifier?: string | null
-          video_id: string
+          video_id?: string | null
         }
         Update: {
           created_at?: string | null
-          device_id?: string
+          device_id?: string | null
           id?: string
           user_identifier?: string | null
-          video_id?: string
+          video_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "video_likes_video_id_fkey"
-            columns: ["video_id"]
-            isOneToOne: false
-            referencedRelation: "videos"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       videos: {
         Row: {
@@ -1266,10 +1250,10 @@ export type Database = {
           publish_at: string | null
           published_at: string | null
           thumbnail_url: string | null
-          title: string
+          title: string | null
           updated_at: string | null
           video_type: string | null
-          video_url: string
+          video_url: string | null
         }
         Insert: {
           aspect_ratio?: string | null
@@ -1285,10 +1269,10 @@ export type Database = {
           publish_at?: string | null
           published_at?: string | null
           thumbnail_url?: string | null
-          title?: string
+          title?: string | null
           updated_at?: string | null
           video_type?: string | null
-          video_url: string
+          video_url?: string | null
         }
         Update: {
           aspect_ratio?: string | null
@@ -1304,10 +1288,10 @@ export type Database = {
           publish_at?: string | null
           published_at?: string | null
           thumbnail_url?: string | null
-          title?: string
+          title?: string | null
           updated_at?: string | null
           video_type?: string | null
-          video_url?: string
+          video_url?: string | null
         }
         Relationships: []
       }
@@ -1323,16 +1307,10 @@ export type Database = {
         }[]
       }
       auto_publish_scheduled_media: { Args: never; Returns: undefined }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "user"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1459,8 +1437,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      app_role: ["admin", "user"],
-    },
+    Enums: {},
   },
 } as const
