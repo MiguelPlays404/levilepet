@@ -19,6 +19,29 @@ import { AdminLayout } from "@/components/AdminLayout";
 
 const STORAGE_BUCKET = "levillepet-media";
 
+// Projeto Supabase atual. Backups antigos guardam URLs do projeto anterior;
+// ao restaurar dados nós reescrevemos o domínio para o projeto atual.
+const CURRENT_SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || "").replace(/\/$/, "");
+
+function rewriteLegacyHosts<T>(value: T): T {
+  if (!CURRENT_SUPABASE_URL) return value;
+  if (typeof value === "string") {
+    return value.replace(
+      /https:\/\/[a-z0-9]+\.supabase\.co(?=\/storage\/v1\/)/g,
+      CURRENT_SUPABASE_URL
+    ) as unknown as T;
+  }
+  if (Array.isArray(value)) return value.map((v) => rewriteLegacyHosts(v)) as unknown as T;
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      out[k] = rewriteLegacyHosts(v);
+    }
+    return out as unknown as T;
+  }
+  return value;
+}
+
 // Ordem de restauração: tabelas "pais" antes das "filhas".
 // As demais tabelas descobertas dinamicamente entram em ordem alfabética no final.
 const RESTORE_ORDER_HINT = [
