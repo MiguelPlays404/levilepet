@@ -229,7 +229,9 @@ function AdminBackupInner() {
     if (!file) return;
     if (
       !confirm(
-        "ATENÇÃO: A restauração vai SUBSTITUIR TODOS os dados do site (tabelas e arquivos de mídia) pelos do backup.\n\nDeseja continuar?"
+        mediaOnly
+          ? "Restaurar SOMENTE as fotos e vídeos do ZIP. Os textos e configurações atuais do site NÃO serão alterados.\n\nDeseja continuar?"
+          : "ATENÇÃO: A restauração vai SUBSTITUIR TODOS os dados do site (tabelas e arquivos de mídia) pelos do backup.\n\nDeseja continuar?"
       )
     )
       return;
@@ -246,30 +248,33 @@ function AdminBackupInner() {
       const manifest: BackupManifest = JSON.parse(await manifestFile.async("string"));
       if (manifest.app !== "le-ville-pet") throw new Error("Backup de outra aplicação.");
 
-      // 1) Restaura tabelas em ordem segura
+      // 1) Restaura tabelas em ordem segura (pulado no modo "somente mídias")
       const order = sortForRestore(manifest.tables);
       let totalRestored = 0;
 
-      for (let ti = 0; ti < order.length; ti++) {
-        const table = order[ti];
-        if (SKIP_TABLES.has(table)) continue;
-        const f = zip.file(`data/${table}.json`);
-        if (!f) continue;
-        setProgress(`Restaurando tabela ${table}…`);
-        setPercent(5 + Math.round(((ti + 1) / order.length) * 35));
-        const rows: any[] = JSON.parse(await f.async("string"));
+      if (!mediaOnly) {
+        for (let ti = 0; ti < order.length; ti++) {
+          const table = order[ti];
+          if (SKIP_TABLES.has(table)) continue;
+          const f = zip.file(`data/${table}.json`);
+          if (!f) continue;
+          setProgress(`Restaurando tabela ${table}…`);
+          setPercent(5 + Math.round(((ti + 1) / order.length) * 35));
+          const rows: any[] = rewriteLegacyHosts(JSON.parse(await f.async("string")));
 
-        const { error: delErr } = await supabase.from(table as any).delete().not("id", "is", null);
-        if (delErr) { console.warn(`Limpar ${table}: ${delErr.message}`); continue; }
+          const { error: delErr } = await supabase.from(table as any).delete().not("id", "is", null);
+          if (delErr) { console.warn(`Limpar ${table}: ${delErr.message}`); continue; }
 
-        for (let i = 0; i < rows.length; i += 500) {
-          const chunk = rows.slice(i, i + 500);
-          if (chunk.length === 0) continue;
-          const { error: insErr } = await supabase.from(table as any).insert(chunk);
-          if (insErr) throw new Error(`Inserir ${table}: ${insErr.message}`);
+          for (let i = 0; i < rows.length; i += 500) {
+            const chunk = rows.slice(i, i + 500);
+            if (chunk.length === 0) continue;
+            const { error: insErr } = await supabase.from(table as any).insert(chunk);
+            if (insErr) throw new Error(`Inserir ${table}: ${insErr.message}`);
+          }
+          totalRestored += rows.length;
         }
-        totalRestored += rows.length;
       }
+
 
       // 2) Restaura arquivos de storage
       let storageRestored = 0;
