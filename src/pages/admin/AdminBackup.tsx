@@ -276,29 +276,40 @@ function AdminBackupInner() {
       }
 
 
-      // 2) Restaura arquivos de storage
+      // 2) Restaura arquivos de storage (aceita qualquer nome de bucket dentro do ZIP)
       let storageRestored = 0;
-      const storageFolder = zip.folder(`storage/${STORAGE_BUCKET}`);
-      if (storageFolder) {
-        const files: { path: string; entry: JSZip.JSZipObject }[] = [];
-        zip.forEach((relPath, entry) => {
-          const prefix = `storage/${STORAGE_BUCKET}/`;
-          if (relPath.startsWith(prefix) && !entry.dir) {
-            files.push({ path: relPath.slice(prefix.length), entry });
-          }
-        });
+      const files: { path: string; entry: JSZip.JSZipObject }[] = [];
+      zip.forEach((relPath, entry) => {
+        if (entry.dir || !relPath.startsWith("storage/")) return;
+        const rest = relPath.slice("storage/".length);
+        const slash = rest.indexOf("/");
+        if (slash === -1) return;
+        files.push({ path: rest.slice(slash + 1), entry });
+      });
 
-        for (let i = 0; i < files.length; i++) {
-          const { path, entry } = files[i];
-          setProgress(`Restaurando mídia ${i + 1}/${files.length}: ${path}`);
-          setPercent(42 + Math.round(((i + 1) / Math.max(files.length, 1)) * 56));
-          const blob = await entry.async("blob");
-          const { error: upErr } = await supabase.storage
-            .from(STORAGE_BUCKET)
-            .upload(path, blob, { upsert: true });
-          if (upErr) { console.warn(`Upload ${path}: ${upErr.message}`); continue; }
-          storageRestored++;
-        }
+      if (files.length > 0) {
+        let done = 0;
+        const CONCURRENCY = 4;
+        let cursor = 0;
+        const worker = async () => {
+          while (cursor < files.length) {
+            const { path, entry } = files[cursor++];
+            try {
+              const blob = await entry.async("blob");
+              const { error: upErr } = await supabase.storage
+                .from(STORAGE_BUCKET)
+                .upload(path, blob, { upsert: true });
+              if (upErr) console.warn(`Upload ${path}: ${upErr.message}`);
+              else storageRestored++;
+            } catch (err) {
+              console.warn(`Upload ${path}:`, err);
+            }
+            done++;
+            setProgress(`Restaurando mídia ${done}/${files.length}`);
+            setPercent(42 + Math.round((done / files.length) * 56));
+          }
+        };
+        await Promise.all(Array.from({ length: CONCURRENCY }, worker));
       }
 
       setLastResult({
