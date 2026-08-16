@@ -122,6 +122,7 @@ function AdminBackupInner() {
   const [percent, setPercent] = useState<number>(0);
   const [lastResult, setLastResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [includeStorage, setIncludeStorage] = useState(true);
+  const [mediaOnly, setMediaOnly] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function handleExport() {
