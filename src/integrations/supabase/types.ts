@@ -10,145 +10,137 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.4"
+    PostgrestVersion: "14.15"
   }
   public: {
     Tables: {
       album_items: {
         Row: {
-          album_id: string
+          album_id: string | null
           aspect_ratio: string | null
           caption: string | null
-          created_at: string
-          id: string
-          media_type: string
-          media_url: string
-          position: number
-          source_type: string
+          created_at: string | null
+          id: string | null
+          media_type: string | null
+          media_url: string | null
+          position: string | null
+          source_type: string | null
           thumb_url: string | null
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
-          album_id: string
+          album_id?: string | null
           aspect_ratio?: string | null
           caption?: string | null
-          created_at?: string
-          id?: string
-          media_type?: string
-          media_url: string
-          position?: number
-          source_type?: string
+          created_at?: string | null
+          id?: string | null
+          media_type?: string | null
+          media_url?: string | null
+          position?: string | null
+          source_type?: string | null
           thumb_url?: string | null
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
-          album_id?: string
+          album_id?: string | null
           aspect_ratio?: string | null
           caption?: string | null
-          created_at?: string
-          id?: string
-          media_type?: string
-          media_url?: string
-          position?: number
-          source_type?: string
+          created_at?: string | null
+          id?: string | null
+          media_type?: string | null
+          media_url?: string | null
+          position?: string | null
+          source_type?: string | null
           thumb_url?: string | null
-          updated_at?: string
+          updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "album_items_album_id_fkey"
-            columns: ["album_id"]
-            isOneToOne: false
-            referencedRelation: "albums"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       albums: {
         Row: {
           aspect_ratio: string | null
           cover_type: string | null
           cover_url: string | null
-          created_at: string
+          created_at: string | null
           description: string | null
           expire_at: string | null
-          id: string
-          is_active: boolean
-          locations: string[]
-          position: number
+          id: string | null
+          is_active: string | null
+          locations: string | null
+          position: string | null
           publish_at: string | null
-          show_in_hoje: boolean
-          title: string
-          updated_at: string
+          show_in_hoje: string | null
+          title: string | null
+          updated_at: string | null
         }
         Insert: {
           aspect_ratio?: string | null
           cover_type?: string | null
           cover_url?: string | null
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           expire_at?: string | null
-          id?: string
-          is_active?: boolean
-          locations?: string[]
-          position?: number
+          id?: string | null
+          is_active?: string | null
+          locations?: string | null
+          position?: string | null
           publish_at?: string | null
-          show_in_hoje?: boolean
-          title?: string
-          updated_at?: string
+          show_in_hoje?: string | null
+          title?: string | null
+          updated_at?: string | null
         }
         Update: {
           aspect_ratio?: string | null
           cover_type?: string | null
           cover_url?: string | null
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           expire_at?: string | null
-          id?: string
-          is_active?: boolean
-          locations?: string[]
-          position?: number
+          id?: string | null
+          is_active?: string | null
+          locations?: string | null
+          position?: string | null
           publish_at?: string | null
-          show_in_hoje?: boolean
-          title?: string
-          updated_at?: string
+          show_in_hoje?: string | null
+          title?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
       audit_log: {
         Row: {
-          action: string
+          action: string | null
           actor_email: string | null
           actor_id: string | null
-          created_at: string
-          details: Json
+          created_at: string | null
+          details: string | null
           entity: string | null
           entity_id: string | null
-          id: string
+          id: string | null
           ip: string | null
           user_agent: string | null
         }
         Insert: {
-          action: string
+          action?: string | null
           actor_email?: string | null
           actor_id?: string | null
-          created_at?: string
-          details?: Json
+          created_at?: string | null
+          details?: string | null
           entity?: string | null
           entity_id?: string | null
-          id?: string
+          id?: string | null
           ip?: string | null
           user_agent?: string | null
         }
         Update: {
-          action?: string
+          action?: string | null
           actor_email?: string | null
           actor_id?: string | null
-          created_at?: string
-          details?: Json
+          created_at?: string | null
+          details?: string | null
           entity?: string | null
           entity_id?: string | null
-          id?: string
+          id?: string | null
           ip?: string | null
           user_agent?: string | null
         }
@@ -156,62 +148,62 @@ export type Database = {
       }
       auth_attempts: {
         Row: {
-          created_at: string
+          created_at: string | null
           email: string | null
-          id: string
-          ident: string
+          id: string | null
+          ident: string | null
           ip: string | null
-          kind: string
-          success: boolean
+          kind: string | null
+          success: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           email?: string | null
-          id?: string
-          ident: string
+          id?: string | null
+          ident?: string | null
           ip?: string | null
-          kind?: string
-          success?: boolean
+          kind?: string | null
+          success?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           email?: string | null
-          id?: string
-          ident?: string
+          id?: string | null
+          ident?: string | null
           ip?: string | null
-          kind?: string
-          success?: boolean
+          kind?: string | null
+          success?: string | null
         }
         Relationships: []
       }
       auth_lockouts: {
         Row: {
-          fail_count: number
-          ident: string
+          fail_count: string | null
+          ident: string | null
           locked_until: string | null
-          stage: number
-          updated_at: string
+          stage: string | null
+          updated_at: string | null
         }
         Insert: {
-          fail_count?: number
-          ident: string
+          fail_count?: string | null
+          ident?: string | null
           locked_until?: string | null
-          stage?: number
-          updated_at?: string
+          stage?: string | null
+          updated_at?: string | null
         }
         Update: {
-          fail_count?: number
-          ident?: string
+          fail_count?: string | null
+          ident?: string | null
           locked_until?: string | null
-          stage?: number
-          updated_at?: string
+          stage?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
       conhecer_content: {
         Row: {
           about_text: string | null
-          id: string
+          id: string | null
           intro_text: string | null
           page_subtitle: string | null
           page_title: string | null
@@ -219,7 +211,7 @@ export type Database = {
         }
         Insert: {
           about_text?: string | null
-          id?: string
+          id?: string | null
           intro_text?: string | null
           page_subtitle?: string | null
           page_title?: string | null
@@ -227,7 +219,7 @@ export type Database = {
         }
         Update: {
           about_text?: string | null
-          id?: string
+          id?: string | null
           intro_text?: string | null
           page_subtitle?: string | null
           page_title?: string | null
@@ -238,120 +230,120 @@ export type Database = {
       guia_articles: {
         Row: {
           category: string | null
-          content: string
+          content: string | null
           created_at: string | null
-          display_order: number | null
+          display_order: string | null
           icon: string | null
-          id: string
-          is_pinned: boolean | null
+          id: string | null
+          is_pinned: string | null
           keywords: string | null
-          title: string
+          title: string | null
           updated_at: string | null
         }
         Insert: {
           category?: string | null
-          content: string
+          content?: string | null
           created_at?: string | null
-          display_order?: number | null
+          display_order?: string | null
           icon?: string | null
-          id?: string
-          is_pinned?: boolean | null
+          id?: string | null
+          is_pinned?: string | null
           keywords?: string | null
-          title: string
+          title?: string | null
           updated_at?: string | null
         }
         Update: {
           category?: string | null
-          content?: string
+          content?: string | null
           created_at?: string | null
-          display_order?: number | null
+          display_order?: string | null
           icon?: string | null
-          id?: string
-          is_pinned?: boolean | null
+          id?: string | null
+          is_pinned?: string | null
           keywords?: string | null
-          title?: string
+          title?: string | null
           updated_at?: string | null
         }
         Relationships: []
       }
       hoje_no_le_ville: {
         Row: {
-          aspect_ratio: string
-          created_at: string
+          aspect_ratio: string | null
+          created_at: string | null
           description: string | null
-          display_order: number
+          display_order: string | null
           expires_at: string | null
-          id: string
-          is_active: boolean
-          media_type: string
-          media_url: string
-          orientation: string
-          published_at: string
+          id: string | null
+          is_active: string | null
+          media_type: string | null
+          media_url: string | null
+          orientation: string | null
+          published_at: string | null
           title: string | null
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
-          aspect_ratio?: string
-          created_at?: string
+          aspect_ratio?: string | null
+          created_at?: string | null
           description?: string | null
-          display_order?: number
+          display_order?: string | null
           expires_at?: string | null
-          id?: string
-          is_active?: boolean
-          media_type?: string
-          media_url: string
-          orientation?: string
-          published_at?: string
+          id?: string | null
+          is_active?: string | null
+          media_type?: string | null
+          media_url?: string | null
+          orientation?: string | null
+          published_at?: string | null
           title?: string | null
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
-          aspect_ratio?: string
-          created_at?: string
+          aspect_ratio?: string | null
+          created_at?: string | null
           description?: string | null
-          display_order?: number
+          display_order?: string | null
           expires_at?: string | null
-          id?: string
-          is_active?: boolean
-          media_type?: string
-          media_url?: string
-          orientation?: string
-          published_at?: string
+          id?: string | null
+          is_active?: string | null
+          media_type?: string | null
+          media_url?: string | null
+          orientation?: string | null
+          published_at?: string | null
           title?: string | null
-          updated_at?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
       home_sections: {
         Row: {
           description: string | null
-          display_order: number | null
+          display_order: string | null
           icon: string | null
-          id: string
-          is_active: boolean | null
-          link_url: string
-          section_key: string
-          title: string
+          id: string | null
+          is_active: string | null
+          link_url: string | null
+          section_key: string | null
+          title: string | null
         }
         Insert: {
           description?: string | null
-          display_order?: number | null
+          display_order?: string | null
           icon?: string | null
-          id?: string
-          is_active?: boolean | null
-          link_url: string
-          section_key: string
-          title: string
+          id?: string | null
+          is_active?: string | null
+          link_url?: string | null
+          section_key?: string | null
+          title?: string | null
         }
         Update: {
           description?: string | null
-          display_order?: number | null
+          display_order?: string | null
           icon?: string | null
-          id?: string
-          is_active?: boolean | null
-          link_url?: string
-          section_key?: string
-          title?: string
+          id?: string | null
+          is_active?: string | null
+          link_url?: string | null
+          section_key?: string | null
+          title?: string | null
         }
         Relationships: []
       }
@@ -370,7 +362,7 @@ export type Database = {
           highlight_3_icon: string | null
           highlight_3_text: string | null
           highlight_3_title: string | null
-          id: string
+          id: string | null
           intro_text: string | null
           page_subtitle: string | null
           page_title: string | null
@@ -391,7 +383,7 @@ export type Database = {
           highlight_3_icon?: string | null
           highlight_3_text?: string | null
           highlight_3_title?: string | null
-          id?: string
+          id?: string | null
           intro_text?: string | null
           page_subtitle?: string | null
           page_title?: string | null
@@ -412,7 +404,7 @@ export type Database = {
           highlight_3_icon?: string | null
           highlight_3_text?: string | null
           highlight_3_title?: string | null
-          id?: string
+          id?: string | null
           intro_text?: string | null
           page_subtitle?: string | null
           page_title?: string | null
@@ -424,35 +416,35 @@ export type Database = {
       nav_items: {
         Row: {
           created_at: string | null
-          display_order: number | null
-          id: string
-          is_active: boolean | null
-          label: string
-          path: string
-          show_in_footer: boolean | null
-          show_in_navbar: boolean | null
+          display_order: string | null
+          id: string | null
+          is_active: string | null
+          label: string | null
+          path: string | null
+          show_in_footer: string | null
+          show_in_navbar: string | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
-          display_order?: number | null
-          id?: string
-          is_active?: boolean | null
-          label: string
-          path: string
-          show_in_footer?: boolean | null
-          show_in_navbar?: boolean | null
+          display_order?: string | null
+          id?: string | null
+          is_active?: string | null
+          label?: string | null
+          path?: string | null
+          show_in_footer?: string | null
+          show_in_navbar?: string | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
-          display_order?: number | null
-          id?: string
-          is_active?: boolean | null
-          label?: string
-          path?: string
-          show_in_footer?: boolean | null
-          show_in_navbar?: boolean | null
+          display_order?: string | null
+          id?: string | null
+          is_active?: string | null
+          label?: string | null
+          path?: string | null
+          show_in_footer?: string | null
+          show_in_navbar?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -460,44 +452,44 @@ export type Database = {
       photos: {
         Row: {
           aspect_ratio: string | null
-          category: string
+          category: string | null
           created_at: string | null
-          display_order: number | null
-          id: string
-          image_url: string
-          is_active: boolean | null
-          is_featured: boolean | null
-          locations: string[] | null
+          display_order: string | null
+          id: string | null
+          image_url: string | null
+          is_active: string | null
+          is_featured: string | null
+          locations: string | null
           publish_at: string | null
-          title: string
+          title: string | null
           updated_at: string | null
         }
         Insert: {
           aspect_ratio?: string | null
-          category?: string
+          category?: string | null
           created_at?: string | null
-          display_order?: number | null
-          id?: string
-          image_url: string
-          is_active?: boolean | null
-          is_featured?: boolean | null
-          locations?: string[] | null
+          display_order?: string | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: string | null
+          is_featured?: string | null
+          locations?: string | null
           publish_at?: string | null
-          title?: string
+          title?: string | null
           updated_at?: string | null
         }
         Update: {
           aspect_ratio?: string | null
-          category?: string
+          category?: string | null
           created_at?: string | null
-          display_order?: number | null
-          id?: string
-          image_url?: string
-          is_active?: boolean | null
-          is_featured?: boolean | null
-          locations?: string[] | null
+          display_order?: string | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: string | null
+          is_featured?: string | null
+          locations?: string | null
           publish_at?: string | null
-          title?: string
+          title?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -535,7 +527,7 @@ export type Database = {
           destaques_home_title: string | null
           destaques_hotel_subtitle: string | null
           destaques_hotel_title: string | null
-          facebook_active: boolean | null
+          facebook_active: string | null
           facebook_btn_text: string | null
           facebook_handle: string | null
           facebook_url: string | null
@@ -557,8 +549,8 @@ export type Database = {
           footer_contact_title: string | null
           footer_description: string | null
           footer_nav_title: string | null
-          footer_show_instagram: boolean | null
-          footer_show_whatsapp: boolean | null
+          footer_show_instagram: string | null
+          footer_show_whatsapp: string | null
           fotos_empty_text: string | null
           fotos_filter_all: string | null
           fotos_filter_conhecer: string | null
@@ -587,14 +579,14 @@ export type Database = {
           home_card_cta_text: string | null
           home_explore_subtitle: string | null
           home_explore_title: string | null
-          home_section_order: Json | null
+          home_section_order: string | null
           hotel_cta_title: string | null
           hotel_gallery_section_title: string | null
           hotel_gallery_title: string | null
           hotel_hero_image_url: string | null
           hotel_videos_title: string | null
-          id: string
-          instagram_active: boolean | null
+          id: string | null
+          instagram_active: string | null
           instagram_btn_text: string | null
           instagram_handle: string | null
           instagram_url: string | null
@@ -606,7 +598,7 @@ export type Database = {
           localizacao_subtitle: string | null
           localizacao_title: string | null
           logo_url: string | null
-          maintenance_mode: boolean | null
+          maintenance_mode: string | null
           nav_label_conhecer: string | null
           nav_label_fotos: string | null
           nav_label_hotelzinho: string | null
@@ -628,12 +620,12 @@ export type Database = {
           sobre_image_url: string | null
           sobre_text: string | null
           sobre_title: string | null
-          tiktok_active: boolean | null
+          tiktok_active: string | null
           tiktok_btn_text: string | null
           tiktok_handle: string | null
           tiktok_url: string | null
           updated_at: string | null
-          vagas_section_active: boolean | null
+          vagas_section_active: string | null
           vagas_section_badge: string | null
           vagas_section_image_url: string | null
           vagas_section_subtitle: string | null
@@ -645,11 +637,11 @@ export type Database = {
           videos_likes_label: string | null
           videos_page_subtitle: string | null
           videos_page_title: string | null
-          whatsapp_active: boolean | null
+          whatsapp_active: string | null
           whatsapp_btn_text: string | null
           whatsapp_message: string | null
-          whatsapp_number: string
-          youtube_active: boolean | null
+          whatsapp_number: string | null
+          youtube_active: string | null
           youtube_btn_text: string | null
           youtube_handle: string | null
           youtube_url: string | null
@@ -686,7 +678,7 @@ export type Database = {
           destaques_home_title?: string | null
           destaques_hotel_subtitle?: string | null
           destaques_hotel_title?: string | null
-          facebook_active?: boolean | null
+          facebook_active?: string | null
           facebook_btn_text?: string | null
           facebook_handle?: string | null
           facebook_url?: string | null
@@ -708,8 +700,8 @@ export type Database = {
           footer_contact_title?: string | null
           footer_description?: string | null
           footer_nav_title?: string | null
-          footer_show_instagram?: boolean | null
-          footer_show_whatsapp?: boolean | null
+          footer_show_instagram?: string | null
+          footer_show_whatsapp?: string | null
           fotos_empty_text?: string | null
           fotos_filter_all?: string | null
           fotos_filter_conhecer?: string | null
@@ -738,14 +730,14 @@ export type Database = {
           home_card_cta_text?: string | null
           home_explore_subtitle?: string | null
           home_explore_title?: string | null
-          home_section_order?: Json | null
+          home_section_order?: string | null
           hotel_cta_title?: string | null
           hotel_gallery_section_title?: string | null
           hotel_gallery_title?: string | null
           hotel_hero_image_url?: string | null
           hotel_videos_title?: string | null
-          id?: string
-          instagram_active?: boolean | null
+          id?: string | null
+          instagram_active?: string | null
           instagram_btn_text?: string | null
           instagram_handle?: string | null
           instagram_url?: string | null
@@ -757,7 +749,7 @@ export type Database = {
           localizacao_subtitle?: string | null
           localizacao_title?: string | null
           logo_url?: string | null
-          maintenance_mode?: boolean | null
+          maintenance_mode?: string | null
           nav_label_conhecer?: string | null
           nav_label_fotos?: string | null
           nav_label_hotelzinho?: string | null
@@ -779,12 +771,12 @@ export type Database = {
           sobre_image_url?: string | null
           sobre_text?: string | null
           sobre_title?: string | null
-          tiktok_active?: boolean | null
+          tiktok_active?: string | null
           tiktok_btn_text?: string | null
           tiktok_handle?: string | null
           tiktok_url?: string | null
           updated_at?: string | null
-          vagas_section_active?: boolean | null
+          vagas_section_active?: string | null
           vagas_section_badge?: string | null
           vagas_section_image_url?: string | null
           vagas_section_subtitle?: string | null
@@ -796,11 +788,11 @@ export type Database = {
           videos_likes_label?: string | null
           videos_page_subtitle?: string | null
           videos_page_title?: string | null
-          whatsapp_active?: boolean | null
+          whatsapp_active?: string | null
           whatsapp_btn_text?: string | null
           whatsapp_message?: string | null
-          whatsapp_number?: string
-          youtube_active?: boolean | null
+          whatsapp_number?: string | null
+          youtube_active?: string | null
           youtube_btn_text?: string | null
           youtube_handle?: string | null
           youtube_url?: string | null
@@ -837,7 +829,7 @@ export type Database = {
           destaques_home_title?: string | null
           destaques_hotel_subtitle?: string | null
           destaques_hotel_title?: string | null
-          facebook_active?: boolean | null
+          facebook_active?: string | null
           facebook_btn_text?: string | null
           facebook_handle?: string | null
           facebook_url?: string | null
@@ -859,8 +851,8 @@ export type Database = {
           footer_contact_title?: string | null
           footer_description?: string | null
           footer_nav_title?: string | null
-          footer_show_instagram?: boolean | null
-          footer_show_whatsapp?: boolean | null
+          footer_show_instagram?: string | null
+          footer_show_whatsapp?: string | null
           fotos_empty_text?: string | null
           fotos_filter_all?: string | null
           fotos_filter_conhecer?: string | null
@@ -889,14 +881,14 @@ export type Database = {
           home_card_cta_text?: string | null
           home_explore_subtitle?: string | null
           home_explore_title?: string | null
-          home_section_order?: Json | null
+          home_section_order?: string | null
           hotel_cta_title?: string | null
           hotel_gallery_section_title?: string | null
           hotel_gallery_title?: string | null
           hotel_hero_image_url?: string | null
           hotel_videos_title?: string | null
-          id?: string
-          instagram_active?: boolean | null
+          id?: string | null
+          instagram_active?: string | null
           instagram_btn_text?: string | null
           instagram_handle?: string | null
           instagram_url?: string | null
@@ -908,7 +900,7 @@ export type Database = {
           localizacao_subtitle?: string | null
           localizacao_title?: string | null
           logo_url?: string | null
-          maintenance_mode?: boolean | null
+          maintenance_mode?: string | null
           nav_label_conhecer?: string | null
           nav_label_fotos?: string | null
           nav_label_hotelzinho?: string | null
@@ -930,12 +922,12 @@ export type Database = {
           sobre_image_url?: string | null
           sobre_text?: string | null
           sobre_title?: string | null
-          tiktok_active?: boolean | null
+          tiktok_active?: string | null
           tiktok_btn_text?: string | null
           tiktok_handle?: string | null
           tiktok_url?: string | null
           updated_at?: string | null
-          vagas_section_active?: boolean | null
+          vagas_section_active?: string | null
           vagas_section_badge?: string | null
           vagas_section_image_url?: string | null
           vagas_section_subtitle?: string | null
@@ -947,11 +939,11 @@ export type Database = {
           videos_likes_label?: string | null
           videos_page_subtitle?: string | null
           videos_page_title?: string | null
-          whatsapp_active?: boolean | null
+          whatsapp_active?: string | null
           whatsapp_btn_text?: string | null
           whatsapp_message?: string | null
-          whatsapp_number?: string
-          youtube_active?: boolean | null
+          whatsapp_number?: string | null
+          youtube_active?: string | null
           youtube_btn_text?: string | null
           youtube_handle?: string | null
           youtube_url?: string | null
@@ -1000,7 +992,7 @@ export type Database = {
           highlight_6_title: string | null
           how_it_works_subtitle: string | null
           how_it_works_title: string | null
-          id: string
+          id: string | null
           intro_text: string | null
           page_subtitle: string | null
           page_title: string | null
@@ -1067,7 +1059,7 @@ export type Database = {
           highlight_6_title?: string | null
           how_it_works_subtitle?: string | null
           how_it_works_title?: string | null
-          id?: string
+          id?: string | null
           intro_text?: string | null
           page_subtitle?: string | null
           page_title?: string | null
@@ -1134,7 +1126,7 @@ export type Database = {
           highlight_6_title?: string | null
           how_it_works_subtitle?: string | null
           how_it_works_title?: string | null
-          id?: string
+          id?: string | null
           intro_text?: string | null
           page_subtitle?: string | null
           page_title?: string | null
@@ -1164,57 +1156,57 @@ export type Database = {
       }
       user_roles: {
         Row: {
-          created_at: string
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
+          created_at: string | null
+          id: string | null
+          role: string | null
+          user_id: string | null
         }
         Insert: {
-          created_at?: string
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
+          created_at?: string | null
+          id?: string | null
+          role?: string | null
+          user_id?: string | null
         }
         Update: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
+          created_at?: string | null
+          id?: string | null
+          role?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
       vagas: {
         Row: {
-          created_at: string
-          display_order: number
-          id: string
-          is_active: boolean
+          created_at: string | null
+          display_order: string | null
+          id: string | null
+          is_active: string | null
           requirements: string | null
           schedule: string | null
-          title: string
-          updated_at: string
+          title: string | null
+          updated_at: string | null
           whatsapp_message: string | null
         }
         Insert: {
-          created_at?: string
-          display_order?: number
-          id?: string
-          is_active?: boolean
+          created_at?: string | null
+          display_order?: string | null
+          id?: string | null
+          is_active?: string | null
           requirements?: string | null
           schedule?: string | null
-          title: string
-          updated_at?: string
+          title?: string | null
+          updated_at?: string | null
           whatsapp_message?: string | null
         }
         Update: {
-          created_at?: string
-          display_order?: number
-          id?: string
-          is_active?: boolean
+          created_at?: string | null
+          display_order?: string | null
+          id?: string | null
+          is_active?: string | null
           requirements?: string | null
           schedule?: string | null
-          title?: string
-          updated_at?: string
+          title?: string | null
+          updated_at?: string | null
           whatsapp_message?: string | null
         }
         Relationships: []
@@ -1222,34 +1214,26 @@ export type Database = {
       video_likes: {
         Row: {
           created_at: string | null
-          device_id: string
-          id: string
+          device_id: string | null
+          id: string | null
           user_identifier: string | null
-          video_id: string
+          video_id: string | null
         }
         Insert: {
           created_at?: string | null
-          device_id: string
-          id?: string
+          device_id?: string | null
+          id?: string | null
           user_identifier?: string | null
-          video_id: string
+          video_id?: string | null
         }
         Update: {
           created_at?: string | null
-          device_id?: string
-          id?: string
+          device_id?: string | null
+          id?: string | null
           user_identifier?: string | null
-          video_id?: string
+          video_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "video_likes_video_id_fkey"
-            columns: ["video_id"]
-            isOneToOne: false
-            referencedRelation: "videos"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       videos: {
         Row: {
@@ -1257,57 +1241,57 @@ export type Database = {
           category: string | null
           created_at: string | null
           description: string | null
-          id: string
-          is_active: boolean | null
-          is_featured: boolean | null
-          likes_count: number | null
-          locations: string[] | null
+          id: string | null
+          is_active: string | null
+          is_featured: string | null
+          likes_count: string | null
+          locations: string | null
           orientation: string | null
           publish_at: string | null
           published_at: string | null
           thumbnail_url: string | null
-          title: string
+          title: string | null
           updated_at: string | null
           video_type: string | null
-          video_url: string
+          video_url: string | null
         }
         Insert: {
           aspect_ratio?: string | null
           category?: string | null
           created_at?: string | null
           description?: string | null
-          id?: string
-          is_active?: boolean | null
-          is_featured?: boolean | null
-          likes_count?: number | null
-          locations?: string[] | null
+          id?: string | null
+          is_active?: string | null
+          is_featured?: string | null
+          likes_count?: string | null
+          locations?: string | null
           orientation?: string | null
           publish_at?: string | null
           published_at?: string | null
           thumbnail_url?: string | null
-          title?: string
+          title?: string | null
           updated_at?: string | null
           video_type?: string | null
-          video_url: string
+          video_url?: string | null
         }
         Update: {
           aspect_ratio?: string | null
           category?: string | null
           created_at?: string | null
           description?: string | null
-          id?: string
-          is_active?: boolean | null
-          is_featured?: boolean | null
-          likes_count?: number | null
-          locations?: string[] | null
+          id?: string | null
+          is_active?: string | null
+          is_featured?: string | null
+          likes_count?: string | null
+          locations?: string | null
           orientation?: string | null
           publish_at?: string | null
           published_at?: string | null
           thumbnail_url?: string | null
-          title?: string
+          title?: string | null
           updated_at?: string | null
           video_type?: string | null
-          video_url?: string
+          video_url?: string | null
         }
         Relationships: []
       }
@@ -1316,23 +1300,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      admin_list_tables: {
-        Args: never
-        Returns: {
-          table_name: string
-        }[]
-      }
-      auto_publish_scheduled_media: { Args: never; Returns: undefined }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
-      app_role: "admin" | "user"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1459,8 +1430,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      app_role: ["admin", "user"],
-    },
+    Enums: {},
   },
 } as const

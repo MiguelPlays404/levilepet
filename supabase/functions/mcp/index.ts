@@ -166,7 +166,7 @@ var list_vagas_default = defineTool5({
 });
 
 // src/lib/mcp/index.ts
-var projectRef = "wxssfflxmextixxzvtzr";
+var projectRef = "pqpyschiqaxgcvvtgjet";
 var mcp_default = defineMcp({
   name: "le-ville-pet-mcp",
   title: "Le Ville Pet",
