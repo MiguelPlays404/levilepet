@@ -386,13 +386,28 @@ function AdminBackupInner() {
             </div>
             <div>
               <h2 className="text-white font-heading">Restaurar Backup</h2>
-              <p className="text-xs text-[#71717A]">Sobrescreve banco e mídias.</p>
+              <p className="text-xs text-[#71717A]">
+                {mediaOnly ? "Reenvia só as fotos e vídeos." : "Sobrescreve banco e mídias."}
+              </p>
             </div>
+          </div>
+          <div className="flex items-center gap-3 rounded-md border border-[#27272A] bg-[#0B0B0D] p-3">
+            <Checkbox
+              id="media-only"
+              checked={mediaOnly}
+              onCheckedChange={(c) => setMediaOnly(c === true)}
+            />
+            <label htmlFor="media-only" className="text-xs text-[#D4D4D8] cursor-pointer">
+              Restaurar <strong>somente as mídias</strong> (fotos e vídeos) — mantém textos e configurações atuais.
+              Recomendado para recuperar arquivos perdidos.
+            </label>
           </div>
           <div className="flex items-start gap-2 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-md p-3">
             <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
             <span>
-              Esta ação apaga TODOS os dados e arquivos atuais e substitui pelos do ZIP. Gere um backup antes.
+              {mediaOnly
+                ? "Os arquivos com o mesmo nome serão sobrescritos. Nenhum texto ou configuração é apagado."
+                : "Esta ação apaga TODOS os dados e arquivos atuais e substitui pelos do ZIP. Gere um backup antes."}
             </span>
           </div>
           <input
