@@ -78,6 +78,38 @@ interface BackupManifest {
   };
 }
 
+const MIME_BY_EXTENSION: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+  gif: "image/gif",
+  avif: "image/avif",
+  svg: "image/svg+xml",
+  mp4: "video/mp4",
+  webm: "video/webm",
+  mov: "video/quicktime",
+  m4v: "video/x-m4v",
+};
+
+function contentTypeForPath(path: string): string {
+  const extension = path.split(".").pop()?.toLowerCase() ?? "";
+  return MIME_BY_EXTENSION[extension] ?? "application/octet-stream";
+}
+
+function getBackupMediaPath(relPath: string): string | null {
+  if (relPath.startsWith("media/")) {
+    const path = relPath.slice("media/".length);
+    return path || null;
+  }
+  if (!relPath.startsWith("storage/")) return null;
+  const rest = relPath.slice("storage/".length);
+  const slash = rest.indexOf("/");
+  if (slash === -1) return null;
+  const path = rest.slice(slash + 1);
+  return path || null;
+}
+
 function sortForRestore(tables: string[]): string[] {
   const set = new Set(tables);
   const ordered: string[] = [];
@@ -276,16 +308,23 @@ function AdminBackupInner() {
       }
 
 
-      // 2) Restaura arquivos de storage (aceita qualquer nome de bucket dentro do ZIP)
+      // 2) Restaura arquivos de storage. Aceita backups atuais em
+      // storage/<bucket>/... e backups antigos em media/...
       let storageRestored = 0;
+      let storageFailed = 0;
+      const storageErrors: string[] = [];
       const files: { path: string; entry: JSZip.JSZipObject }[] = [];
       zip.forEach((relPath, entry) => {
-        if (entry.dir || !relPath.startsWith("storage/")) return;
-        const rest = relPath.slice("storage/".length);
-        const slash = rest.indexOf("/");
-        if (slash === -1) return;
-        files.push({ path: rest.slice(slash + 1), entry });
+        if (entry.dir) return;
+        const path = getBackupMediaPath(relPath);
+        if (path) files.push({ path, entry });
       });
+
+      if (mediaOnly && files.length === 0) {
+        throw new Error(
+          "Este ZIP não contém arquivos físicos de mídia. Ele pode ter somente os registros do banco; use um backup que inclua as pastas media/ ou storage/."
+        );
+      }
 
       if (files.length > 0) {
         let done = 0;
@@ -298,10 +337,21 @@ function AdminBackupInner() {
               const blob = await entry.async("blob");
               const { error: upErr } = await supabase.storage
                 .from(STORAGE_BUCKET)
-                .upload(path, blob, { upsert: true });
-              if (upErr) console.warn(`Upload ${path}: ${upErr.message}`);
-              else storageRestored++;
+                .upload(path, blob, {
+                  upsert: true,
+                  contentType: contentTypeForPath(path),
+                  cacheControl: "31536000",
+                });
+              if (upErr) {
+                storageFailed++;
+                if (storageErrors.length < 3) storageErrors.push(`${path}: ${upErr.message}`);
+                console.warn(`Upload ${path}: ${upErr.message}`);
+              } else storageRestored++;
             } catch (err) {
+              storageFailed++;
+              if (storageErrors.length < 3) {
+                storageErrors.push(`${path}: ${err instanceof Error ? err.message : "erro desconhecido"}`);
+              }
               console.warn(`Upload ${path}:`, err);
             }
             done++;
@@ -312,13 +362,25 @@ function AdminBackupInner() {
         await Promise.all(Array.from({ length: CONCURRENCY }, worker));
       }
 
+      if (files.length > 0 && storageRestored === 0) {
+        throw new Error(
+          `Nenhuma das ${files.length} mídias foi enviada. ${storageErrors.join(" | ") || "Verifique a sessão administrativa e as permissões do Storage."}`
+        );
+      }
+
       setLastResult({
-        ok: true,
-        msg: `Restauração concluída: ${totalRestored} registros, ${storageRestored} arquivos.`,
+        ok: storageFailed === 0,
+        msg: storageFailed > 0
+          ? `Restauração parcial: ${storageRestored} arquivos enviados e ${storageFailed} falharam. ${storageErrors.join(" | ")}`
+          : `Restauração concluída: ${totalRestored} registros, ${storageRestored} arquivos.`,
       });
       setPercent(100);
-      toast.success("Backup restaurado! Recarregando…");
-      setTimeout(() => window.location.reload(), 1500);
+      if (storageFailed > 0) {
+        toast.error(`${storageFailed} mídia(s) não puderam ser restauradas.`);
+      } else {
+        toast.success("Backup restaurado! Recarregando…");
+        setTimeout(() => window.location.reload(), 1500);
+      }
     } catch (e: any) {
       setLastResult({ ok: false, msg: e.message || "Falha ao restaurar" });
       toast.error("Erro ao restaurar: " + (e.message || ""));
