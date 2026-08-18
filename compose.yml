@@ -1,0 +1,37 @@
+# ─────────────────────────────────────────────────────────────
+#  Le Ville Pet — Docker Compose (compatível com Dokploy)
+#  Uso local:
+#    docker compose up -d --build
+#
+#  No Dokploy: o Traefik acessa o container pela rede "dokploy-network"
+#  na porta 7070. Configure o domínio levillepet.com.br apontando para
+#  o serviço "levillepet" / porta 7070.
+# ─────────────────────────────────────────────────────────────
+
+services:
+  levillepet:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY:-}
+    image: levillepet:latest
+    # Porta interna usada pelo proxy (Traefik/Dokploy).
+    # Não publicamos uma porta do host: isso evita conflito e o Traefik
+    # acessa o serviço diretamente pela rede compartilhada.
+    expose:
+      - "7070"
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:7070/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - dokploy-network
+
+networks:
+  dokploy-network:
+    external: true
