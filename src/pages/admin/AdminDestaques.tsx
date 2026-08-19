@@ -105,7 +105,7 @@ export default function AdminDestaques() {
   const load = async () => {
     setLoading(true);
     const [{ data: photosData }, { data: cfg }] = await Promise.all([
-      supabase.from("photos").select("*").order("display_order"),
+      supabase.from("photos").select("*").order("display_order").order("created_at", { ascending: false }),
       supabase.from("site_config").select("*").limit(1).maybeSingle(),
     ]);
     setPhotos(photosData || []);

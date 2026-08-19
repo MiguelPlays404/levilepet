@@ -166,7 +166,13 @@ export async function getConhecerContent(): Promise<any> {
 
 export async function getPhotos(): Promise<any[]> {
   return fetchCached("photos_active", async () => {
-    const { data } = await supabase.from("photos").select("*").eq("is_active", true).order("display_order");
+    // display_order é o critério principal (permite reordenação manual no admin),
+    // mas fotos novas sempre nascem com o mesmo display_order (0), então sem um
+    // desempate o banco retorna a ordem entre elas de forma não determinística —
+    // era por isso que fotos novas apareciam ora no começo, ora no fim, aleatório.
+    // created_at DESC como segundo critério resolve: entre fotos com o mesmo
+    // display_order, a mais recente vem primeiro.
+    const { data } = await supabase.from("photos").select("*").eq("is_active", true).order("display_order").order("created_at", { ascending: false });
     return data || [];
   });
 }

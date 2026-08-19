@@ -19,7 +19,7 @@ export default function AdminTransporte() {
   const { toast } = useToast();
 
   const loadPhotos = async () => {
-    const { data } = await supabase.from("photos").select("*").order("display_order");
+    const { data } = await supabase.from("photos").select("*").order("display_order").order("created_at", { ascending: false });
     setPhotos((data || []).filter((p: any) => normalizeLocations(p).includes("transporte")));
   };
 

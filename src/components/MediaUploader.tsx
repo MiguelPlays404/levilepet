@@ -196,7 +196,12 @@ export function MediaUploader({
       
       for (let i = 0; i < arr.length; i++) {
         const file = arr[i];
-        const uploadId = `batch-${Date.now()}-${i}`;
+        // Date.now() sozinho pode repetir entre chamadas próximas (dois lotes
+        // enviados rapidamente, ou dois MediaUploader na mesma tela) — e como
+        // o ID é a CHAVE do objeto na fila, uma colisão faz uma foto
+        // sobrescrever silenciosamente a entrada da outra antes mesmo do
+        // upload começar. Math.random() garante unicidade real.
+        const uploadId = `batch-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 9)}`;
         
         // Adiciona ao store global. O useEffect acima cuidará da execução real do uploadOne
         // Mas para fluidez imediata, podemos disparar aqui se quisermos seqüencial
@@ -215,7 +220,7 @@ export function MediaUploader({
       setBatchInfo(null);
     } else {
       const file = arr[0];
-      const uploadId = `single-${Date.now()}`;
+      const uploadId = `single-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
       addUpload(uploadId, file.name, 1, bucket, pathPrefix, file);
       // O useEffect detectará status='uploading' e iniciará o uploadOne
     }
