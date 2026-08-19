@@ -20,6 +20,40 @@ export interface UploadProgress {
   claimed?: boolean;
 }
 
+// ---------------------------------------------------------------------------
+// REGISTRY DE CALLBACKS (em memória, fora do zustand)
+// ---------------------------------------------------------------------------
+// Por que isso existe: o zustand-persist salva `uploads` no localStorage a
+// cada mudança, e o `partialize` (lá embaixo) sempre remove `onUploaded` antes
+// de gravar — porque função não é serializável em JSON. O problema é que a
+// REHYDRATION do persist (que acontece ao carregar/recarregar a página, ou em
+// qualquer merge de estado entre abas) sobrescreve o estado em memória com a
+// versão sem `onUploaded`. Resultado: se o upload de uma foto (galeria,
+// hotelzinho, transporte) ainda está em andamento ou na fila quando isso
+// acontece, o arquivo sobe certinho pro Storage, mas a callback que insere a
+// linha na tabela `photos` nunca é chamada — a foto "some" (na prática nunca
+// existiu no banco), mesmo aparecendo como "enviada".
+//
+// A correção: guardamos as callbacks aqui, num Map em memória indexado por
+// uploadId, fora do fluxo do zustand/persist. Elas nunca são serializadas e
+// nunca são apagadas por rehydration. O zustand continua controlando o
+// progresso/estado (que É seguro persistir), e este registry garante que a
+// callback de inserção sempre exista enquanto o upload estiver pendente na
+// mesma sessão do navegador.
+const callbackRegistry = new Map<string, (url: string) => void | Promise<void>>();
+
+export function registerUploadCallback(id: string, cb: (url: string) => void | Promise<void>) {
+  callbackRegistry.set(id, cb);
+}
+
+export function getUploadCallback(id: string) {
+  return callbackRegistry.get(id);
+}
+
+export function clearUploadCallback(id: string) {
+  callbackRegistry.delete(id);
+}
+
 interface UploadStore {
   uploads: Record<string, UploadProgress>;
   addUpload: (id: string, fileName: string, total: number, bucket: string, pathPrefix: string, fileData?: File, onUploaded?: (url: string) => void | Promise<void>) => void;
@@ -43,7 +77,10 @@ export const useUploadStore = create<UploadStore>()(
   persist(
     (set, get) => ({
       uploads: {},
-      addUpload: (id, fileName, total, bucket, pathPrefix, fileData, onUploaded) => 
+      addUpload: (id, fileName, total, bucket, pathPrefix, fileData, onUploaded) => {
+        // Callback vive no registry em memória (não no zustand/persist) —
+        // veja o comentário no topo do arquivo sobre por que isso é necessário.
+        if (onUploaded) registerUploadCallback(id, onUploaded);
         set((state) => ({
           uploads: {
             ...state.uploads,
@@ -61,7 +98,8 @@ export const useUploadStore = create<UploadStore>()(
               onUploaded
             }
           }
-        })),
+        }));
+      },
       updateProgress: (id, progress, done) =>
         set((state) => ({
           uploads: {
@@ -95,12 +133,14 @@ export const useUploadStore = create<UploadStore>()(
         }));
         return true;
       },
-      clearUpload: (id) =>
+      clearUpload: (id) => {
+        clearUploadCallback(id);
         set((state) => {
           const newUploads = { ...state.uploads };
           delete newUploads[id];
           return { uploads: newUploads };
-        }),
+        });
+      },
       cancelUpload: (id) => {
         const upload = get().uploads[id];
         if (upload?.xhr) {

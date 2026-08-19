@@ -2,7 +2,7 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { logAudit } from "@/lib/audit";
-import { useUploadStore, UploadProgress } from "@/lib/uploadStore";
+import { useUploadStore, UploadProgress, getUploadCallback, clearUploadCallback } from "@/lib/uploadStore";
 import { storeFileForResume, getStoredFile, removeStoredFile } from "@/lib/uploadPersistence";
 import { Upload, X, Image as ImageIcon, Video as VideoIcon, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 
@@ -151,12 +151,24 @@ export function MediaUploader({
             const url = await uploadOne(file, upload.id, upload.done, upload.total);
             if (url) {
               markCompleted(upload.id);
-              if (upload.onUploaded) {
-                await upload.onUploaded(url);
+              // Buscamos a callback no registry em memória primeiro — é a fonte
+              // confiável, pois nunca é apagada por rehydration do persist.
+              // `upload.onUploaded` fica como fallback para o mesmo tick em que
+              // o upload acabou de ser criado (ainda não passou por nenhum
+              // ciclo de persist/rehydrate).
+              const cb = getUploadCallback(upload.id) || upload.onUploaded;
+              if (cb) {
+                await cb(url);
+                clearUploadCallback(upload.id);
               } else if (!multiple && upload.id.startsWith('single-')) {
                 // Para uploads individuais via UI local
                 await onUploaded(url);
                 setPreview(url);
+              } else {
+                // Não deveria acontecer mais, mas se acontecer, avisa em vez
+                // de silenciosamente perder a foto enviada.
+                console.error(`Upload ${upload.id} concluído mas sem callback registrada — item pode não ter sido salvo.`);
+                toast({ title: "⚠️ Arquivo enviado, mas não foi salvo", description: "Recarregue a página e tente reenviar esta foto.", variant: "destructive" });
               }
             }
           } catch (err) {
