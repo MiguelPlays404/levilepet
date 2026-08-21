@@ -4,6 +4,7 @@ import { MediaUploader } from "@/components/MediaUploader";
 import { BulkActionsBar } from "@/components/BulkActionsBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { fetchAllRows } from "@/lib/fetchAll";
 import { invalidateCache } from "@/lib/dataCache";
 import { Trash2, Star, Eye, EyeOff, Pencil, X, Search, Check, ArrowUpDown } from "lucide-react";
 
@@ -82,11 +83,12 @@ export default function AdminPhotos() {
   useEffect(() => { fetchPhotos(); }, []);
 
   const fetchPhotos = async () => {
-    // Usamos created_at para garantir que fotos novas apareçam conforme enviadas
-    const { data } = await supabase.from("photos").select("*").order("created_at", { ascending: false });
-    setPhotos(data || []);
+    // Paginação completa: o Supabase devolve no máximo 1000 linhas por requisição
+    const data = await fetchAllRows("photos", "created_at", false);
+    setPhotos(data);
     setLoading(false);
   };
+
 
   // Refetch automático quando algo termina o upload (usando polling simples ou poderia ser real-time)
   useEffect(() => {

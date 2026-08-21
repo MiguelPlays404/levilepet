@@ -3,6 +3,7 @@ import { AdminLayout } from "@/components/AdminLayout";
 import { MediaUploader } from "@/components/MediaUploader";
 import { AspectRatioPicker, aspectToOrientation, aspectClass, ASPECT_OPTIONS } from "@/components/AspectRatioPicker";
 import { BulkActionsBar } from "@/components/BulkActionsBar";
+import { fetchAllRows } from "@/lib/fetchAll";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { invalidateCache } from "@/lib/dataCache";
@@ -93,10 +94,11 @@ export default function AdminVideos() {
   useEffect(() => { fetchVideos(); }, []);
 
   const fetchVideos = async () => {
-    const { data } = await supabase.from("videos").select("*").order("published_at", { ascending: false });
-    setVideos(data || []);
+    const data = await fetchAllRows("videos", "published_at", false);
+    setVideos(data);
     setLoading(false);
   };
+
 
   useEffect(() => {
     const interval = setInterval(() => {
