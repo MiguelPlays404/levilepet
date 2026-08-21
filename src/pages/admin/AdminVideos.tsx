@@ -94,10 +94,11 @@ export default function AdminVideos() {
   useEffect(() => { fetchVideos(); }, []);
 
   const fetchVideos = async () => {
-    const { data } = await supabase.from("videos").select("*").order("published_at", { ascending: false });
-    setVideos(data || []);
+    const data = await fetchAllRows("videos", "published_at", false);
+    setVideos(data);
     setLoading(false);
   };
+
 
   useEffect(() => {
     const interval = setInterval(() => {
