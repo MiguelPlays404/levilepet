@@ -1308,6 +1308,10 @@ export type Database = {
       }
       auto_publish_scheduled_media: { Args: never; Returns: undefined }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
+      unlike_video: {
+        Args: { _device_id: string; _video_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
