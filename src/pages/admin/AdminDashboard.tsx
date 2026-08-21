@@ -27,22 +27,30 @@ export default function AdminDashboard() {
   const [topVideos, setTopVideos] = useState<any[]>([]);
   const [recentPhotos, setRecentPhotos] = useState<any[]>([]);
 
-  useEffect(() => { loadStats(); }, []);
+  useEffect(() => {
+    loadStats();
+    const t = setInterval(loadStats, 20000);
+    const onFocus = () => loadStats();
+    window.addEventListener("focus", onFocus);
+    return () => { clearInterval(t); window.removeEventListener("focus", onFocus); };
+  }, []);
 
   const loadStats = async () => {
-    const [photos, videos, hotelPhotos] = await Promise.all([
-      supabase.from("photos").select("id", { count: "exact" }),
-      supabase.from("videos").select("id, likes_count"),
-      supabase.from("photos").select("id", { count: "exact" }).eq("category", "hotelzinho"),
+    const [photosCount, videosCount, hotelCount, likesRows] = await Promise.all([
+      countRows("photos"),
+      countRows("videos"),
+      countRows("photos", (q: any) => q.eq("category", "hotelzinho")),
+      fetchAllRows("videos", "published_at", false),
     ]);
-    const totalLikes = (videos.data || []).reduce((acc, v) => acc + (v.likes_count || 0), 0);
-    setStats({ photos: photos.count || 0, videos: (videos.data || []).length, likes: totalLikes, hotelPhotos: hotelPhotos.count || 0 });
+    const totalLikes = likesRows.reduce((acc: number, v: any) => acc + (v.likes_count || 0), 0);
+    setStats({ photos: photosCount, videos: videosCount, likes: totalLikes, hotelPhotos: hotelCount });
 
     const { data: top } = await supabase.from("videos").select("*").order("likes_count", { ascending: false }).limit(5);
     setTopVideos(top || []);
     const { data: recent } = await supabase.from("photos").select("*").order("created_at", { ascending: false }).limit(8);
     setRecentPhotos(recent || []);
   };
+
 
   const statCards = [
     { label: "Total de Fotos", value: stats.photos, icon: Image, color: "text-blue-400" },
