@@ -4,6 +4,7 @@ import { MediaUploader } from "@/components/MediaUploader";
 import { BulkActionsBar } from "@/components/BulkActionsBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { fetchAllRows } from "@/lib/fetchAll";
 import { invalidateCache } from "@/lib/dataCache";
 import { Trash2, Star, Eye, EyeOff, Pencil, X, Search, Check, ArrowUpDown } from "lucide-react";
 
