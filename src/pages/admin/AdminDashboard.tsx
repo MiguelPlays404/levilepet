@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows, countRows } from "@/lib/fetchAll";
 import { Image, Video, Heart, Hotel, Camera, Settings, Share2, Shield, BookOpen, Palette, Compass, Type, CalendarClock } from "lucide-react";
 import { Link } from "react-router-dom";
 
