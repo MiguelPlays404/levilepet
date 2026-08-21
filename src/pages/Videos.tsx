@@ -49,7 +49,7 @@ const Videos = () => {
 
     if (isLiked) {
       newLiked.delete(videoId);
-      await supabase.from("video_likes").delete().eq("video_id", videoId).eq("device_id", userId);
+      await supabase.rpc("unlike_video", { _video_id: videoId, _device_id: userId });
       await supabase.from("videos").update({ likes_count: Math.max(0, (video.likes_count || 1) - 1) }).eq("id", videoId);
     } else {
       newLiked.add(videoId);
