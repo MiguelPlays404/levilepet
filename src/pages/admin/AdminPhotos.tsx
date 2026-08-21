@@ -82,11 +82,12 @@ export default function AdminPhotos() {
   useEffect(() => { fetchPhotos(); }, []);
 
   const fetchPhotos = async () => {
-    // Usamos created_at para garantir que fotos novas apareçam conforme enviadas
-    const { data } = await supabase.from("photos").select("*").order("created_at", { ascending: false });
-    setPhotos(data || []);
+    // Paginação completa: o Supabase devolve no máximo 1000 linhas por requisição
+    const data = await fetchAllRows("photos", "created_at", false);
+    setPhotos(data);
     setLoading(false);
   };
+
 
   // Refetch automático quando algo termina o upload (usando polling simples ou poderia ser real-time)
   useEffect(() => {
